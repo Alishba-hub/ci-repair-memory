@@ -1,0 +1,42 @@
+--- step: test (windows-latest, 3.12) ---
+    from ..mcp import (
+src\agentscope\mcp\__init__.py:9: in <module>
+    from ._http_stateless_client import HttpStatelessClient
+src\agentscope\mcp\_http_stateless_client.py:9: in <module>
+    from mcp.client.streamable_http import streamablehttp_client
+E   ImportError: cannot import name 'streamablehttp_client' from 'mcp.client.streamable_http' (C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\site-packages\mcp\client\streamable_http.py)
+=========================== short test summary info ===========================
+ERROR tests/embedding_cache_test.py
+ERROR tests/hook_test.py
+ERROR tests/mcp_sse_client_test.py
+ERROR tests/mcp_streamable_http_client_test.py
+ERROR tests/pipeline_test.py
+ERROR tests/react_agent_test.py
+ERROR tests/session_test.py
+ERROR tests/tool_dashscope_test.py
+ERROR tests/tool_openai_test.py
+ERROR tests/tool_test.py
+ERROR tests/toolkit_test.py
+ERROR tests/tracer_test.py
+ERROR tests/user_input_test.py
+!!!!!!!!!!!!!!!!!! Interrupted: 13 errors during collection !!!!!!!!!!!!!!!!!!!
+============================= 13 errors in 6.04s ==============================
+##[error]Process completed with exit code 1.
+Post job cleanup.
+[command]"C:\Program Files\Git\bin\git.exe" version
+[command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\agentscope\agentscope
+Removing SSH command configuration
+[command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+[command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+Removing HTTP extra header
+[command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+[command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+Removing includeIf entries pointing to credentials config files
+[command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+includeif.gitdir:D:/a/agentscope/agentscope/.git.path
+... (12 lines omitted)
+[command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+/github/runner_temp/git-credentials-e45d4bd2-3385-4dc8-8a55-34b70890156f.config
+[command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-e45d4bd2\-3385\-4dc8\-8a55\-34b70890156f\.config
+[command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+Removing credentials config 'D:\a\_temp\git-credentials-e45d4bd2-3385-4d

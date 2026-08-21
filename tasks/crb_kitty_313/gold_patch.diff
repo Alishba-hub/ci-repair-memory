@@ -1,0 +1,26 @@
+diff --git a/.github/workflows/ci.py b/.github/workflows/ci.py
+index c83f522f440..e856c315ef2 100644
+--- a/.github/workflows/ci.py
++++ b/.github/workflows/ci.py
+@@ -272,6 +272,8 @@ def main() -> None:
+         subprocess.check_call(['go', 'install', 'golang.org/x/vuln/cmd/govulncheck@latest'])
+         with open('govulncheck.sarif', 'wb') as f:
+             subprocess.check_call(['govulncheck', '-format', 'sarif', './...'], stdout=f)
++        with open('govulncheck.sarif') as f:
++            print(f.read())
+     elif action == 'gofmt':
+         q = subprocess.check_output('gofmt -s -l tools kittens'.split()).decode()
+         if q.strip():
+diff --git a/bypy/sources.json b/bypy/sources.json
+index b4fc9614ae6..901b105550c 100644
+--- a/bypy/sources.json
++++ b/bypy/sources.json
+@@ -212,7 +212,7 @@
+     },
+ 
+     {
+-        "name": "brotli 1.1.0",
++        "name": "libbrotli 1.1.0",
+         "os": "linux",
+         "unix": {
+             "file_extension": "tar.gz",

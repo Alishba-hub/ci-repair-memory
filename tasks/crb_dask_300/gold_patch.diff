@@ -1,0 +1,31 @@
+diff --git a/dask/array/core.py b/dask/array/core.py
+index ee979ff46c4..c072e56c7a3 100644
+--- a/dask/array/core.py
++++ b/dask/array/core.py
+@@ -478,7 +478,7 @@ def apply_infer_dtype(func, args, kwargs, funcname, suggest_dtype="dtype", nout=
+     # make sure that every arg is an evaluated array
+     args = [
+         (
+-            np.ones_like(meta_from_array(x), shape=((1,) * x.ndim), dtype=x.dtype)
++            np.zeros_like(meta_from_array(x), shape=((1,) * x.ndim), dtype=x.dtype)
+             if is_arraylike(x)
+             else x
+         )
+diff --git a/dask/array/tests/test_routines.py b/dask/array/tests/test_routines.py
+index 3fb588b81a6..fe45d2fcc24 100644
+--- a/dask/array/tests/test_routines.py
++++ b/dask/array/tests/test_routines.py
+@@ -1815,6 +1815,13 @@ def test_choose():
+     assert_eq(index_dask.choose([0, d]), index_numpy.choose([0, x]))
+     assert_eq(index_dask.choose([-d, d]), index_numpy.choose([-x, x]))
+ 
++    indices_np = np.array([0, 0, 0, 0])
++    choices_np = (np.array([10.0, 20.0, 30.0, 40.0]),)
++    indices_da = da.from_array(indices_np, chunks=(2,))
++    choices_da = da.from_array(choices_np, chunks=(1, 2))
++
++    assert_eq(np.choose(indices_np, choices_np), da.choose(indices_da, choices_da))
++
+ 
+ def test_piecewise():
+     rng = np.random.default_rng(1337)

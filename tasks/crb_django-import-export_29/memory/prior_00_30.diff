@@ -1,0 +1,12 @@
+diff --git a/tests/core/tests/test_resources/test_resources.py b/tests/core/tests/test_resources/test_resources.py
+index 82ef08b..63be3f7 100644
+--- a/tests/core/tests/test_resources/test_resources.py
++++ b/tests/core/tests/test_resources/test_resources.py
+@@ -1,7 +1,6 @@
+ import json
+ import sys
+ from collections import OrderedDict
+-from copy import deepcopy
+ from datetime import date
+ from decimal import Decimal, InvalidOperation
+ from unittest import mock, skipUnless

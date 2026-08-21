@@ -1,0 +1,19 @@
+--- step: test (ubuntu-latest, mindeps-optional) ---
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_merge_combine_similar_squash_merges[True] - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.10/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_merge_combine_similar_squash_merges[False] - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.10/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_shuffle_consistency_checks - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.10/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_merge_indicator - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.10/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_shuffle_partition_reduction - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.10/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_p2p_and_merge_shuffle - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.10/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/tests/test_docs.py::test_development_guidelines_matches_ci[.github/workflows/upstream.yml] - FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/dask/dask/.github/workflows/upstream.yml'
+FAILED dask/tests/test_distributed.py::test_serializable_groupby_agg - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.10/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/tests/test_docs.py::test_development_guidelines_matches_ci[.github/workflows/additional.yml] - FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/dask/dask/.github/workflows/additional.yml'
+= 15 failed, 16289 passed, 1037 skipped, 289 xfailed, 289 xpassed, 154 warnings in 1302.24s (0:21:42) =
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:12120) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: test (ubuntu-latest, 3.12, pandas-nig

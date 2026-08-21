@@ -1,0 +1,12 @@
+diff --git a/src/axolotl/utils/data/rl.py b/src/axolotl/utils/data/rl.py
+index 887726e7e3..52f190bf99 100644
+--- a/src/axolotl/utils/data/rl.py
++++ b/src/axolotl/utils/data/rl.py
+@@ -278,6 +278,7 @@ def _load_split(cfg: DictDefault, split: Literal["train", "test"]) -> Dataset:
+     return dataset
+ 
+ 
++# pylint: disable=duplicate-code
+ def _load_or_create_dataset_split(
+     cfg: DictDefault, tokenizer: PreTrainedTokenizer, split: Literal["train", "test"]
+ ) -> Dataset:

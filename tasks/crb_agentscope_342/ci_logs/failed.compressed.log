@@ -1,0 +1,55 @@
+--- step: test (ubuntu-latest, 3.10) ---
+__________________ ERROR collecting tests/user_input_test.py ___________________
+ImportError while importing test module '/home/runner/work/agentscope/agentscope/tests/user_input_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/user_input_test.py:9: in <module>
+    from agentscope.agent import UserAgent
+src/agentscope/__init__.py:11: in <module>
+    from . import tool
+src/agentscope/tool/__init__.py:25: in <module>
+    from ._toolkit import Toolkit
+src/agentscope/tool/_toolkit.py:35: in <module>
+    from ..mcp import (
+src/agentscope/mcp/__init__.py:9: in <module>
+    from ._http_stateless_client import HttpStatelessClient
+src/agentscope/mcp/_http_stateless_client.py:9: in <module>
+    from mcp.client.streamable_http import streamablehttp_client
+E   ImportError: cannot import name 'streamablehttp_client' from 'mcp.client.streamable_http' (/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/mcp/client/streamable_http.py)
+=========================== short test summary info ============================
+ERROR tests/embedding_cache_test.py
+ERROR tests/evaluation_test.py
+ERROR tests/hook_test.py
+ERROR tests/mcp_sse_client_test.py
+ERROR tests/mcp_streamable_http_client_test.py
+ERROR tests/pipeline_test.py
+ERROR tests/plan_test.py
+ERROR tests/rag_knowledge_test.py
+ERROR tests/rag_reader_test.py
+ERROR tests/rag_store_test.py
+ERROR tests/react_agent_test.py
+ERROR tests/session_test.py
+ERROR tests/tool_dashscope_test.py
+ERROR tests/tool_openai_test.py
+ERROR tests/tool_test.py
+ERROR tests/toolkit_test.py
+ERROR tests/tracer_test.py
+ERROR tests/user_input_test.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 18 errors during collection !!!!!!!!!!!!!!!!!!!
+============================== 18 errors in 3.64s ==============================
+##[error]Process completed with exit code 2.
+Post job cleanup.
+Removing SSH command configuration
+Removing HTTP extra header
+Removing includeIf entries pointing to credentials config files
+includeif.gitdir:/home/runner/work/agentscope/agentscope/.git.path
+includeif.gitdir:/home/runner/work/agentscope/agentscope/.git/worktrees/*.path
+includeif.gitdir:/github/workspace/.git.path
+includeif.gitdir:/github/workspace/.git/worktrees/*.path
+/home/runner/work/_temp/git-credentials-c1240ee7-afbf-4e36-9752-e17e4015505c.config
+/home/runner/work/_temp/git-credentials-c1240ee7-afbf-4e36-9752-e17e4015505c.config
+/github/runner_temp/git-credentials-c1240ee7-afbf-4e36-9752-e17e4015505c.config
+/github/runner_temp/git-credentials-c1240ee7-afbf-4e36-9752-e17e4015505c.config
+Removing credentials config '/home/runner/work/_temp/git-credentials-c1240ee7-afbf-4e36-9752-e17e4015505c.config'

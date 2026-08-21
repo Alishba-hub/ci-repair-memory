@@ -1,0 +1,22 @@
+--- step: Python 3.9 ---
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.25/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.25/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.25/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.9.25/x64/lib
++ coverage report --show-missing --skip-covered --fail-under=100
+Name               Stmts   Miss  Cover   Missing
+------------------------------------------------
+httpx/_config.py     133      1    99%   139
+------------------------------------------------
+TOTAL               7570      1    99%
+58 files skipped due to complete coverage.
+Coverage failure: total of 99 is less than fail-under=100
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://github.com/.extraheader
+ [2026-08-12 20:32:22 +0000] [7] [INFO] Starting gunicorn 23.0.0
+ [2026-08-12 20:32:22 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:32:22 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:32:22 +0000] [10] [INFO] Booting worker with pid: 10
+edfdd9fe12ebcdd1dc3713b528721320b4a76248d8c23393e1401978269e1cb3
+github_network_92e2149fb1194304baed6d058e474559

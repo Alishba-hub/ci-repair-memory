@@ -1,0 +1,24 @@
+--- step: check_code_quality ---
+  PIP_INDEX_URL: http://localhost:8629/2024-01-19
+  UV_INDEX_URL: http://localhost:8629/2024-01-19
+  pythonLocation: /opt/hostedtoolcache/Python/3.8.18/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.8.18/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.8.18/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.8.18/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.8.18/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.8.18/x64/lib
+src/diffusers/loaders/single_file_utils.py:23:8: F401 [*] `torch` imported but unused
+src/diffusers/loaders/single_file_utils.py:25:44: F401 [*] `safetensors.torch.load_file` imported but unused
+Found 2 errors.
+[*] 2 fixable with the `--fix` option.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:2757) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+http.https://github.com/.extraheader
+ [2026-08-12 20:33:56 +0000] [7] [INFO] Starting gunicorn 23.0.0
+ [2026-08-12 20:33:56 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:33:56 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:33:56 +0000] [10] [INFO] Booting worker with pid: 10
+6700e2568ab0d5698d4f29386198b4fbe2c574a64e4d3cd7d33c1d6a6ca827b8
+github_network_14d5286eedf940f8833f27806f962440

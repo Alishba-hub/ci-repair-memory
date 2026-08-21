@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+    # Try loading from hub if push_dataset_to_hub is configured
+    dataset = None
+    if cfg.push_dataset_to_hub:
+        dataset = _try_load_from_hub(cfg, dataset_hash, split)
+    # If not found on hub, try loading from disk
+    if dataset is None:
+        dataset = load_preprocessed_dataset(cfg, dataset_hash)
+    # If not found on disk or skipping prepared dataset, load and process raw datasets (duplicate-code)
+------------------------------------
+Your code has been rated at 10.00/10
+mypy.....................................................................Passed
+bandit...................................................................Passed
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=99757]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__6b96f4b9-437e-4503-a232-4931b966317b.__actions_cache]
+##[end-action id=__6b96f4b9-437e-4503-a232-4931b966317b.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

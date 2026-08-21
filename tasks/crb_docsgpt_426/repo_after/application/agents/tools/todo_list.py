@@ -1,0 +1,166 @@
+import datetime
+import uuid
+from typing import Any, Dict, List, Optional
+from application.core.mongo_db import MongoDB
+from application.core.settings import settings
+
+from .base import Tool
+
+
+class TodoListTool(Tool):
+    """
+    Todo List Tool
+    A simple MongoDB-backed todo list tool for agents to create, list, update, retrieve and delete todo items.
+    Constructor accepts optional `tool_config` (may include `tool_id`) and
+    optional `user_id` (decoded_token['sub']).
+    """
+
+    def __init__(self, tool_config: Optional[Dict[str, Any]] = None, user_id: Optional[str] = None):
+        self.user_id: Optional[str] = user_id
+        self.tool_config = tool_config or {}
+
+        if self.tool_config and "tool_id" in self.tool_config:
+            self.tool_id = self.tool_config["tool_id"]
+        elif self.user_id:
+            self.tool_id = f"default_{self.user_id}"
+        else:
+            self.tool_id = str(uuid.uuid4())
+
+        self.database_name = settings.MONGO_DB_NAME
+        self.collection_name = "todos"
+        self._client = None
+        self._db = None
+        self._col = None
+        self._connect()
+
+    def _connect(self):
+        try:
+            self._client = MongoDB.get_client()
+            self._db = self._client[self.database_name]
+            self._col = self._db[self.collection_name]
+        except Exception:
+            self._client = None
+            self._db = None
+            self._col = None
+            return
+
+        try:
+            self._col.create_index([("user_id", 1), ("tool_id", 1)], unique=True)
+        except Exception:
+            pass
+
+    def _ensure_connection(self):
+        if self._col is None:
+            self._connect()
+            if self._col is None:
+                raise RuntimeError("TodoListTool: no MongoDB connection available")
+
+    def execute_action(self, action_name: str, **kwargs):
+        actions = {
+            "todo_create": self._create_todo,
+            "todo_get": self._get_todo,
+            "todo_update": self._update_todo,
+            "todo_delete": self._delete_todo,
+        }
+        if action_name not in actions:
+            raise ValueError(f"Unknown action: {action_name}")
+        if not self.user_id:
+            return {"status_code": 401, "message": "user_id required"}
+
+        return actions[action_name](**kwargs)
+
+    # -----------------------------
+    # Actions
+    # -----------------------------
+    def _create_todo(self, title: str, description: str = "", due_date: Optional[str] = None, metadata: Optional[Dict] = None):
+        self._ensure_connection()
+        now = datetime.datetime.utcnow()
+        doc = {
+            "title": title,
+            "description": description,
+            "status": "open",
+            "metadata": metadata or {},
+            "due_date": due_date,
+            "created_at": now,
+            "updated_at": now,
+        }
+        self._col.update_one({"user_id": self.user_id, "tool_id": self.tool_id}, {"$set": doc}, upsert=True)
+        return {"status_code": 201, "message": "Todo created"}
+
+    def _get_todo(self):
+        self._ensure_connection()
+        doc = self._col.find_one({"user_id": self.user_id, "tool_id": self.tool_id})
+        if not doc:
+            return {"status_code": 404, "message": "Todo not found"}
+        return {"status_code": 200, "todo": doc}
+
+    def _update_todo(self, updates: Dict[str, Any]):
+        self._ensure_connection()
+        allowed = {"title", "description", "status", "due_date", "metadata"}
+        set_fields = {k: v for k, v in updates.items() if k in allowed}
+        if not set_fields:
+            return {"status_code": 400, "message": "No valid fields to update"}
+        set_fields["updated_at"] = datetime.datetime.utcnow()
+        result = self._col.update_one({"user_id": self.user_id, "tool_id": self.tool_id}, {"$set": set_fields})
+        if result.matched_count == 0:
+            return {"status_code": 404, "message": "Todo not found"}
+        return {"status_code": 200, "message": "Todo updated"}
+
+    def _delete_todo(self):
+        self._ensure_connection()
+        result = self._col.delete_one({"user_id": self.user_id, "tool_id": self.tool_id})
+        if result.deleted_count == 0:
+            return {"status_code": 404, "message": "Todo not found"}
+        return {"status_code": 200, "message": "Todo deleted"}
+
+    def get_actions_metadata(self) -> List[Dict[str, Any]]:
+        return [
+            {
+                "name": "todo_create",
+                "description": "Create a new todo item for the user",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string"},
+                        "description": {"type": "string"},
+                        "due_date": {"type": "string"},
+                        "metadata": {"type": "object"},
+                    },
+                    "required": ["title"],
+                    "additionalProperties": False,
+                },
+            },
+            {
+                "name": "todo_get",
+                "description": "Get a single todo by id",
+                "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": False,
+                },
+            },
+            {
+                "name": "todo_update",
+                "description": "Update a todo's fields",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"updates": {"type": "object"}},
+                    "required": ["updates"],
+                    "additionalProperties": False,
+                },
+            },
+            {
+                "name": "todo_delete",
+                "description": "Delete a todo",
+                "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": False,
+                },
+            },
+        ]
+
+    def get_config_requirements(self):
+        return {}

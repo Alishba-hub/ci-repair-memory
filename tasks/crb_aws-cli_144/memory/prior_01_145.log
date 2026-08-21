@@ -1,0 +1,41 @@
+--- step: build (3.10, ubuntu-latest) ---
+* Installing packages in isolated environment... (awscrt==0.26.1, colorama>=0.2.5,<0.4.7, distro>=1.5.0,<1.9.0, docutils>=0.10,<0.20, jmespath>=0.7.1,<1.1.0, prompt-toolkit>=3.0.24,<3.0.39, python-dateutil>=2.1,<=2.9.0, ruamel.yaml.clib>=0.2.0,<=0.2.12, ruamel.yaml>=0.15.0,<=0.17.21, urllib3>=1.25.4,<1.27)
+* Building wheel...
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/pep517/in_process/_in_process.py", line 351, in <module>
+Generating auto-complete index
+    main()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/pep517/in_process/_in_process.py", line 333, in main
+    json_out['return_val'] = hook(**hook_input['kwargs'])
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/pep517/in_process/_in_process.py", line 249, in build_wheel
+    return _build_backend().build_wheel(wheel_directory, config_settings,
+  File "/tmp/build-via-sdist-zmwbuzpw/awscli-2.27.37/backends/pep517.py", line 65, in build_wheel
+    _inject_wheel_extras(os.path.join(wheel_directory, whl_filename))
+  File "/tmp/build-via-sdist-zmwbuzpw/awscli-2.27.37/backends/pep517.py", line 191, in _inject_wheel_extras
+    _build_and_inject_ac_index(BUILD_DIR, extracted_wheel_dir)
+  File "/tmp/build-via-sdist-zmwbuzpw/awscli-2.27.37/backends/pep517.py", line 219, in _build_and_inject_ac_index
+... (10 lines omitted)
+    _load_plugins(BUILTIN_PLUGINS, event_hooks)
+  File "/tmp/build-via-sdist-zmwbuzpw/awscli-2.27.37/awscli/plugin.py", line 62, in _load_plugins
+    modules = _import_plugins(plugin_mapping)
+  File "/tmp/build-via-sdist-zmwbuzpw/awscli-2.27.37/awscli/plugin.py", line 76, in _import_plugins
+    module = __import__(path, fromlist=[module])
+  File "/tmp/build-via-sdist-zmwbuzpw/awscli-2.27.37/awscli/handlers.py", line 113, in <module>
+    from awscli.customizations.s3.s3 import s3_plugin_initialize
+  File "/tmp/build-via-sdist-zmwbuzpw/awscli-2.27.37/awscli/customizations/s3/s3.py", line 15, in <module>
+    from awscli.customizations.s3.subcommands import (
+  File "/tmp/build-via-sdist-zmwbuzpw/awscli-2.27.37/awscli/customizations/s3/subcommands.py", line 1638
+    f'The user-provided path {params['src']} does not exist.'
+                                      ^^^
+SyntaxError: f-string: unmatched '['
+ERROR Backend subproccess exited when trying to invoke build_wheel
+Traceback (most recent call last):
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/install", line 32, in <module>
+    run("python -m build")
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/install", line 15, in run
+    return check_call(command, shell=True)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/subprocess.py", line 369, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command 'python -m build' returned non-zero exit status 1.
+##[error]Process completed with exit code 1.
+Post job cleanup.

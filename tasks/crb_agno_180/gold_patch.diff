@@ -1,0 +1,57 @@
+diff --git a/libs/agno/agno/models/cerebras/cerebras.py b/libs/agno/agno/models/cerebras/cerebras.py
+index 0c230b5b3..8a9dae5c1 100644
+--- a/libs/agno/agno/models/cerebras/cerebras.py
++++ b/libs/agno/agno/models/cerebras/cerebras.py
+@@ -160,7 +160,12 @@ class Cerebras(Model):
+             request_params["parallel_tool_calls"] = False
+ 
+         # Handle response format for structured outputs
+-        if self.response_format["type"] == "json_schema" and "json_schema" in self.response_format:
++        if (
++            isinstance(self.response_format, dict)
++            and "type" in self.response_format
++            and self.response_format["type"] == "json_schema"
++            and "json_schema" in self.response_format
++        ):
+             # Ensure json_schema has strict=True as required by Cerebras API-- Reference: https://arc.net/l/quote/tkifovqh
+             schema = self.response_format["json_schema"]
+             if isinstance(schema, dict) and "schema" in schema:
+@@ -326,8 +331,8 @@ class Cerebras(Model):
+                         "id": tool_call.id,
+                         "type": tool_call.type,
+                         "function": {
+-                            "name": tool_call.function.name,  # type: ignore
+-                            "arguments": tool_call.function.arguments,  # type: ignore
++                            "name": getattr(tool_call.function, "name", None),  # type: ignore
++                            "arguments": getattr(tool_call.function, "arguments", None),  # type: ignore
+                         },
+                     }
+                     for tool_call in message.tool_calls
+@@ -372,8 +377,8 @@ class Cerebras(Model):
+                     "id": tool_call.id,
+                     "type": tool_call.type,
+                     "function": {
+-                        "name": tool_call.function.name,  # type: ignore
+-                        "arguments": tool_call.function.arguments,  # type: ignore
++                        "name": getattr(tool_call.function, "name", None),  # type: ignore
++                        "arguments": getattr(tool_call.function, "arguments", None),  # type: ignore
+                     },
+                 }
+                 for tool_call in delta.tool_calls
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b7212..46576e1d8 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,7 +39,11 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++            agno_conf_workspace_dir_path = (
++                ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                if agno_conf_workspace_dir_str is not None
++                else ws_root_path
++            )
+             logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+             if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+                 return agno_conf_workspace_dir_path

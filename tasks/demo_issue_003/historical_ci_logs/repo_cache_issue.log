@@ -1,0 +1,10 @@
+============================= test session starts =============================
+collected 5 items
+
+tests/test_cache.py E
+
+==================================== ERRORS ====================================
+ImportError: No module named 'cache_utils'
+
+=========================== short test summary info ===========================
+ERROR tests/test_cache.py - ImportError

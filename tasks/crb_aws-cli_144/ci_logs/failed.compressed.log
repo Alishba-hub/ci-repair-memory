@@ -1,0 +1,38 @@
+--- step: build (3.12, ubuntu-latest) ---
+  The rsync feature will be removed in pytest-xdist 4.0.
+    config.issue_config_time_warning(warning, 2)
+functional/botocore/test_credentials.py:64
+functional/botocore/test_credentials.py:64
+functional/botocore/test_credentials.py:64
+... (130 lines omitted)
+tests/functional/botocore/test_s3.py: 7 warnings
+tests/functional/botocore/test_endpoint_rulesets.py: 8 warnings
+  /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/awscli/botocore/crt/auth.py:259: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    datetime_now = datetime.datetime.utcnow().replace(
+tests/functional/botocore/test_s3.py::TestGeneratePresigned::test_generate_unauthed_post
+tests/functional/botocore/test_s3.py::TestGeneratePresigned::test_presign_post_s3_accelerate
+  /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/awscli/botocore/signers.py:716: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    datetime_now = datetime.datetime.utcnow()
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------- coverage: platform linux, python 3.12.13-final-0 ----------
+Coverage XML written to file coverage.xml
+=========================== short test summary info ============================
+FAILED functional/botocore/test_s3.py::test_retries_reuse_request_checksum - AssertionError: assert 1 == 2
+ +  where 1 = <MagicMock name='send' id='140102755101648'>.call_count
+==== 1 failed, 75649 passed, 6 skipped, 1241 warnings in 738.63s (0:12:18) =====
+CDing to /home/runner/work/aws-cli/aws-cli/tests
+Running pytest --cov=awscli --cov=botocore --cov=s3transfer --cov-config=/home/runner/work/aws-cli/aws-cli/.coveragerc --cov-report xml --numprocesses=auto --dist=loadfile --maxprocesses=4 unit/ functional/...
+Traceback (most recent call last):
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-tests", line 129, in <module>
+    run(cmd, allow_repo_root_on_path=raw_args.allow_repo_root_on_path)
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-tests", line 31, in run
+    return check_call(command, shell=True, env=env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/subprocess.py", line 413, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command 'pytest --cov=awscli --cov=botocore --cov=s3transfer --cov-config=/home/runner/work/aws-cli/aws-cli/.coveragerc --cov-report xml --numprocesses=auto --dist=loadfile --maxprocesses=4 unit/ functional/' returned non-zero exit status 1.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step:

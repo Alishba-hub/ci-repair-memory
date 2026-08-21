@@ -1,0 +1,59 @@
+--- step: Linux package ---
+/usr/bin/tar: Exiting with failure status due to previous errors
+##[warning]Failed to restore: "/usr/bin/tar" failed with error: The process '/usr/bin/tar' failed with exit code 2
+Cache not found for input keys: Linux-golang-static-250d856eb50e5144a2c77f686c73f2615be00002150e58050b5197552426bc60, Linux-golang-static-
+python -m pip install -r docs/requirements.txt ruff mypy types-requests types-docutils
+shell: /usr/bin/bash -e {0}
+env:
+  CI: true
+  ASAN_OPTIONS: detect_leaks=0
+  LC_ALL: en_US.UTF-8
+  LANG: en_US.UTF-8
+  CFLAGS: -funsigned-char
+  pythonLocation: /opt/hostedtoolcache/Python/3.13.14/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.14/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.14/x64
+... (1086 lines omitted)
+  ASAN_OPTIONS: detect_leaks=0
+  LC_ALL: en_US.UTF-8
+  LANG: en_US.UTF-8
+  CFLAGS: -funsigned-char
+  pythonLocation: /opt/hostedtoolcache/Python/3.13.14/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.14/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.14/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.14/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.14/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.14/x64/lib
+/opt/hostedtoolcache/Python/3.13.14/x64/bin/python
+mypy 2.3.0 (compiled: yes)
+setup.py:1141: error: Need type annotation for "lines" (hint:
+"lines: list[<type>] = ...")  [var-annotated]
+        lines = []
+        ^~~~~
+kitty/search_query_parser.py:96: error: Argument 1 to "__call__" of
+"SearchTreeNode" has incompatible type "set[T]"; expected "set[object]"
+[arg-type]
+            return candidates.difference(self.rhs(candidates, get_matches)...
+                                                  ^~~~~~~~~~
+kitty/search_query_parser.py:96: error: Argument 2 to "__call__" of
+"SearchTreeNode" has incompatible type "Callable[[str, str, set[T]], set[T]]";
+expected "Callable[[str, str, set[object]], set[object]]"  [arg-type]
+    ...       return candidates.difference(self.rhs(candidates, get_matches))
+                                                                ^~~~~~~~~~~
+kitty/shm.py:109: error: Argument 2 to "seek" of "mmap" has incompatible type
+"int"; expected "Literal[0, 1, 2, 3, 4]"  [arg-type]
+            self.mmap.seek(pos, whence)
+                                ^~~~~~
+kitty/actions.py:51: error: Redundant cast to
+"Literal['cp', 'sc', 'win', 'tab', 'mouse', 'mk', 'lay', 'misc', 'debug']"
+[redundant-cast]
+            return Action(getattr(x, '__name__'), cast(ActionGroup, spec.g...
+                                                  ^
+Found 5 errors in 4 files (checked 195 source files)
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:10426) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+--- step: macOS Brew ---
+======================================

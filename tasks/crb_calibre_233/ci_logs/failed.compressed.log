@@ -1,0 +1,24 @@
+--- step: Scan dependencies for vulnerabilities ---
+Python                    3.14.7                3.15.0                              apple-app-bundle  CVE-2026-15308  High      0.6% (47th)   0.5
+Python                    3.14.7                3.15.0                              binary            CVE-2026-15308  High      0.6% (47th)   0.5
+python                    3.14.7                3.15.0                              binary            CVE-2026-15308  High      0.6% (47th)   0.5
+node                      22.22.0               *22.23.2, 24.18.1                   binary            CVE-2026-56846  High      0.6% (46th)   0.5
+node                      22.22.0               *22.23.2, 24.18.1, 26.5.1           binary            CVE-2026-56848  High      0.6% (46th)   0.5
+stdlib                    go1.26.3              1.25.11, *1.26.4                    go-module         CVE-2026-27145  High      0.6% (45th)   0.4
+node                      22.22.0               *22.23.0, 24.17.0                   binary            CVE-2026-48937  Medium    0.5% (42nd)   0.3
+... (31 lines omitted)
+FFmpeg                    7.1.2                 8.0                                 binary            CVE-2025-59729  Medium    0.1% (4th)    < 0.1
+FFmpeg                    7.1.2                 8.0                                 binary            CVE-2025-59730  Medium    0.1% (4th)    < 0.1
+ffmpeg                    7.1.2                 8.0                                 binary            CVE-2025-59729  Medium    0.1% (4th)    < 0.1
+ffmpeg                    7.1.2                 8.0                                 binary            CVE-2025-59730  Medium    0.1% (4th)    < 0.1
+FFmpeg                    7.1.2                 8.1                                 binary            CVE-2025-12343  Medium    0.1% (4th)    < 0.1
+ffmpeg                    7.1.2                 8.1                                 binary            CVE-2025-12343  Medium    0.1% (4th)    < 0.1
+node                      22.22.0               *22.23.0, 24.17.0, 26.3.1           binary            CVE-2026-48617  Low       0.2% (15th)   < 0.1
+node                      22.22.0               *22.23.2, 24.18.1, 26.5.1           binary            CVE-2026-58039  Low       0.2% (7th)    < 0.1
+node                      22.22.0               20.20.2, *22.22.2, 24.14.1, 25.8.2  binary            CVE-2026-21716  Low       0.2% (5th)    < 0.1
+node                      22.22.0               *22.23.2, 24.18.1, 26.5.1           binary            CVE-2026-56847  Low       0.2% (5th)    < 0.1
+node                      22.22.0               20.20.2, *22.22.2, 24.14.1, 25.8.2  binary            CVE-2026-21715  Low       0.2% (5th)    < 0.1
+node                      22.22.0               *22.23.2, 24.18.1, 26.5.1           binary            CVE-2026-56850  Medium    < 0.1% (0th)  < 0.1
+##[error]Process completed with exit code 2.
+Post job cleanup.
+Post job cleanup.

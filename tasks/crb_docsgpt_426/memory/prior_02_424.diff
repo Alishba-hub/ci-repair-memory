@@ -1,0 +1,13 @@
+diff --git a/application/api/connector/routes.py b/application/api/connector/routes.py
+index 5c753f2fe..49307058e 100644
+--- a/application/api/connector/routes.py
++++ b/application/api/connector/routes.py
+@@ -334,7 +334,7 @@ def get(self):
+ 
+         except Exception as e:
+             current_app.logger.error(f"Error handling connector callback: {e}")
+-            return redirect(f"/api/connectors/callback-status?status=error&message=Authentication+failed.+Please+try+again+and+make+sure+to+grant+all+requested+permissions.")
++            return redirect("/api/connectors/callback-status?status=error&message=Authentication+failed.+Please+try+again+and+make+sure+to+grant+all+requested+permissions.")
+ 
+ 
+ @connectors_ns.route("/api/connectors/refresh")

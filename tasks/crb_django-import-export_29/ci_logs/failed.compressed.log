@@ -1,0 +1,32 @@
+--- step: main ---
++++ b/tests/core/tests/test_admin_integration.py
+@@ -680,7 +680,9 @@ class ExportAdminIntegrationTest(AdminTestMixin, TestCase):
+             "file_format": "0",
+         }
+         date_str = datetime.now().strftime("%Y-%m-%d")
+-        with self.assertNumQueries(7):  # Should not contain COUNT queries from ModelAdmin.get_results()
++        with self.assertNumQueries(
++            7
++        ):  # Should not contain COUNT queries from ModelAdmin.get_results()
+             response = self.client.post("/admin/core/book/export/", data)
+         self.assertEqual(response.status_code, 200)
+         self.assertTrue(response.has_header("Content-Disposition"))
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=4289]
+with:
+  msg: [pre-commit.ci lite] apply automatic fixes
+env:
+  PIP_INDEX_URL: http://localhost:8629/2023-12-14
+  UV_INDEX_URL: http://localhost:8629/2023-12-14
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+... (9 lines omitted)
+ [2026-08-12 20:25:20 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:25:20 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:25:20 +0000] [10] [INFO] Booting worker with pid: 10
+8724407525ef89b1cba4501fa8cc45b8e9abf67cc952cc343010cfd667274ffc
+github_network_6c16b6ed4c624c908de75e8a07af0c95

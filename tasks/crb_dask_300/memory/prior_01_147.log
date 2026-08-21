@@ -1,0 +1,35 @@
+--- step: test (ubuntu-latest, 3.11, false) ---
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_merge_indicator - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.11/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_shuffle_partition_reduction - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.11/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/dataframe/dask_expr/tests/test_distributed.py::test_p2p_and_merge_shuffle - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.11/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/bytes/tests/test_http.py::test_bag - concurrent.futures.process.BrokenProcessPool: A process in the process pool was terminated abruptly while the future was running or pending.
+FAILED dask/tests/test_distributed.py::test_serializable_groupby_agg - ImportError: cannot import name 'check_minimal_arrow_version' from 'distributed.shuffle' (/home/runner/miniconda3/envs/test-environment/lib/python3.11/site-packages/distributed/shuffle/__init__.py)
+FAILED dask/tests/test_docs.py::test_development_guidelines_matches_ci[.github/workflows/additional.yml] - FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/dask/dask/.github/workflows/additional.yml'
+FAILED dask/tests/test_docs.py::test_development_guidelines_matches_ci[.github/workflows/upstream.yml] - FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/dask/dask/.github/workflows/upstream.yml'
+ERROR dask/dataframe/io/tests/test_parquet.py - TypeError: object of type 'NoneType' has no len()
+ERROR dask/dataframe/io/tests/test_parquet.py - TypeError: object of type 'NoneType' has no len()
+ERROR dask/dataframe/io/tests/test_parquet.py - TypeError: object of type 'NoneType' has no len()
+ERROR dask/dataframe/io/tests/test_parquet.py - TypeError: object of type 'NoneType' has no len()
+= 16 failed, 16113 passed, 985 skipped, 279 xfailed, 284 xpassed, 116 warnings, 4 errors, 10 rerun in 1040.66s (0:17:20) =
+##[error]Process completed with exit code 1.
+with:
+  name: ubuntu-latest-3.11-
+  path: pytest.xml
+env.yaml
+  if-no-files-found: warn
+  compression-level: 6
+  overwrite: false
+  include-hidden-files: false
+env:
+  PARALLEL: true
+  COVERAGE: true
+  HDF5_USE_FILE_LOCKING: FALSE
+... (20 lines omitted)
+Post job cleanup.
+(node:12096) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: test (ubuntu-latest, mindeps-optional) ---
+FAILED dask/dataframe/dask_expr/tests/test_distri

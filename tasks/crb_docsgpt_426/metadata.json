@@ -1,0 +1,61 @@
+{
+  "task_id": "crb_docsgpt_426",
+  "name": "CI failure in docsgpt (Package Installation Error, Dependency Issues)",
+  "source": "ci-repair-bench",
+  "instance_id": "426",
+  "repo_name": "docsgpt",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "8efb5578f2c0b9ad8e539bb79ff522c50d3bb771",
+  "sha_success": "0b586e4f7461f8db1626054b4c69472fbe0dd54f",
+  "commit_date": "2025-10-07T16:15:56Z",
+  "error_type": [
+    "Package Installation Error",
+    "Dependency Issues"
+  ],
+  "workflow_path": ".github/workflows/pytest.yml",
+  "target_files": [
+    "application/agents/tools/todo_list.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "376",
+      "commit_date": "2025-10-07T12:57:38Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "tests/test_todo_tool.py"
+      ],
+      "log_file": "memory/prior_00_376.log",
+      "diff_file": "memory/prior_00_376.diff"
+    },
+    {
+      "instance_id": "427",
+      "commit_date": "2025-10-01T21:10:30Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "tests/security/test_encryption.py",
+        "tests/storage/test_local_storage.py"
+      ],
+      "log_file": "memory/prior_01_427.log",
+      "diff_file": "memory/prior_01_427.diff"
+    },
+    {
+      "instance_id": "424",
+      "commit_date": "2025-09-24T23:28:05Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "application/api/connector/routes.py"
+      ],
+      "log_file": "memory/prior_02_424.log",
+      "diff_file": "memory/prior_02_424.diff"
+    }
+  ]
+}

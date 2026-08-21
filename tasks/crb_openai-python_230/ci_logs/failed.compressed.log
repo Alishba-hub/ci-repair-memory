@@ -1,0 +1,35 @@
+--- step: test ---
+E
+E   types for the `stop` param are do not match; source='Union[Optional[str], SequenceNotStr[str], None] | NotGiven' checking='Union[Optional[str], List[str], None] | NotGiven'
+_______________________ test_stream_method_in_sync[sync] _______________________
+[gw2] linux -- Python 3.9.18 /home/runner/work/openai-python/openai-python/.venv/bin/python3
+tests/lib/chat/test_completions_streaming.py:1075: in test_stream_method_in_sync
+    assert_signatures_in_sync(
+src/openai/_utils/_reflection.py:43: in assert_signatures_in_sync
+    raise AssertionError(
+E   AssertionError: 1 errors encountered when comparing signatures:
+E
+E   types for the `stop` param are do not match; source='Union[Optional[str], SequenceNotStr[str], None] | NotGiven' checking='Union[Optional[str], List[str], None] | NotGiven'
+______________________ test_stream_method_in_sync[async] _______________________
+[gw2] linux -- Python 3.9.18 /home/runner/work/openai-python/openai-python/.venv/bin/python3
+tests/lib/chat/test_completions_streaming.py:1075: in test_stream_method_in_sync
+    assert_signatures_in_sync(
+src/openai/_utils/_reflection.py:43: in assert_signatures_in_sync
+    raise AssertionError(
+E   AssertionError: 1 errors encountered when comparing signatures:
+E
+E   types for the `stop` param are do not match; source='Union[Optional[str], SequenceNotStr[str], None] | NotGiven' checking='Union[Optional[str], List[str], None] | NotGiven'
+=========================== short test summary info ============================
+FAILED tests/lib/chat/test_completions.py::test_parse_method_in_sync[sync] - AssertionError: 1 errors encountered when comparing signatures:
+types for the `stop` param are do not match; source='Union[Optional[str], SequenceNotStr[str], None] | NotGiven' checking='Union[Optional[str], List[str], None] | NotGiven'
+FAILED tests/lib/chat/test_completions.py::test_parse_method_in_sync[async] - AssertionError: 1 errors encountered when comparing signatures:
+types for the `stop` param are do not match; source='Union[Optional[str], SequenceNotStr[str], None] | NotGiven' checking='Union[Optional[str], List[str], None] | NotGiven'
+FAILED tests/lib/chat/test_completions_streaming.py::test_stream_method_in_sync[sync] - AssertionError: 1 errors encountered when comparing signatures:
+types for the `stop` param are do not match; source='Union[Optional[str], SequenceNotStr[str], None] | NotGiven' checking='Union[Optional[str], List[str], None] | NotGiven'
+FAILED tests/lib/chat/test_completions_streaming.py::test_stream_method_in_sync[async] - AssertionError: 1 errors encountered when comparing signatures:
+types for the `stop` param are do not match; source='Union[Optional[str], SequenceNotStr[str], None] | NotGiven' checking='Union[Optional[str], List[str], None] | NotGiven'
+================= 4 failed, 3291 passed, 10 skipped in 31.16s ==================
+Stopped 2760.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extrahea

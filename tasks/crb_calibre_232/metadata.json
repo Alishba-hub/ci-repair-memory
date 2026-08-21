@@ -1,0 +1,67 @@
+{
+  "task_id": "crb_calibre_232",
+  "name": "CI failure in calibre (Dependency Issues)",
+  "source": "ci-repair-bench",
+  "instance_id": "232",
+  "repo_name": "calibre",
+  "repo_owner": "kovidgoyal",
+  "sha_fail": "0c72143691d2bd88c3346287b827c1952293e338",
+  "sha_success": "0fb0fade0737c3cfeed8e7e8a3725981c948670c",
+  "commit_date": "2025-09-24T04:43:55Z",
+  "error_type": [
+    "Dependency Issues"
+  ],
+  "workflow_path": ".github/workflows/depscan.yml",
+  "target_files": [
+    "setup/unix-ci.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "312",
+      "commit_date": "2025-09-08T15:49:59Z",
+      "error_type": [
+        "Dependency Issues",
+        "Configuration Error"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "recipes/el_diplo.recipe",
+        "src/calibre/gui2/actions/column_tooltips.py",
+        "src/calibre/gui2/library/models.py"
+      ],
+      "log_file": "memory/prior_00_312.log",
+      "diff_file": "memory/prior_00_312.diff"
+    },
+    {
+      "instance_id": "311",
+      "commit_date": "2025-08-29T02:15:33Z",
+      "error_type": [
+        "Dependency Issues",
+        "Configuration Error",
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "src/calibre/scraper/test_fetch_backend.py"
+      ],
+      "log_file": "memory/prior_01_311.log",
+      "diff_file": "memory/prior_01_311.diff"
+    },
+    {
+      "instance_id": "310",
+      "commit_date": "2025-08-26T09:55:07Z",
+      "error_type": [
+        "Test Failure",
+        "Runtime Error",
+        "Configuration Error"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "src/calibre/gui2/actions/polish.py"
+      ],
+      "log_file": "memory/prior_02_310.log",
+      "diff_file": "memory/prior_02_310.diff"
+    }
+  ]
+}

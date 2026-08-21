@@ -1,0 +1,13 @@
+diff --git a/tests/backends/build_system/functional/test_aws_cli_venv.py b/tests/backends/build_system/functional/test_aws_cli_venv.py
+index f19e09099..fc271a835 100644
+--- a/tests/backends/build_system/functional/test_aws_cli_venv.py
++++ b/tests/backends/build_system/functional/test_aws_cli_venv.py
+@@ -23,8 +23,8 @@ import pytest
+ from build_system.awscli_venv import AwsCliVenv
+ from build_system.constants import ArtifactType
+ 
++from awscli.testutils import if_windows, skip_if_windows
+ from backends.build_system.constants import BIN_DIRNAME, PYTHON_EXE_NAME
+-from tests.markers import if_windows, skip_if_windows
+ 
+ ROOT_DIR = pathlib.Path(__file__).parents[4]

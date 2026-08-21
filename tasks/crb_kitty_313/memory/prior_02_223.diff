@@ -1,0 +1,88 @@
+diff --git a/kitty/layout/grid.py b/kitty/layout/grid.py
+index a41f82d2c13..553158d1afa 100644
+--- a/kitty/layout/grid.py
++++ b/kitty/layout/grid.py
+@@ -8,7 +8,7 @@
+ from typing import Any
+ 
+ from kitty.borders import BorderColor
+-from kitty.types import Edges
++from kitty.types import Edges, WindowMapper
+ from kitty.typing_compat import WindowType
+ from kitty.window_list import WindowGroup, WindowList
+ 
+@@ -314,3 +314,8 @@ def layout_state(self) -> dict[str, Any]:
+             'biased_cols': self.biased_cols,
+             'biased_rows': self.biased_rows
+         }
++
++    def set_layout_state(self, layout_state: dict[str, Any], map_group_id: WindowMapper) -> bool:
++        self.biased_rows = layout_state['biased_rows']
++        self.biased_cols = layout_state['biased_cols']
++        return True
+diff --git a/kitty/layout/tall.py b/kitty/layout/tall.py
+index 082f43a1d93..34d2bd14dc3 100644
+--- a/kitty/layout/tall.py
++++ b/kitty/layout/tall.py
+@@ -7,7 +7,7 @@
+ 
+ from kitty.borders import BorderColor
+ from kitty.conf.utils import to_bool
+-from kitty.types import Edges
++from kitty.types import Edges, WindowMapper
+ from kitty.typing_compat import EdgeLiteral, WindowType
+ from kitty.window_list import WindowGroup, WindowList
+ 
+@@ -347,11 +347,15 @@ def minimal_borders(self, all_windows: WindowList) -> Generator[BorderLine, None
+ 
+     def layout_state(self) -> dict[str, Any]:
+         return {
+-            'num_full_size_windows': self.num_full_size_windows,
+             'main_bias': self.main_bias,
+             'biased_map': self.biased_map
+         }
+ 
++    def set_layout_state(self, layout_state: dict[str, Any], map_group_id: WindowMapper) -> bool:
++        self.main_bias = layout_state['main_bias']
++        self.biased_map = layout_state['biased_map']
++        return True
++
+ 
+ class Fat(Tall):
+ 
+diff --git a/kitty/layout/vertical.py b/kitty/layout/vertical.py
+index 6671a8feefc..292de94c86f 100644
+--- a/kitty/layout/vertical.py
++++ b/kitty/layout/vertical.py
+@@ -5,7 +5,7 @@
+ from typing import Any
+ 
+ from kitty.borders import BorderColor
+-from kitty.types import Edges
++from kitty.types import Edges, WindowMapper
+ from kitty.typing_compat import WindowType
+ from kitty.window_list import WindowGroup, WindowList
+ 
+@@ -140,6 +140,9 @@ def neighbors_for_window(self, window: WindowType, all_windows: WindowList) -> N
+     def layout_state(self) -> dict[str, Any]:
+         return {'biased_map': self.biased_map}
+ 
++    def set_layout_state(self, layout_state: dict[str, Any], map_group_id: WindowMapper) -> bool:
++        self.biased_map = layout_state['biased_map']
++        return True
+ 
+ class Horizontal(Vertical):
+ 
+diff --git a/kitty/typing_compat.pyi b/kitty/typing_compat.pyi
+index 9c95b07cdac..e183458d086 100644
+--- a/kitty/typing_compat.pyi
++++ b/kitty/typing_compat.pyi
+@@ -5,7 +5,7 @@ from socket import AddressFamily as AddressFamily
+ from socket import socket as Socket
+ from subprocess import CompletedProcess as CompletedProcess
+ from subprocess import Popen as PopenType
+-from typing import Callable, Literal
++from typing import Literal
+ from typing import NotRequired as NotRequired
+ from typing import Protocol as Protocol
+ from typing import TypedDict as TypedDict

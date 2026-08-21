@@ -1,0 +1,17 @@
+diff --git a/tests/backends/build_system/integration/test_makefile.py b/tests/backends/build_system/integration/test_makefile.py
+index b67e02ad7563..26b47f5f7bc6 100644
+--- a/tests/backends/build_system/integration/test_makefile.py
++++ b/tests/backends/build_system/integration/test_makefile.py
+@@ -12,11 +12,11 @@
+ # language governing permissions and limitations under the License.
+ import os
+ 
++from awscli.testutils import skip_if_windows
+ from tests.backends.build_system.integration import (
+     BaseArtifactTest,
+     VEnvWorkspace,
+ )
+-from tests.markers import skip_if_windows
+ 
+ WINDOWS_SKIP_REASON = "./configure tests do not run nativly on windows"
+ 

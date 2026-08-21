@@ -1,0 +1,62 @@
+{
+  "name": "ci-memory-agents-runner",
+  "displayName": "CI Memory Agents Runner",
+  "description": "Runs the CI memory experiment automatically through GitHub Copilot",
+  "version": "0.2.0",
+  "publisher": "ci-memory-agents",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ciMemory.runAll",
+        "title": "CI Memory: Run All Experiments",
+        "category": "CI Memory"
+      },
+      {
+        "command": "ciMemory.runOne",
+        "title": "CI Memory: Run A Single Task",
+        "category": "CI Memory"
+      },
+      {
+        "command": "ciMemory.listModels",
+        "title": "CI Memory: List Available Copilot Models",
+        "category": "CI Memory"
+      }
+    ],
+    "configuration": {
+      "title": "CI Memory Agents",
+      "properties": {
+        "ciMemory.repoRoot": {
+          "type": "string",
+          "default": "D:\\research\\ci-memory-agents",
+          "description": "Folder containing tasks/ and runs/"
+        },
+        "ciMemory.agent": {
+          "type": "string",
+          "default": "copilot",
+          "description": "Name of the runs/<agent> folder to fill in"
+        },
+        "ciMemory.modelFamily": {
+          "type": "string",
+          "default": "",
+          "description": "Copilot model family, for example gpt-4o or claude-3.5-sonnet. Empty picks the first available."
+        },
+        "ciMemory.delaySeconds": {
+          "type": "number",
+          "default": 2,
+          "description": "Pause between runs, to stay within Copilot rate limits"
+        },
+        "ciMemory.maxRuns": {
+          "type": "number",
+          "default": 0,
+          "description": "Stop after this many runs. 0 means no limit."
+        }
+      }
+    }
+  }
+}

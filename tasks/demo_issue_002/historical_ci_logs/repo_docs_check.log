@@ -1,0 +1,11 @@
+============================= test session starts =============================
+collected 4 items
+
+tests/test_docs.py ..F.
+
+=================================== FAILURES ===================================
+__________________________ test_render_missing_title ___________________________
+E       AttributeError: 'NoneType' object has no attribute 'strip'
+
+=========================== short test summary info ===========================
+FAILED tests/test_docs.py::test_render_missing_title - AttributeError

@@ -1,0 +1,59 @@
+--- step: lint ---
+@@ -218,13 +218,11 @@
+                 for key in unknown_params:
+                     result[key] = params[key]
+         return result
+-    def _transform_value(
+-        self, provider_key: str, param_key: str, value: Any
+-    ) -> Any:
++    def _transform_value(self, provider_key: str, param_key: str, value: Any) -> Any:
+         """
+         Transform parameter values during mapping.
+         This handles provider-specific transformations like:
+         - Google: Expanding "en" to "en-US"
+would reformat /home/runner/work/aisuite/aisuite/aisuite/framework/asr_params.py
+--- /home/runner/work/aisuite/aisuite/aisuite/providers/mistral_provider.py	2026-08-13 01:14:15.888139+00:00
++++ /home/runner/work/aisuite/aisuite/aisuite/providers/mistral_provider.py	2026-08-13 01:14:21.586528+00:00
+@@ -3,11 +3,10 @@
+ import os
+ from mistralai import Mistral
+ from aisuite.framework import ChatCompletionResponse
+ from aisuite.provider import Provider, LLMError
+ from aisuite.providers.message_converter import OpenAICompliantMessageConverter
+-
+ # Implementation of Mistral provider.
+ # Mistral's message format is the same as OpenAI's. Just different class names,
+ # but fully cross-compatible.
+ # Links:
+would reformat /home/runner/work/aisuite/aisuite/aisuite/providers/mistral_provider.py
+--- /home/runner/work/aisuite/aisuite/aisuite/providers/nebius_provider.py	2026-08-13 01:14:15.888139+00:00
++++ /home/runner/work/aisuite/aisuite/aisuite/providers/nebius_provider.py	2026-08-13 01:14:21.595497+00:00
+@@ -1,9 +1,8 @@
+ import os
+ from aisuite.provider import Provider
+ from openai import Client
+-
+ BASE_URL = "https://api.studio.nebius.ai/v1"
+ # TODO(rohitcp): This needs to be added to our internal testbed. Tool calling not tested.
+would reformat /home/runner/work/aisuite/aisuite/aisuite/providers/nebius_provider.py
+--- /home/runner/work/aisuite/aisuite/aisuite/providers/google_provider.py	2026-08-13 01:14:15.888139+00:00
++++ /home/runner/work/aisuite/aisuite/aisuite/providers/google_provider.py	2026-08-13 01:14:21.958883+00:00
+@@ -22,11 +22,10 @@
+     Segment,
+     Alternative,
+     StreamingTranscriptionChunk,
+ )
+ from aisuite.provider import Provider, ASRError, Audio
+-
+ DEFAULT_TEMPERATURE = 0.7
+ ENABLE_DEBUG_MESSAGES = False
+ # Links.
+would reformat /home/runner/work/aisuite/aisuite/aisuite/providers/google_provider.py
+Oh no! ð¥ ð ð¥
+4 files would be reformatted, 60 files would be left unchanged.
+##[error]Process completed with exit code 1.
+##[end-action id=__psf_black.__run;outcome=failure;conclusion=failure;duration_ms=6218]
+Post job cleanup.
+(node:2420) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+http.https://github.com/.extraheader

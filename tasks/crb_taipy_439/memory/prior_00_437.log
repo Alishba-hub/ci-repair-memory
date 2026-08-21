@@ -1,0 +1,49 @@
+--- step: overall-tests (3.10, ubuntu-latest, min) ---
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+  pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+/home/runner/.local/share/virtualenvs/taipy-SKi803WO/lib/python3.10/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.
+Plugin: helpconfig, Hook: pytest_cmdline_parse
+ConftestImportFailure: ModuleNotFoundError: No module named 'pkg_resources' (from /home/runner/work/taipy/taipy/tests/conftest.py)
+For more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning
+  config = pluginmanager.hook.pytest_cmdline_parse(
+ImportError while loading conftest '/home/runner/work/taipy/taipy/tests/conftest.py'.
+tests/conftest.py:17: in <module>
+    from taipy.common._cli._base_cli._taipy_parser import _TaipyParser
+taipy/__init__.py:25: in <module>
+    from taipy.rest._init import *
+taipy/rest/__init__.py:24: in <module>
+    from ._init import *
+taipy/rest/_init.py:12: in <module>
+    from .rest import Rest
+taipy/rest/rest.py:15: in <module>
+    from .app import create_app as _create_app
+taipy/rest/app.py:16: in <module>
+    from . import api
+taipy/rest/api/__init__.py:12: in <module>
+    from . import error_handler, views
+taipy/rest/api/error_handler.py:29: in <module>
+    from .views import blueprint
+taipy/rest/api/views.py:19: in <module>
+    from ..extensions import apispec
+taipy/rest/extensions.py:18: in <module>
+    from .commons.apispec import APISpecExt
+taipy/rest/commons/apispec.py:15: in <module>
+    from apispec_webframeworks.flask import FlaskPlugin
+../../../.local/share/virtualenvs/taipy-SKi803WO/lib/python3.10/site-packages/apispec_webframeworks/__init__.py:1: in <module>
+    import pkg_resources
+E   ModuleNotFoundError: No module named 'pkg_resources'
+##[error]Process completed with exit code 4.
+Post job cleanup.
+##[start-action display=Restore cached frontend build;id=__b7ff26fd-7391-4d5e-a43a-5ab55097103e.cache-fe-build]
+##[end-action id=__b7ff26fd-7391-4d5e-a43a-5ab55097103e.cache-fe-build;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Run actions/setup-node@v4;id=__b7ff26fd-7391-4d5e-a43a-5ab55097103e.__actions_setup-node]
+##[end-action id=__b7ff26fd-7391-4d5e-a43a-5ab55097103e.__actions_setup-node;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Run actions/setup-python@v5;id=__b7ff26fd-7391-4d5e-a43a-5ab55097103e.__actions_setup-python]
+##[end-action id=__b7ff26fd-7391-4d5e-a43a-5ab55097103e.__actions_setup-python;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.

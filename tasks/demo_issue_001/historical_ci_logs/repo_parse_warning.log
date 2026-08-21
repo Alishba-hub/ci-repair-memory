@@ -1,0 +1,11 @@
+============================= test session starts =============================
+collected 4 items
+
+tests/test_parser.py ..F.
+
+=================================== FAILURES ===================================
+_________________________ test_parse_label_whitespace __________________________
+E       AssertionError: assert '  draft  ' == 'draft'
+
+=========================== short test summary info ===========================
+FAILED tests/test_parser.py::test_parse_label_whitespace - AssertionError

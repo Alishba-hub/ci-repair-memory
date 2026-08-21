@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CI Memory Agents</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --panel2: #1e222b; --line: #2a2f3a;
+    --text: #e6e9ef; --dim: #939aa8; --accent: #5b9dff; --ok: #3fb950;
+    --warn: #d29922; --bad: #f85149; --mem: #a371f7;
+    /* Chart slots, validated against the #171a21 panel surface: all three clear the
+       lightness band, the chroma floor, all-pairs CVD separation and 3:1 contrast. */
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+    --grid: #252a33; --axis: #333a47; --good: #0ca30c;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.5; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 80px; }
+
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 4px; }
+  h1 { font-size: 21px; margin: 0; letter-spacing: -.01em; }
+  .sub { color: var(--dim); font-size: 13px; }
+
+  .bar { height: 8px; background: var(--panel2); border-radius: 99px; overflow: hidden; margin: 14px 0 6px; }
+  .bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+  .barlabel { font-size: 13px; color: var(--dim); margin-bottom: 22px; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .card h2 { font-size: 15px; margin: 0 0 12px; }
+
+  button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line);
+           background: var(--panel2); color: var(--text); padding: 9px 15px; transition: .15s; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #04122c; font-weight: 600; }
+  button.primary:hover { filter: brightness(1.1); }
+  button.good { background: var(--ok); border-color: var(--ok); color: #04220a; font-weight: 600; }
+  button.big { padding: 13px 20px; font-size: 15px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--dim); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  tbody tr:hover { background: var(--panel2); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11.5px;
+          background: var(--panel2); color: var(--dim); border: 1px solid var(--line); }
+  .pill.mem { color: var(--mem); border-color: #3a2d55; }
+  .pill.ok { color: var(--ok); border-color: #1d3b23; }
+  .banner.info { }
+
+  .prog { display: inline-flex; gap: 3px; vertical-align: middle; }
+  .dot { width: 9px; height: 9px; border-radius: 2px; background: var(--panel2); border: 1px solid var(--line); }
+  .dot.on { background: var(--ok); border-color: var(--ok); }
+
+  .step { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .step:last-child { border-bottom: 0; }
+  .step .n { flex: 0 0 28px; height: 28px; border-radius: 99px; background: var(--panel2);
+             display: grid; place-items: center; font-size: 13px; font-weight: 600; color: var(--dim); }
+  .step.done .n { background: var(--ok); color: #04220a; }
+  .step .body { flex: 1; }
+  .step .t { font-weight: 600; margin-bottom: 3px; }
+  .step .d { color: var(--dim); font-size: 13px; margin-bottom: 10px; }
+
+  pre { background: #0b0d11; border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+        overflow: auto; max-height: 320px; font-size: 12px; margin: 0; }
+  .muted { color: var(--dim); font-size: 13px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .spacer { flex: 1; }
+  .hide { display: none !important; }
+  .banner { padding: 11px 14px; border-radius: 8px; font-size: 13.5px; margin-bottom: 14px; }
+  .banner.ok { background: #10251a; border: 1px solid #1d3b23; color: #7ee787; }
+  .banner.err { background: #2a1215; border: 1px solid #4a1f24; color: #ff9d95; }
+  .banner.info { background: #101c2e; border: 1px solid #1d3350; color: #a8ccff; }
+  .big-num { font-size: 27px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .kpi { display: flex; gap: 26px; flex-wrap: wrap; }
+  .kpi div span { display: block; font-size: 12px; color: var(--dim); }
+
+  /* ---------- results: figures ---------- */
+  .fig { margin: 0 0 30px; }
+  .fig h3 { font-size: 14px; margin: 0 0 2px; font-weight: 600; }
+  .fig .cap { color: var(--dim); font-size: 12.5px; margin: 0 0 10px; max-width: 74ch; }
+  .fig svg { width: 100%; height: auto; overflow: visible; display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 12.5px;
+            color: var(--dim); margin: 0 0 10px; }
+  .legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block;
+              margin-right: 7px; vertical-align: -1px; }
+  .sect { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: var(--dim);
+          font-weight: 650; margin: 38px 0 14px; padding-bottom: 7px; border-bottom: 1px solid var(--line); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 11px; }
+  .tile { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .tile .lab { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .tile .val { font-size: 22px; font-weight: 620; margin-top: 4px; line-height: 1.15; }
+  .tile .sub2 { font-size: 12px; color: var(--dim); margin-top: 3px; }
+  .hero-num { font-size: 46px; font-weight: 620; letter-spacing: -.022em; line-height: 1.05; }
+
+  /* ---------- results: per-task drill-down ---------- */
+  .taskrow { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px;
+             background: var(--panel2); overflow: hidden; }
+  .taskrow > summary { list-style: none; cursor: pointer; padding: 11px 14px; display: grid;
+                       gap: 12px; align-items: center;
+                       grid-template-columns: 14px minmax(150px, 1.1fr) minmax(150px, 1.3fr)
+                                              minmax(150px, auto) 128px; }
+  @media (max-width: 780px) { .taskrow > summary { grid-template-columns: 14px 1fr; } }
+  .condline { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--dim);
+              justify-content: flex-end; }
+  .condline b { font-variant-numeric: tabular-nums; font-weight: 500; min-width: 34px; text-align: right; }
+  .condline .who { min-width: 52px; }
+  .taskrow > summary::-webkit-details-marker { display: none; }
+  .taskrow > summary:hover { background: #232833; }
+  .taskrow[open] > summary { border-bottom: 1px solid var(--line); }
+  .chev { color: var(--dim); display: inline-block; transition: transform .15s; }
+  .taskrow[open] .chev { transform: rotate(90deg); }
+  .taskbody { padding: 4px 14px 14px; }
+  .runtable th, .runtable td { padding: 6px 9px; font-size: 12.5px; }
+  .runtable td.f { color: var(--good); font-weight: 600; }
+  .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+
+  /* ---------- run detail sheet ---------- */
+  .modal { position: fixed; inset: 0; background: #000b; z-index: 30; display: grid;
+           place-items: center; padding: 22px; }
+  .sheet { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+           width: min(1000px, 100%); max-height: 88vh; overflow: auto; padding: 20px 22px 26px; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0 10px; }
+  .tabs button.on { background: var(--accent); border-color: var(--accent); color: #04122c; font-weight: 600; }
+  pre.diff .a { color: #7ee787; }
+  pre.diff .r { color: #ff9d95; }
+  pre.diff .h { color: var(--dim); }
+  pre.tall { max-height: 55vh; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>CI Memory Agents</h1>
+    <label class="sub">agent
+      <select id="agentsel" onchange="switchAgent()"
+              style="background:var(--panel2);color:var(--text);border:1px solid var(--line);
+                     border-radius:7px;padding:5px 9px;font:inherit;margin-left:6px"></select>
+    </label>
+    <span class="spacer"></span>
+    <button onclick="showList()">All tasks</button>
+    <button onclick="showResults()">Results</button>
+    <button class="primary" onclick="openReport()">Full report</button>
+  </header>
+
+  <div class="bar"><i id="progbar" style="width:0%"></i></div>
+  <div class="barlabel" id="proglabel">Loading...</div>
+
+  <div id="msg"></div>
+
+  <!-- ============ LIST VIEW ============ -->
+  <section id="list">
+    <div class="card" id="nextcard">
+      <h2>Next run to do</h2>
+      <div id="nextbody"></div>
+    </div>
+
+    <div class="card">
+      <h2>All tasks</h2>
+      <table>
+        <thead><tr>
+          <th>Task</th><th>Failure type</th>
+          <th>Without memory</th><th>With memory</th><th></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ RUN VIEW ============ -->
+  <section id="run" class="hide">
+    <div class="card">
+      <div class="row" style="margin-bottom:6px">
+        <strong id="runtitle"></strong>
+        <span id="runpill"></span>
+        <span class="spacer"></span>
+        <button onclick="showList()">Back</button>
+      </div>
+      <div class="muted" id="runsub"></div>
+    </div>
+
+    <div class="card">
+      <div class="step" id="s1">
+        <div class="n">1</div>
+        <div class="body">
+          <div class="t">Copy the prompt</div>
+          <div class="d">This is the full question for Copilot. Copies the whole thing.</div>
+          <div class="row">
+            <button class="primary big" id="copybtn" onclick="copyPrompt()">Copy prompt</button>
+            <button onclick="togglePrompt()">Preview</button>
+          </div>
+          <pre id="promptbox" class="hide" style="margin-top:12px"></pre>
+        </div>
+      </div>
+
+      <div class="step" id="s2">
+        <div class="n">2</div>
+        <div class="body">
+          <div class="t">Open the code folder</div>
+          <div class="d">Opens the broken code in a new VS Code window.</div>
+          <button class="big" onclick="openWorkspace()">Open in VS Code</button>
+        </div>
+      </div>
+
+      <div class="step" id="s3">
+        <div class="n">3</div>
+        <div class="body">
+          <div class="t">Let Copilot fix it</div>
+          <div class="d">
+            In the new window open Copilot Chat, switch to <strong>Agent mode</strong>,
+            paste the prompt, and let it edit the files. Then save with Ctrl+S.
+          </div>
+        </div>
+      </div>
+
+      <div class="step" id="s4">
+        <div class="n">4</div>
+        <div class="body">
+          <div class="t">Score it</div>
+          <div class="d">Compares Copilot's answer with the real developer fix.</div>
+          <div class="row">
+            <button class="good big" onclick="scoreThis()">Done - score this run</button>
+            <button onclick="resetThis()">Undo this run</button>
+          </div>
+          <div id="scorebox" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS VIEW ============ -->
+  <section id="results" class="hide">
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <h2 style="margin:0">Results</h2>
+        <span class="spacer"></span>
+        <button onclick="downloadExport('csv')">Download CSV</button>
+        <button onclick="downloadExport('latex')">Download LaTeX</button>
+        <button onclick="showList()">Back to tasks</button>
+      </div>
+      <div id="resultsbody" class="muted">Scoring every finished run, this takes a moment...</div>
+    </div>
+  </section>
+</div>
+
+<div id="runmodal" class="modal hide" onclick="if(event.target===this)closeRun()">
+  <div class="sheet" id="runsheet"></div>
+</div>
+
+<script>
+let DATA = null, CURRENT = null, PROMPT = "";
+let RESULTS = null, RUNDETAIL = null, RUNTAB = "prompt";
+let AGENT = new URLSearchParams(location.search).get("agent") || "";
+const q = extra => "?agent=" + encodeURIComponent(AGENT) + (extra || "");
+
+const $ = id => document.getElementById(id);
+const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
+
+function flash(text, kind = "ok") {
+  $("msg").innerHTML = `<div class="banner ${kind}">${text}</div>`;
+  setTimeout(() => { $("msg").innerHTML = ""; }, 4000);
+}
+
+async function load() {
+  const res = await fetch("/api/tasks" + q());
+  DATA = await res.json();
+  AGENT = DATA.agent;
+  const sel = $("agentsel");
+  if (sel.options.length !== (DATA.agents || []).length) {
+    sel.innerHTML = (DATA.agents || []).map(a => `<option value="${a}">${a}</option>`).join("");
+  }
+  sel.value = AGENT;
+  render();
+}
+
+function switchAgent() {
+  AGENT = $("agentsel").value;
+  showList();
+}
+
+function totals() {
+  let done = 0, total = 0;
+  for (const t of DATA.tasks)
+    for (const c of ["no_memory", "with_memory"]) {
+      done += t.conditions[c].done; total += t.conditions[c].total;
+    }
+  return { done, total };
+}
+
+function dots(cond) {
+  return `<span class="prog">` +
+    cond.runs.map(r => `<i class="dot ${r.done ? "on" : ""}"></i>`).join("") +
+    `</span> <span class="muted">${cond.done}/${cond.total}</span>`;
+}
+
+function nextUndone() {
+  for (const t of DATA.tasks)
+    for (const c of ["no_memory", "with_memory"])
+      for (const r of t.conditions[c].runs)
+        if (!r.done) return { task: t, condition: c, run: r.run };
+  return null;
+}
+
+function render() {
+  const { done, total } = totals();
+  $("progbar").style.width = pct(done, total) + "%";
+  $("proglabel").textContent = `${done} of ${total} runs finished (${pct(done, total)}%)`;
+
+  const next = nextUndone();
+  $("nextbody").innerHTML = next
+    ? `<div class="row">
+         <div><strong>${next.task.repo}</strong>
+           <span class="pill ${next.condition === "with_memory" ? "mem" : ""}">
+             ${next.condition === "with_memory" ? "with memory" : "without memory"}</span>
+           <span class="pill">${next.run}</span>
+           <div class="muted">${next.task.error_type.join(", ") || "unknown"}</div>
+         </div>
+         <span class="spacer"></span>
+         <button class="primary big" onclick="openRun('${next.task.task_id}','${next.condition}','${next.run}')">
+           Start this run</button>
+       </div>`
+    : `<div class="banner ok">All runs are finished. Open Results.</div>`;
+
+  $("tbody").innerHTML = DATA.tasks.map(t => `
+    <tr>
+      <td><strong>${t.repo}</strong><div class="muted">${t.task_id}</div></td>
+      <td class="muted">${t.error_type.join(", ") || "-"}</td>
+      <td>${dots(t.conditions.no_memory)}</td>
+      <td>${dots(t.conditions.with_memory)}</td>
+      <td><button onclick="openFirst('${t.task_id}')">Open</button></td>
+    </tr>`).join("");
+}
+
+function openFirst(taskId) {
+  const t = DATA.tasks.find(x => x.task_id === taskId);
+  for (const c of ["no_memory", "with_memory"])
+    for (const r of t.conditions[c].runs)
+      if (!r.done) return openRun(taskId, c, r.run);
+  openRun(taskId, "no_memory", t.conditions.no_memory.runs[0]?.run || "run_01");
+}
+
+async function openRun(task, condition, run, fromHistory) {
+  if (!fromHistory) remember({ view: "run", run: { task, condition, run } });
+  CURRENT = { task, condition, run };
+  const t = DATA.tasks.find(x => x.task_id === task);
+  $("runtitle").textContent = t.repo + "  ·  " + run;
+  $("runpill").innerHTML = `<span class="pill ${condition === "with_memory" ? "mem" : ""}">` +
+    (condition === "with_memory" ? "WITH memory" : "WITHOUT memory") + `</span>`;
+  $("runsub").textContent = condition === "with_memory"
+    ? `Copilot also sees ${t.memory_count} earlier CI failures from this project.`
+    : `Copilot sees only the broken code and the current error.`;
+  $("scorebox").innerHTML = "";
+  $("promptbox").classList.add("hide");
+  ["s1", "s2", "s4"].forEach(s => $(s).classList.remove("done"));
+  $("copybtn").textContent = "Copy prompt";
+
+  show("run");
+  const res = await fetch("/api/prompt" + q(`&task=${task}&condition=${condition}&run=${run}`));
+  PROMPT = (await res.json()).prompt || "";
+  $("promptbox").textContent = PROMPT;
+}
+
+function togglePrompt() { $("promptbox").classList.toggle("hide"); }
+
+async function copyPrompt() {
+  try {
+    await navigator.clipboard.writeText(PROMPT);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = PROMPT; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+  }
+  $("copybtn").textContent = "Copied";
+  $("s1").classList.add("done");
+  flash(`Copied ${PROMPT.length.toLocaleString()} characters. Now paste it into Copilot Chat.`);
+}
+
+async function post(path, body) {
+  const res = await fetch(path, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, agent: AGENT })
+  });
+  return res.json();
+}
+
+async function openWorkspace() {
+  const out = await post("/api/open", CURRENT);
+  if (out.error) return flash(out.error, "err");
+  $("s2").classList.add("done");
+  flash("Opening VS Code. If nothing appears, the folder was opened in Explorer instead.", "info");
+}
+
+async function resetThis() {
+  const out = await post("/api/reset", CURRENT);
+  if (out.error) return flash(out.error, "err");
+  $("scorebox").innerHTML = "";
+  $("s4").classList.remove("done");
+  flash("This run was reset to the original broken code.", "info");
+  await load();
+}
+
+async function scoreThis() {
+  const res = await fetch("/api/score" + q(`&task=${CURRENT.task}`));
+  const data = await res.json();
+  if (data.error) return flash(data.error, "err");
+  const mine = data.results.filter(r => r.condition === CURRENT.condition && r.run === CURRENT.run);
+  if (!mine.length) {
+    $("scorebox").innerHTML =
+      `<div class="banner err">No changes detected. Did Copilot edit the files, and did you save?</div>`;
+    return;
+  }
+  const r = mine[0];
+  const verdict = r.normalized_match
+    ? `<div class="banner ok">Correct. This matches the real developer fix.</div>`
+    : r.file_recall === 1
+      ? `<div class="banner info">Right file, different fix. Copilot edited exactly the files it should have,
+           but wrote different code than the real fix.</div>`
+      : r.file_iou > 0
+        ? `<div class="banner info">Partly right. Some correct files, some not.</div>`
+        : `<div class="banner err">Wrong files. Copilot edited files the real fix never touched.</div>`;
+  $("scorebox").innerHTML = verdict + `
+    <table style="margin-top:10px">
+      <tr><th>Right files found</th><td class="num">${Math.round(r.file_recall * 100)}%</td></tr>
+      <tr><th>File overlap (IoU)</th><td class="num">${r.file_iou.toFixed(2)}</td></tr>
+      <tr><th>Exact code match</th><td class="num">${r.exact_match ? "yes" : "no"}</td></tr>
+      <tr><th>Edited</th><td class="num">${r.predicted_files.join(", ") || "-"}</td></tr>
+      <tr><th>Real fix touched</th><td class="num">${r.gold_files.join(", ")}</td></tr>
+    </table>`;
+  $("s4").classList.add("done");
+  await load();
+}
+
+/* ======================= chart primitives ======================= */
+const COND = [
+  ["no_memory", "Without memory", "var(--series-1)"],
+  ["with_memory", "With memory", "var(--series-2)"],
+];
+const esc = s => String(s ?? "").replace(/[&<>"]/g,
+  c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pc1 = v => v == null ? "—" : (v * 100).toFixed(1) + "%";
+const pc0 = v => v == null ? "—" : Math.round(v * 100) + "%";
+const secs = v => v == null ? "—" : v >= 60 ? `${Math.floor(v / 60)}m ${Math.round(v % 60)}s` : `${v}s`;
+
+// Rounded data-end, square at the baseline, per the chart mark spec.
+function barPath(x, y, w, h, r = 4) {
+  r = Math.max(0, Math.min(r, w, h / 2));
+  return `M${x},${y}H${x + w - r}a${r},${r} 0 0 1 ${r},${r}V${y + h - r}` +
+         `a${r},${r} 0 0 1 ${-r},${r}H${x}Z`;
+}
+
+const legend = (items = COND.map(c => [c[1], c[2]])) =>
+  `<div class="legend">` + items.map(([t, c]) =>
+    `<span><i style="background:${c}"></i>${esc(t)}</span>`).join("") + `</div>`;
+
+const fig = (title, cap, body, withLegend = true) =>
+  `<figure class="fig"><h3>${esc(title)}</h3><p class="cap">${cap}</p>` +
+  `${withLegend ? legend() : ""}${body}</figure>`;
+
+/** Grouped horizontal bars, one group per row, one bar per condition.
+    Horizontal because the row labels are long; a vertical axis would rotate them. */
+function hbars(rows, opts = {}) {
+  if (!rows.length) return `<p class="muted">Nothing to plot yet.</p>`;
+  const labelW = opts.labelW ?? 210, right = opts.right ?? 96, W = 860;
+  const barH = 13, gap = 2, pad = 17;
+  const rowH = 2 * barH + gap + pad, top = 10;
+  const H = rows.length * rowH + top + 22;
+  const plotW = W - labelW - right;
+  const x = v => labelW + Math.max(0, Math.min(1, v)) * plotW;
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.title || "chart")}">`;
+  for (const t of [0, .25, .5, .75, 1]) {
+    s += `<line x1="${x(t)}" y1="${top}" x2="${x(t)}" y2="${H - 20}" stroke="var(--grid)" stroke-width="1"/>` +
+         `<text x="${x(t)}" y="${H - 5}" fill="var(--dim)" font-size="10.5" text-anchor="middle">${t * 100}%</text>`;
+  }
+  rows.forEach((row, i) => {
+    const y0 = top + i * rowH;
+    s += `<text x="${labelW - 12}" y="${y0 + barH + 3}" fill="var(--text)" font-size="12" ` +
+         `text-anchor="end">${esc(row.label)}</text>`;
+    row.values.forEach((val, j) => {
+      const y = y0 + j * (barH + gap);
+      if (val.v == null) {
+        s += `<text x="${labelW + 6}" y="${y + barH - 2}" fill="var(--dim)" font-size="10.5">not run</text>`;
+        return;
+      }
+      const w = Math.max(2, x(val.v) - labelW);
+      s += `<path d="${barPath(labelW, y, w, barH)}" fill="${COND[j][2]}">` +
+           `<title>${esc(val.title || "")}</title></path>`;
+      let tip = labelW + w;
+      if (val.ci) {
+        const lo = x(val.ci.low), hi = x(val.ci.high), cy = y + barH / 2;
+        s += `<line x1="${lo}" y1="${cy}" x2="${hi}" y2="${cy}" stroke="var(--text)" stroke-opacity=".5" stroke-width="1"/>` +
+             `<line x1="${lo}" y1="${cy - 3.5}" x2="${lo}" y2="${cy + 3.5}" stroke="var(--text)" stroke-opacity=".5" stroke-width="1"/>` +
+             `<line x1="${hi}" y1="${cy - 3.5}" x2="${hi}" y2="${cy + 3.5}" stroke="var(--text)" stroke-opacity=".5" stroke-width="1"/>`;
+        tip = Math.max(tip, hi);
+      }
+      s += `<text x="${tip + 8}" y="${y + barH - 2.5}" fill="var(--dim)" font-size="11">${esc(val.text)}</text>`;
+    });
+  });
+  return s + `</svg>`;
+}
+
+/** Two-series line chart over integer K. */
+function linechart(xs, series, counts) {
+  if (!xs.length) return `<p class="muted">Not enough paired runs yet.</p>`;
+  const W = 860, H = 280, L = 48, R = 132, T = 14, B = 46;
+  const flat = COND.flatMap(c => series[c[0]] || []);
+  const maxY = Math.min(1, Math.max(0.1, Math.ceil(Math.max(...flat, 0) * 12) / 10));
+  const px = i => L + (xs.length === 1 ? (W - L - R) / 2 : (i / (xs.length - 1)) * (W - L - R));
+  const py = v => T + (1 - v / maxY) * (H - T - B);
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Pass at K">`;
+  for (let t = 0; t <= 4; t++) {
+    const v = maxY * t / 4;
+    s += `<line x1="${L}" y1="${py(v)}" x2="${W - R}" y2="${py(v)}" stroke="var(--grid)" stroke-width="1"/>` +
+         `<text x="${L - 9}" y="${py(v) + 4}" fill="var(--dim)" font-size="10.5" text-anchor="end">${(v * 100).toFixed(0)}%</text>`;
+  }
+  xs.forEach((k, i) => {
+    s += `<text x="${px(i)}" y="${H - B + 19}" fill="var(--dim)" font-size="10.5" text-anchor="middle">${k}</text>`;
+    if (counts) s += `<text x="${px(i)}" y="${H - B + 32}" fill="var(--dim)" font-size="9.5" ` +
+                     `text-anchor="middle" opacity=".7">${counts[i]}</text>`;
+  });
+
+  const ends = [];
+  COND.forEach(([key, name, colour], j) => {
+    const ys = series[key] || [];
+    if (!ys.length) return;
+    s += `<path d="${ys.map((v, i) => `${i ? "L" : "M"}${px(i)},${py(v)}`).join(" ")}" fill="none" ` +
+         `stroke="${colour}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    ys.forEach((v, i) => {
+      s += `<circle cx="${px(i)}" cy="${py(v)}" r="4.5" fill="${colour}" stroke="var(--panel)" stroke-width="2">` +
+           `<title>${esc(name)} — Pass@${xs[i]} = ${pc1(v)}</title></circle>`;
+    });
+    ends.push({ y: py(ys[ys.length - 1]), x: px(ys.length - 1), name, v: ys[ys.length - 1] });
+  });
+  // Direct end-labels only when the two lines separate; overlapping labels detach
+  // from their lines and read as noise, so the legend carries identity instead.
+  if (ends.length < 2 || Math.abs(ends[0].y - ends[1].y) > 14) {
+    for (const e of ends) {
+      s += `<text x="${e.x + 12}" y="${e.y + 4}" fill="var(--text)" font-size="11.5">` +
+           `${esc(e.name)} ${pc0(e.v)}</text>`;
+    }
+  }
+  s += `<text x="${(L + W - R) / 2}" y="${H - 3}" fill="var(--dim)" font-size="11" text-anchor="middle">` +
+       `K — runs allowed per task (small figure: paired tasks contributing)</text>`;
+  return s + `</svg>`;
+}
+
+/** Axis maximum on a round number, so the ticks read 0/10/20 rather than 0/13/25. */
+function niceScale(max) {
+  if (max <= 4) return { max: 4, step: 1 };
+  const raw = max / 4;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(raw)));
+  // Only 1/2/5 decades, so a count axis never lands on a fractional tick.
+  const step = [1, 2, 5, 10].map(m => m * magnitude).find(s => s >= raw) || 10 * magnitude;
+  return { max: step * 4, step };
+}
+
+/** Grouped columns, for a distribution over ordered bins. */
+function columns(labels, series, opts = {}) {
+  if (!labels.length) return "";
+  const W = 860, H = 230, L = 44, R = 16, T = 14, B = 40;
+  const flat = COND.flatMap(c => series[c[0]] || []);
+  const scale = niceScale(Math.max(1, ...flat));
+  const maxY = scale.max;
+  const band = (W - L - R) / labels.length;
+  const colW = Math.min(24, (band - 22) / 2);
+  const py = v => T + (1 - v / maxY) * (H - T - B);
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.title || "distribution")}">`;
+  for (let t = 0; t <= 4; t++) {
+    const v = scale.step * t;
+    s += `<line x1="${L}" y1="${py(v)}" x2="${W - R}" y2="${py(v)}" stroke="var(--grid)" stroke-width="1"/>` +
+         `<text x="${L - 9}" y="${py(v) + 4}" fill="var(--dim)" font-size="10.5" text-anchor="end">${v}</text>`;
+  }
+  labels.forEach((label, i) => {
+    const centre = L + band * (i + 0.5);
+    s += `<text x="${centre}" y="${H - B + 19}" fill="var(--dim)" font-size="10.5" text-anchor="middle">${esc(label)}</text>`;
+    COND.forEach(([key, name, colour], j) => {
+      const v = (series[key] || [])[i] ?? 0;
+      // 2px of surface between the two touching columns; nothing is stroked.
+      const x = centre - colW - 1 + j * (colW + 2);
+      const h = Math.max(v ? 2 : 0, py(0) - py(v));
+      if (!h) return;
+      s += `<rect x="${x}" y="${py(0) - h}" width="${colW}" height="${h}" rx="4" fill="${colour}">` +
+           `<title>${esc(name)} — ${v} run(s) in ${esc(label)}</title></rect>`;
+    });
+  });
+  return s + `</svg>`;
+}
+
+/* ========================= results view ========================= */
+/* A <button> nested in an <a> never follows the link: the button takes the click and
+   does nothing with it, which is why both downloads used to look dead. The response
+   carries Content-Disposition: attachment, so navigating starts a download and leaves
+   the page where it is. */
+function downloadExport(format) {
+  window.location.href =
+    "/api/export?format=" + format + "&agent=" + encodeURIComponent(AGENT);
+}
+
+async function showResults(fromHistory) {
+  if (!fromHistory) remember({ view: "results" });
+  show("results");
+  $("resultsbody").innerHTML = `<div class="muted">Scoring every finished run, this takes a moment...</div>`;
+  let data;
+  try {
+    data = await (await fetch("/api/score" + q())).json();
+  } catch (error) {
+    $("resultsbody").innerHTML =
+      `<div class="banner err">Could not reach the server: ${esc(error.message)}.
+        Is the dashboard still running?</div>`;
+    return;
+  }
+  if (data.error) {
+    $("resultsbody").innerHTML = `<div class="banner err">${esc(data.error)}</div>`;
+    return;
+  }
+  RESULTS = data;
+  try {
+    renderResults(data);
+  } catch (error) {
+    // Without this the page sits on "Scoring..." forever and gives no clue why. The
+    // usual cause is a stale server process answering with an older result shape.
+    $("resultsbody").innerHTML = `
+      <div class="banner err">Could not draw the results: ${esc(error.message)}</div>
+      <p class="muted">This normally means an older copy of the dashboard is still running
+        and answered this request. Close every dashboard window, check that nothing else is
+        bound to the port, and start it once more.</p>
+      <pre>${esc(error.stack || "")}</pre>`;
+  }
+}
+
+function renderResults(data) {
+  const s = data.summary, a = s.analysis, cov = s.coverage || {};
+  if (!s.attempted) {
+    $("resultsbody").innerHTML =
+      `<div class="banner info">No runs have finished yet. Run the agent first.</div>`;
+    return;
+  }
+  const c = s.conditions, A = c.no_memory, B = c.with_memory;
+  const effect = a.n_tasks ? (a.rate_with_memory - a.rate_no_memory) : null;
+  const headline = a.discordant === 0
+    ? "No difference detected"
+    : a.only_with_memory > a.only_no_memory ? "Memory solved more tasks" : "Memory solved fewer tasks";
+
+  const tile = (lab, val, sub) =>
+    `<div class="tile"><div class="lab">${lab}</div><div class="val">${val}</div>` +
+    `${sub ? `<div class="sub2">${sub}</div>` : ""}</div>`;
+
+  $("resultsbody").innerHTML = `
+    ${headlineBlock(s, a, effect, headline)}
+
+    <div class="sect">1 · How much has actually run</div>
+    <div class="tiles">
+      ${tile("Runs planned", cov.planned ?? "—",
+             `${(s.by_task || []).length} task(s) × 2 conditions`)}
+      ${tile("Runs scored", cov.scored ?? "—", `${pc0((cov.scored || 0) / (cov.planned || 1))} of the plan`)}
+      ${tile("Timed out", cov.timed_out ?? 0, "excluded: partial answers")}
+      ${tile("Finished, changed nothing", cov.no_edit ?? 0, "excluded: nothing to score")}
+      ${tile("Not started", cov.not_started ?? 0, "still queued")}
+      ${tile("Agent time spent",
+             secs(Math.round((A?.telemetry?.total_duration_s || 0) + (B?.telemetry?.total_duration_s || 0))),
+             "sum over scored runs")}
+    </div>
+
+    <div class="sect">2 · Every task, run by run</div>
+    <p class="cap">Each row is one benchmark task. Open it for every individual run: what it
+      scored, how long it took, which files it edited, and the exact prompt it was given.
+      A filled square is a run the judge found to have repaired the failure.</p>
+    ${taskCards(s.by_task || [])}
+
+    <div class="sect">3 · Accuracy, every measure</div>
+    ${fig("Success and localisation rates by condition",
+        "Whiskers are 95% Wilson intervals, shown on the two rates the paper reports. " +
+        "The lower measures are means over scored runs, not proportions of tasks.",
+        hbars(accuracyRows(s), { title: "Accuracy by condition" }))}
+
+    <div class="sect">4 · Consistency across retries</div>
+    ${fig("Pass@K — chance a task is solved within K attempts",
+        "Pass@1 is single-shot accuracy; the curve's right end is what the agent reaches if " +
+        "allowed to retry. A task enters at a given K only when both conditions have K runs, " +
+        "so the small figure under each K is the paired sample it rests on." +
+        (s.pass_at_k_curve?.withheld_k?.length
+          ? ` K = ${s.pass_at_k_curve.withheld_k.join(", ")} are withheld: fewer than
+              ${s.pass_at_k_curve.min_tasks} tasks have that many runs in both conditions yet,
+              and a curve drawn over two tasks would show which tasks finished first rather
+              than anything about the agent.`
+          : ""),
+        linechart(s.pass_at_k_curve?.k || [], s.pass_at_k_curve?.series || {},
+                  s.pass_at_k_curve?.tasks_at_k))}
+
+    <div class="sect">5 · Where runs fall out</div>
+    ${fig("Repair funnel",
+        "Repair is finding the right files and then writing the right change. Splitting them " +
+        "says whether a failure was &ldquo;looked in the wrong place&rdquo; or &ldquo;right " +
+        "place, wrong edit&rdquo;, which one accuracy number cannot.",
+        hbars(funnelRows(s.funnel || []), { labelW: 220, title: "Repair funnel" }))}
+
+    <div class="sect">6 · By failure type</div>
+    <p class="cap">Project precedent should plausibly help on dependency and environment
+      failures and not on syntax errors, so a single pooled number can hide opposite effects.</p>
+    ${fig("Runs that repaired the failure, by CI failure category",
+        "A task carrying several categories is counted under each, so these runs sum to more than the total.",
+        hbars((s.by_error_type || []).map(e => ({
+          label: e.error_type,
+          values: COND.map(([k]) => ({
+            v: e[k].runs ? e[k].solved / e[k].runs : null,
+            text: e[k].runs ? `${e[k].solved}/${e[k].runs}` : "",
+            title: `${e.error_type}: ${e[k].solved} of ${e[k].runs} runs fixed`,
+          })),
+        })), { labelW: 230 }))}
+    ${errorTable(s.by_error_type || [])}
+
+    <div class="sect">7 · How close the misses were</div>
+    ${fig("Distribution of file recall over scored runs",
+        "The share of files the real fix touched that the agent also edited. A mean near 100% " +
+        "with a long left tail is a different story from every run landing at 90%.",
+        columns(s.recall_histogram?.labels || [], s.recall_histogram?.series || {},
+                { title: "File recall distribution" }))}
+
+    <div class="sect">8 · What each condition cost</div>
+    ${costTable(A, B)}
+
+    <div class="sect">9 · Statistical analysis</div>
+    ${statsBlock(s)}
+
+    <p class="muted" style="margin-top:22px">
+      &ldquo;Fixed&rdquo; means a blind judge read the failing log, the maintainer's patch and the
+      agent's patch and found the same root cause removed. A repair written differently from the
+      maintainer's still counts, which is the point: text comparison scored those as failures and
+      pinned every rate near zero. Hiding a failure, by deleting a test or skipping it
+      unconditionally, counts as not fixed. The judge is a model, so its agreement with a human on
+      a fixed sample is the number to check before trusting any of this: run
+      <code>judge_runs.py --mode calibration</code>. Runs not yet judged count as not fixed.
+    </p>`;
+}
+
+function headlineBlock(s, a, effect, headline) {
+  if (!a.n_tasks) return `<div class="banner info">No task has finished in both conditions yet.</div>`;
+  const sign = effect > 0 ? "+" : "";
+  const warn = a.n_tasks < 10
+    ? `<div class="banner info">Only ${a.n_tasks} paired task(s) so far. One task can flip this,
+       so treat it as a preview rather than an answer.</div>`
+    : a.discordant < s.min_discordant_for_significance
+      ? `<div class="banner info">Only ${a.discordant} task(s) differ between conditions. Exact
+         McNemar cannot reach p&lt;0.05 below ${s.min_discordant_for_significance}, so this is
+         underpowered by construction, not merely non-significant.</div>`
+      : "";
+  return `
+    <div class="row" style="align-items:flex-end;gap:34px;margin-bottom:16px">
+      <div>
+        <div class="hero-num">${sign}${(effect * 100).toFixed(1)} pts</div>
+        <div class="muted" style="margin-top:4px">memory effect on task solve rate ·
+          ${pc1(a.rate_no_memory)} &rarr; ${pc1(a.rate_with_memory)}</div>
+      </div>
+      <div style="flex:1;min-width:260px">
+        <div style="font-size:19px;font-weight:650">${headline}</div>
+        <div class="muted">Of ${a.n_tasks} tasks run both ways: ${a.neither_solved} solved by
+          neither, ${a.both_solved} by both, ${a.only_no_memory} only without memory,
+          ${a.only_with_memory} only with memory.</div>
+      </div>
+    </div>
+    ${warn}`;
+}
+
+function accuracyRows(s) {
+  const a = s.analysis, c = s.conditions;
+  const row = (label, get) => ({
+    label,
+    values: COND.map(([k]) => c[k] ? get(c[k], k) : { v: null, text: "" }),
+  });
+  const rows = [];
+  if (a.n_tasks) {
+    rows.push({
+      label: "Task solved (any run)",
+      values: COND.map(([k]) => {
+        const solved = k === "no_memory"
+          ? a.both_solved + a.only_no_memory : a.both_solved + a.only_with_memory;
+        return {
+          v: solved / a.n_tasks,
+          ci: k === "no_memory" ? a.ci_no_memory : a.ci_with_memory,
+          text: `${solved}/${a.n_tasks}`,
+          title: `${solved} of ${a.n_tasks} paired tasks solved in at least one run`,
+        };
+      }),
+    });
+  }
+  rows.push(
+    row("Run repaired the failure", (x) => ({
+      v: x.normalized, ci: x.run_rate_ci, text: `${x.solved}/${x.runs}`,
+      title: `${x.solved} of ${x.runs} scored runs removed the same root cause, per the judge`,
+    })),
+    row("Run matched the maintainer's text", (x) => ({
+      v: x.mean_normalized_match,
+      text: `${Math.round(x.mean_normalized_match * x.runs)}/${x.runs}`,
+      title: "The old criterion, kept as the strict lower bound: same code after ignoring whitespace and comments",
+    })),
+    row("Run was byte-identical", (x) => ({
+      v: x.mean_exact_match, text: `${Math.round(x.mean_exact_match * x.runs)}/${x.runs}`,
+      title: "Matched the gold file exactly, comments and whitespace included",
+    })),
+    row("Edited every file the fix touched", (x) => ({
+      v: x.mean_localized, text: pc0(x.mean_localized), title: "File recall of 100%",
+    })),
+    row("Gold files matched (partial credit)", (x) => ({
+      v: x.mean_partial_credit, text: pc0(x.mean_partial_credit),
+      title: "Mean share of the fix's files whose contents matched",
+    })),
+    row("File recall", (x) => ({ v: x.mean_file_recall, text: pc0(x.mean_file_recall) })),
+    row("File precision", (x) => ({ v: x.mean_file_precision, text: pc0(x.mean_file_precision) })),
+    row("File IoU", (x) => ({ v: x.mean_file_iou, text: x.mean_file_iou.toFixed(2) })),
+  );
+  return rows;
+}
+
+function funnelRows(funnel) {
+  return funnel.map(stage => ({
+    label: stage.stage,
+    values: COND.map(([k]) => {
+      const total = stage[k + "_total"] || 0;
+      return {
+        v: total ? stage[k] / total : null,
+        text: total ? `${stage[k]}/${total}` : "",
+        title: `${stage.stage}: ${stage[k]} of ${total} runs`,
+      };
+    }),
+  }));
+}
+
+function errorTable(rows) {
+  if (!rows.length) return "";
+  return `<table style="margin-top:8px"><thead><tr>
+      <th>Failure type</th><th class="num">Fixed without</th><th class="num">Fixed with</th>
+      <th class="num">Located without</th><th class="num">Located with</th>
+      <th class="num">Runs</th></tr></thead><tbody>` +
+    rows.map(e => `<tr><td>${esc(e.error_type)}</td>
+      <td class="num">${e.no_memory.solved}/${e.no_memory.runs}</td>
+      <td class="num">${e.with_memory.solved}/${e.with_memory.runs}</td>
+      <td class="num">${e.no_memory.localized}/${e.no_memory.runs}</td>
+      <td class="num">${e.with_memory.localized}/${e.with_memory.runs}</td>
+      <td class="num">${e.total_runs}</td></tr>`).join("") + `</tbody></table>`;
+}
+
+function costTable(A, B) {
+  if (!A || !B) return `<div class="banner info">Both conditions need runs before cost can be compared.</div>`;
+  const r = (label, get, fmt = (v => v ?? "—")) =>
+    `<tr><th>${label}</th><td class="num">${fmt(get(A))}</td><td class="num">${fmt(get(B))}</td></tr>`;
+  return `
+    <p class="cap">The memory condition carries a much longer prompt. Any gain has to be read
+      against that cost, or memory looks free when it is not.</p>
+    <table><thead><tr><th></th><th class="num">Without memory</th><th class="num">With memory</th></tr></thead>
+    <tbody>
+      ${r("Scored runs", x => x.runs)}
+      ${r("Mean wall clock", x => x.telemetry.mean_duration_s, secs)}
+      ${r("Median wall clock", x => x.telemetry.median_duration_s, secs)}
+      ${r("Mean time on runs that fixed it", x => x.telemetry.mean_duration_when_solved_s, secs)}
+      ${r("Mean prompt size", x => x.telemetry.mean_prompt_chars,
+          v => v == null ? "—" : Math.round(v).toLocaleString() + " chars")}
+      ${r("Mean reply size", x => x.telemetry.mean_reply_chars,
+          v => v == null ? "—" : Math.round(v).toLocaleString() + " chars")}
+      ${r("Change size vs the real fix, typical run", x => x.median_line_deviation_ratio,
+          v => v == null ? "—" : "×" + (1 + v).toFixed(1) + " lines")}
+      ${r("Change size vs the real fix, mean", x => x.mean_line_deviation_ratio,
+          v => v == null ? "—" : "×" + (1 + v).toFixed(1) + " lines")}
+      ${r("Non-zero exit codes", x => x.telemetry.nonzero_exit)}
+    </tbody></table>`;
+}
+
+/* ==================== per-task drill-down ==================== */
+function taskCards(byTask) {
+  if (!byTask.length) return `<div class="banner info">No scored runs yet.</div>`;
+  return byTask.map(t => {
+    const A = t.no_memory, B = t.with_memory;
+    const solvedA = A.solved > 0, solvedB = B.solved > 0;
+    let verdict = "neither fixed it", colour = "var(--dim)";
+    if (!A.runs || !B.runs) { verdict = "still running"; }
+    else if (solvedA && solvedB) { verdict = "both fixed it"; colour = "var(--ok)"; }
+    else if (solvedB) { verdict = "only with memory"; colour = "var(--ok)"; }
+    else if (solvedA) { verdict = "only without memory"; colour = "var(--bad)"; }
+
+    const dots = x => `<span class="prog">` + x.runs_detail.map(r =>
+      `<i class="dot ${r.solved ? "on" : ""}" title="${esc(r.run)}: ${r.solved ? "repaired the failure" : "did not repair it"}"></i>`
+    ).join("") + `</span>`;
+
+    const rows = [];
+    for (const [key, name] of COND.map(cc => [cc[0], cc[1]])) {
+      for (const r of t[key].runs_detail) rows.push({ key, name, r });
+    }
+    rows.sort((p, q) => p.r.run.localeCompare(q.r.run) || p.key.localeCompare(q.key));
+
+    return `<details class="taskrow">
+      <summary>
+        <span class="chev">&rsaquo;</span>
+        <div>
+          <strong>${esc(t.repo)}</strong>
+          <div class="muted mono">${esc(t.task_id)}</div>
+        </div>
+        <div class="muted" style="font-size:12.5px">${esc((t.error_type || []).join(", ") || "unknown")}
+          <div>${t.memory_count} memory item(s) · fix touches ${t.gold_files.length} file(s)</div></div>
+        <div>
+          <div class="condline"><span class="who">without</span>${dots(A)}<b>${A.solved}/${A.runs}</b></div>
+          <div class="condline" style="margin-top:4px"><span class="who">with</span>${dots(B)}<b>${B.solved}/${B.runs}</b></div>
+        </div>
+        <span class="pill" style="color:${colour};justify-self:end">${verdict}</span>
+      </summary>
+      <div class="taskbody">
+        <p class="muted" style="margin:10px 0 6px">The real fix changed:
+          <span class="mono">${t.gold_files.map(esc).join(", ")}</span></p>
+        <table class="runtable">
+          <thead><tr>
+            <th>Run</th><th>Condition</th><th>Result</th>
+            <th class="num">Files matched</th><th class="num">Files found</th>
+            <th class="num">Precision</th><th class="num">IoU</th>
+            <th class="num">Size vs real fix</th><th class="num">Time</th><th></th>
+          </tr></thead>
+          <tbody>${rows.map(({ key, name, r }) => `
+            <tr>
+              <td class="mono">${esc(r.run)}</td>
+              <td><span class="pill ${key === "with_memory" ? "mem" : ""}">${name.replace(" memory", "")}</span></td>
+              <td class="${r.solved ? "f" : ""}">${r.solved ? (r.exact ? "fixed (exact)" : "fixed") : "not fixed"}</td>
+              <td class="num">${r.files_matched}/${r.files_expected}</td>
+              <td class="num" title="${esc(r.untouched_gold_files.join(", ") || "all gold files edited")}">${pc0(r.file_recall)}</td>
+              <td class="num" title="${esc(r.collateral_files.join(", ") || "no unrelated files touched")}">${pc0(r.file_precision)}</td>
+              <td class="num">${r.file_iou.toFixed(2)}</td>
+              <td class="num">×${(1 + r.line_deviation_ratio).toFixed(1)}</td>
+              <td class="num">${secs(r.duration_s)}</td>
+              <td><button onclick="openRunDetail('${esc(t.task_id)}','${key}','${esc(r.run)}')">View</button></td>
+            </tr>`).join("")}</tbody>
+        </table>
+      </div>
+    </details>`;
+  }).join("");
+}
+
+/* ====================== single run sheet ====================== */
+async function openRunDetail(task, condition, run, tab) {
+  RUNTAB = tab || "prompt";
+  $("runmodal").classList.remove("hide");
+  $("runsheet").innerHTML = `<div class="muted">Loading run...</div>`;
+  const d = await (await fetch("/api/run" + q(`&task=${task}&condition=${condition}&run=${run}`))).json();
+  if (d.error) {
+    $("runsheet").innerHTML = `<div class="banner err">${esc(d.error)}</div>`;
+    return;
+  }
+  RUNDETAIL = d;
+  renderRunSheet();
+}
+
+function closeRun() { $("runmodal").classList.add("hide"); }
+function setRunTab(tab) { RUNTAB = tab; renderRunSheet(); }
+
+function renderRunSheet() {
+  const d = RUNDETAIL, e = d.evaluation, t = d.telemetry;
+  const j = e && e.judge;
+  const solved = !!(e && e.solved);
+  // The judge decides; the textual measures explain where it landed relative to the
+  // maintainer's own patch. Saying both keeps a "repaired, written differently" run
+  // legible instead of showing it as a bare pass or a bare miss.
+  const verdict = !e
+    ? `<div class="banner err">This run changed no files, so there is nothing to score.</div>`
+    : !e.judged
+      ? `<div class="banner info">Not judged yet, so it counts as unfixed. Run
+           <span class="mono">judge_runs.py</span> to grade it.</div>`
+      : solved
+        ? `<div class="banner ok">Repaired the failure${j && j.mechanism === "different" ? ", by a different route than the maintainer" : ""}${e.normalized_match ? ", and matches their code" : ""}.
+             ${j ? esc(j.reason) : ""}</div>`
+        : j && j.cheats
+          ? `<div class="banner err">Hid the failure rather than repairing it. ${esc(j.reason)}</div>`
+          : `<div class="banner info">Did not repair the failure. ${j ? esc(j.reason) : ""}
+               ${e.file_recall === 1 ? "It did edit exactly the files the real fix touched." : ""}</div>`;
+
+  const tile = (lab, val, sub) =>
+    `<div class="tile"><div class="lab">${lab}</div><div class="val">${val}</div>` +
+    `${sub ? `<div class="sub2">${sub}</div>` : ""}</div>`;
+
+  const body = {
+    prompt: `<pre class="tall">${esc(d.prompt)}</pre>`,
+    response: d.response
+      ? `<pre class="tall">${esc(d.response)}</pre>`
+      : `<div class="banner info">The agent returned no text.</div>`,
+    agent: d.agent_diff
+      ? `<pre class="tall diff">${diffHtml(d.agent_diff)}</pre>`
+      : `<div class="banner info">No file changes recorded.</div>`,
+    gold: `<pre class="tall diff">${diffHtml(d.gold_diff)}</pre>`,
+  }[RUNTAB];
+
+  const tab = (key, label) =>
+    `<button class="${RUNTAB === key ? "on" : ""}" onclick="setRunTab('${key}')">${label}</button>`;
+
+  $("runsheet").innerHTML = `
+    <div class="row">
+      <div>
+        <strong style="font-size:16px">${esc(d.repo)}</strong>
+        <span class="pill ${d.condition === "with_memory" ? "mem" : ""}">
+          ${d.condition === "with_memory" ? "with memory" : "without memory"}</span>
+        <span class="pill">${esc(d.run)}</span>
+        <div class="muted mono">${esc(d.task_id)}</div>
+      </div>
+      <span class="spacer"></span>
+      <button onclick="closeRun()">Close</button>
+    </div>
+    <div style="margin:14px 0">${verdict}</div>
+    <div class="tiles">
+      ${tile("Result", e ? (solved ? "Fixed" : "Not fixed") : "Unscored",
+             e ? `${e.files_matched} of ${e.files_expected} target file(s) matched` : "")}
+      ${tile("Files found", e ? pc0(e.file_recall) : "—",
+             e ? `${e.predicted_files.length} file(s) edited` : "")}
+      ${tile("Precision", e ? pc0(e.file_precision) : "—",
+             e && e.collateral_files.length ? `${e.collateral_files.length} unrelated file(s)` : "no unrelated edits")}
+      ${tile("Change size", e ? `${e.predicted_line_delta} lines` : "—",
+             e ? `real fix changed ${e.gold_line_delta}` : "")}
+      ${tile("Wall clock", secs(t.duration_s), t.exit_code === null ? "run by hand" : `exit code ${t.exit_code}`)}
+      ${tile("Prompt", t.prompt_chars ? t.prompt_chars.toLocaleString() + " chars" : "—",
+             `${d.memory_count} memory item(s) available`)}
+    </div>
+    ${e ? fileCheckTable(e) : ""}
+    <div class="tabs">
+      ${tab("prompt", "Prompt it was given")}
+      ${tab("response", "What the agent said")}
+      ${tab("agent", "What the agent changed")}
+      ${tab("gold", "The real developer fix")}
+    </div>
+    ${body}
+    ${d.stderr ? `<h3 style="font-size:13px;margin:16px 0 6px" class="muted">stderr</h3>
+                  <pre>${esc(d.stderr)}</pre>` : ""}`;
+}
+
+function fileCheckTable(e) {
+  if (!e.file_checks?.length) return "";
+  return `<table style="margin-top:14px"><thead><tr>
+      <th>File the real fix changed</th><th>Edited</th><th>Matches</th>
+      <th class="num">Lines changed</th><th class="num">Real fix changed</th>
+    </tr></thead><tbody>` +
+    e.file_checks.map(f => `<tr>
+      <td class="mono">${esc(f.path)}</td>
+      <td>${f.touched ? "yes" : "<span class='muted'>no</span>"}</td>
+      <td class="${f.normalized ? "f" : ""}" style="${f.normalized ? "color:var(--good);font-weight:600" : ""}">
+        ${f.normalized ? (f.exact ? "exact" : "yes") : "no"}</td>
+      <td class="num">${f.predicted_line_delta}</td>
+      <td class="num">${f.gold_line_delta}</td>
+    </tr>`).join("") +
+    (e.collateral_files.length
+      ? `<tr><td colspan="5" class="muted">Also edited, outside the real fix:
+           <span class="mono">${esc(e.collateral_files.join(", "))}</span></td></tr>`
+      : "") +
+    `</tbody></table>`;
+}
+
+const diffHtml = text => esc(text).split("\n").map(line =>
+  /^(\+\+\+|---|@@|\.\.\.)/.test(line) ? `<span class="h">${line}</span>`
+  : line.startsWith("+") ? `<span class="a">${line}</span>`
+  : line.startsWith("-") ? `<span class="r">${line}</span>` : line).join("\n");
+
+function openReport() {
+  window.location.href = "/report?agent=" + encodeURIComponent(AGENT);
+}
+
+function statsBlock(s) {
+  const a = s.analysis;
+  if (!a || !a.n_tasks) return `<div class="banner info">Not enough paired data yet.</div>`;
+  const ci = c => `[${pc1(c.low)}, ${pc1(c.high)}]`;
+  const diff = a.ci_difference
+    ? `<tr><th>Difference with &minus; without</th>
+         <td class="num">${(a.difference * 100).toFixed(1)} pts
+           <span class="muted">95% bootstrap CI [${(a.ci_difference.low * 100).toFixed(1)},
+           ${(a.ci_difference.high * 100).toFixed(1)}] pts</span></td></tr>`
+    : "";
+  return `
+    <table>
+      <tbody>
+        <tr><th>Paired tasks (measured in both conditions)</th><td class="num">${a.n_tasks}</td></tr>
+        <tr><th>Solved without memory</th>
+            <td class="num">${a.both_solved + a.only_no_memory}/${a.n_tasks}
+                = ${pc1(a.rate_no_memory)} <span class="muted">95% CI ${ci(a.ci_no_memory)}</span></td></tr>
+        <tr><th>Solved with memory</th>
+            <td class="num">${a.both_solved + a.only_with_memory}/${a.n_tasks}
+                = ${pc1(a.rate_with_memory)} <span class="muted">95% CI ${ci(a.ci_with_memory)}</span></td></tr>
+        ${diff}
+        <tr><th>Solved by both / by neither</th>
+            <td class="num">${a.both_solved} / ${a.neither_solved}</td></tr>
+        <tr><th>Discordant pairs (the only ones carrying signal)</th>
+            <td class="num">${a.discordant}
+              <span class="muted">= ${a.only_no_memory} without-only + ${a.only_with_memory} with-only</span></td></tr>
+        <tr><th>Exact McNemar test</th>
+            <td class="num">p = ${a.p_value}${a.significant ? " (significant)" : " (not significant)"}</td></tr>
+        <tr><th>Pass@1 over paired tasks</th>
+            <td class="num">${pc1(s.pass_at_k?.no_memory)} without · ${pc1(s.pass_at_k?.with_memory)} with</td></tr>
+      </tbody>
+    </table>
+    <div class="banner info" style="margin-top:12px">${esc(a.interpretation)}</div>
+    <p class="muted">Wilson intervals are used rather than the normal approximation, which collapses
+      to zero width at rates near zero; McNemar is computed exactly rather than by chi-square, which
+      is invalid at this sample size. Fewer than ${s.min_discordant_for_significance} discordant
+      pairs can never reach p&lt;0.05, whatever the direction, so below that a null result reflects
+      sample size and not the absence of an effect.</p>
+    ${(s.timed_out?.length || s.no_edit?.length) ? `<p class="muted">Excluded:
+       ${s.timed_out.length} run(s) cut off by a timeout,
+       ${s.no_edit.length} run(s) that finished without changing any file.</p>` : ""}`;
+}
+
+function show(which) {
+  ["list", "run", "results"].forEach(s => $(s).classList.toggle("hide", s !== which));
+}
+function showList(fromHistory) {
+  if (!fromHistory) remember({ view: "list" });
+  show("list"); load();
+}
+
+// Keep the browser Back button working. Without this the page is a single view and
+// Back leaves the app entirely, losing the user's place.
+function remember(state) {
+  if (JSON.stringify(history.state) !== JSON.stringify(state)) history.pushState(state, "");
+}
+window.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !$("runmodal").classList.contains("hide")) closeRun();
+});
+window.addEventListener("popstate", event => {
+  const state = event.state || { view: "list" };
+  if (state.view === "run" && state.run) openRun(state.run.task, state.run.condition, state.run.run, true);
+  else if (state.view === "results") showResults(true);
+  else showList(true);
+});
+
+// Deep links: #results opens the results page, and #run/<task>/<condition>/<run> opens one
+// run's detail, so a single run can be bookmarked or sent to someone.
+const deepRun = location.hash.startsWith("#run/") ? location.hash.slice(5).split("/") : null;
+const deepResults = deepRun || location.hash === "#results";
+load();
+if (deepResults) showResults();
+if (deepRun && deepRun.length >= 3) openRunDetail(deepRun[0], deepRun[1], deepRun[2], deepRun[3]);
+history.replaceState({ view: deepResults ? "results" : "list" }, "");
+setInterval(() => { if (!$("list").classList.contains("hide")) load(); }, 8000);
+</script>
+</body>
+</html>

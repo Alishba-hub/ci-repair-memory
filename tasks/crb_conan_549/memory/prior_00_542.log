@@ -1,0 +1,41 @@
+--- step: Linux Integration (3.10) ---
+    tree = ast.parse(source, filename=strfn)
+/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/home/runner/work/conan/conan/test/integration/remote/test_local_recipes_index.py", line 284
+E       client.run(f"create '{os.path.join(recipes_folder, "zlib-ng", "all")}' --version=0.1")
+E                                                           ^^^^
+E   SyntaxError: f-string: unmatched '('
+=============================== warnings summary ===============================
+test/integration/command/cache/test_cache_integrity.py: 1 warning
+test/integration/command/remove_test.py: 39 warnings
+test/integration/command/cache/test_cache_path.py: 1 warning
+test/integration/command/cache/test_cache_save_restore.py: 1 warning
+test/integration/command/source_test.py: 2 warnings
+test/integration/command/custom_commands_test.py: 1 warning
+test/integration/test_db_error.py: 1 warning
+test/integration/test_package_python_files.py: 2 warnings
+test/integration/command/test_forced_download_source.py: 2 warnings
+test/integration/command/download/download_parallel_test.py: 1 warning
+test/integration/command/download/download_selected_packages_test.py: 1 warning
+... (156 lines omitted)
+============================= slowest 10 durations =============================
+6.05s call     test/integration/command/test_remote_users.py::TestRemoteAuth::test_remote_auth_server_expire_token
+5.34s call     test/integration/command/upload/upload_complete_test.py::UploadTest::test_upload_error
+4.44s call     test/integration/command/list/test_list_lru.py::TestLRU::test_cache_clean_lru[list]
+4.44s call     test/integration/command/list/test_list_lru.py::TestLRU::test_cache_clean_lru[remove]
+3.85s setup    test/integration/command/download/test_download_patterns.py::TestDownloadPatterns::test_all_latest
+3.39s setup    test/integration/command/upload/test_upload_patterns.py::TestUploadPatterns::test_all_latest
+3.39s call     test/integration/lockfile/test_lock_requires.py::test_revision_timestamp
+3.29s call     test/integration/remote/auth_test.py::test_token_expired
+2.92s call     test/integration/remote/multi_remote_test.py::MultiRemotesTest::test_conan_install_update
+2.90s call     test/integration/remote/multi_remote_test.py::MultiRemotesTest::test_conan_install_build_flag
+= 2802 passed, 65 skipped, 1 xpassed, 625 warnings, 1 error in 149.20s (0:02:29) =
+##[error]Process completed with exit code 1.
+##[end-action id=__self.__run;outcome=failure;conclusion=failure;duration_ms=149924]
+##[start-action display=Rename coverage file;id=__self.__run_2]
+##[end-action id=__self.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Upload coverage artifact;id=__self.__actions_upload-artifact]
+##[end-action id=__self.__actions_upload-artifact;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

@@ -1,0 +1,32 @@
+--- step: main ---
+[INFO] Installing environment for https://github.com/PyCQA/isort.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+[INFO] Installing environment for https://github.com/PyCQA/flake8.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+black....................................................................Passed
+isort....................................................................Passed
+flake8...................................................................Failed
+- hook id: flake8
+- exit code: 1
+tests/core/tests/test_resources/test_resources.py:4:1: F401 'copy.deepcopy' imported but unused
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=19511]
+with:
+  msg: [pre-commit.ci lite] apply automatic fixes
+env:
+  PIP_INDEX_URL: http://localhost:8629/2023-12-05
+  UV_INDEX_URL: http://localhost:8629/2023-12-05
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+... (9 lines omitted)
+ [2026-08-12 20:23:11 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:23:11 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:23:11 +0000] [10] [INFO] Booting worker with pid: 10
+34e15294e6c08afef2bd8f0bd20a5ab2b5398fd6b380f9e6108d52e5cb0a629b
+github_network_28761a069e104b8795af9b862c5f2b80

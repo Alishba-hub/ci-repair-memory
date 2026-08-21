@@ -1,0 +1,46 @@
+--- step: Test on macos-latest ---
+   37 |     __yield();              // Generic
+      |     ^
+/Users/Shared/calibre-build/sw/sw/qt/lib/QtCore.framework/Headers/qyieldcpu.h:37:5: note: include the header <arm_acle.h> or explicitly provide a declaration for '__yield'
+1 error generated.
+make[1]: *** [rcc.o] Error 1
+Error while executing: make -j3
+make: *** [sub-rcc_backend-make_first-ordered] Error 2
+Traceback (most recent call last):
+  File "/Users/runner/work/calibre/calibre/setup.py", line 131, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/Users/runner/work/calibre/calibre/setup.py", line 116, in main
+    command.run_all(opts)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/runner/work/calibre/calibre/setup/__init__.py", line 238, in run_all
+    self.run_cmd(self, opts)
+    ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/runner/work/calibre/calibre/setup/__init__.py", line 228, in run_cmd
+    self.run_cmd(scmd, opts)
+    ~~~~~~~~~~~~^^^^^^^^^^^^
+... (2 lines omitted)
+    ~~~~~~~^^^^^^
+  File "/Users/runner/work/calibre/calibre/setup/build.py", line 505, in run
+    self.build_pyqt_extension(ext, sbf)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/runner/work/calibre/calibre/setup/build.py", line 738, in build_pyqt_extension
+    self.check_call([self.env.make] + ([] if iswindows else [f'-j{os.cpu_count() or 1}']), env=env)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/runner/work/calibre/calibre/setup/build.py", line 619, in check_call
+    subprocess.check_call(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/Shared/calibre-build/sw/sw/python/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 420, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command '['make', '-j3']' returned non-zero exit status 2.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:7404) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[command]/opt/homebrew/bin/git version
+Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/81178fc0-4820-4edb-b260-b31af0c722f5/.gitconfig'
+[command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/calibre/calibre
+[command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+[command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.htt

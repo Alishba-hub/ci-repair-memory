@@ -1,0 +1,16 @@
+--- step: build_and_test (3.11) ---
+  Downloading python_discovery-1.5.2-py3-none-any.whl.metadata (5.1 kB)
+  Downloading more_itertools-11.1.0-py3-none-any.whl.metadata (41 kB)
+  Downloading backports.tarfile-1.2.0-py3-none-any.whl.metadata (2.0 kB)
+   ââââââââââââââââââââââââââââââââââââââââ 1.5/1.5 MB 27.6 MB/s  0:00:00
+   ââââââââââââââââââââââââââââââââââââââââ 3.2/3.2 MB 75.5 MB/s  0:00:00
+   ââââââââââââââââââââââââââââââââââââââââ 4.7/4.7 MB 103.2 MB/s  0:00:00
+   ââââââââââââââââââââââââââââââââââââââââ 5.3/5.3 MB 190.2 MB/s  0:00:00
+Installing collected packages: trove-classifiers, distlib, zipp, urllib3, typing_extensions, tomlkit, shellingham, rapidfuzz, pyproject-hooks, pycparser, poetry-core, platformdirs, pkginfo, pbs-installer, packaging, msgpack, more-itertools, jeepney, installer, idna, h11, filelock, fastjsonschema, crashtest, charset_normalizer, certifi, backports.zstd, backports.tarfile, requests, python-discovery, jaraco.functools, jaraco.context, jaraco.classes, importlib_metadata, httpcore, findpython, dulwich, cleo, cffi, build, anyio, virtualenv, requests-toolbelt, httpx, cryptography, cachecontrol, SecretStorage, keyring, poetry
+Successfully installed SecretStorage-3.5.0 anyio-4.14.2 backports.tarfile-1.2.0 backports.zstd-1.6.0 build-1.5.0 cachecontrol-0.14.4 certifi-2026.7.22 cffi-2.1.1 charset_normalizer-3.5.0 cleo-2.1.0 crashtest-0.4.1 cryptography-50.0.0 distlib-0.4.3 dulwich-1.2.12 fastjsonschema-2.22.1 filelock-3.32.2 findpython-0.8.0 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.18 importlib_metadata-9.0.0 installer-1.0.1 jaraco.classes-3.4.0 jaraco.context-6.1.2 jaraco.functools-4.6.0 jeepney-0.9.0 keyring-25.7.0 more-itertools-11.1.0 msgpack-1.2.1 packaging-26.3 pbs-installer-2026.8.7 pkginfo-1.12.1.2 platformdirs-4.11.2 poetry-2.4.1 poetry-core-2.4.0 pycparser-3.0 pyproject-hooks-1.2.0 python-discovery-1.5.2 rapidfuzz-3.14.5 requests-2.34.2 requests-toolbelt-1.0.0 shellingham-1.5.4 tomlkit-0.15.1 trove-classifiers-2026.6.1.19 typing_extensions-4.16.0 urllib3-2.7.0 virtualenv-21.7.4 zipp-4.1.0
+Creating virtualenv aisuite-10tK6cXX-py3.11 in /home/runner/.cache/pypoetry/virtualenvs
+Installing dependencies from lock file
+pyproject.toml changed significantly since poetry.lock was last generated. Run `poetry lock` to fix the lock file.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

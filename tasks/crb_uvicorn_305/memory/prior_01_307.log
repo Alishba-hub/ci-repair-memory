@@ -1,0 +1,64 @@
+--- step: Python 3.12 ubuntu-latest ---
+All checks passed!
+scripts/build
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  UV_PYTHON: 3.12
+  UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
++ uv build
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist/uvicorn-0.37.0.tar.gz
+Successfully built dist/uvicorn-0.37.0-py3-none-any.whl
++ uv run twine check dist/uvicorn-0.37.0-py3-none-any.whl dist/uvicorn-0.37.0.tar.gz
+Checking dist/uvicorn-0.37.0-py3-none-any.whl: ERROR    InvalidDistribution: Invalid distribution metadata: '2.5' is not a
+         valid metadata version
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: Python 3.10 ubuntu-latest ---
+All checks passed!
+scripts/build
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  UV_PYTHON: 3.10
+  UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
++ uv build
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist/uvicorn-0.37.0.tar.gz
+Successfully built dist/uvicorn-0.37.0-py3-none-any.whl
++ uv run twine check dist/uvicorn-0.37.0-py3-none-any.whl dist/uvicorn-0.37.0.tar.gz
+Checking dist/uvicorn-0.37.0-py3-none-any.whl: ERROR    InvalidDistribution: Invalid distribution metadata: '2.5' is not a
+         valid metadata version
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: Python 3.10 macos-latest ---
+ + zipp==3.23.0
+scripts/build
+shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  UV_PYTHON: 3.10
+  UV_CACHE_DIR: /Users/runner/work/_temp/setup-uv-cache
++ uv build
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist/uvicorn-0.37.0.tar.gz
+Successfully built dist/uvicorn-0.37.0-py3-none-any.whl
++ uv run twine check dist/uvicorn-0.37.0-py3-none-any.whl dist/uvicorn-0.37.0.tar.gz
+Checking dist/uvicorn-0.37.0-py3-none-any.whl: ERROR    InvalidDistribution: Invalid distribution metadata: '2.5' is not a
+         valid metadata version
+##[error]Process completed with exit code 1.
+Post job cleanup.
+[command]/opt/homebrew/bin/git version
+Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/672b73dd-9457-45d3-9358-a6c445618e49/.gitconfig'
+[command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/uvicorn/uvicorn
+[command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+http.https://github.com/.extraheader
+[command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+[command]/opt/homebrew/bin/git submodule foreach 

@@ -1,0 +1,20 @@
+--- step: Run mypy on Tools/cases_generator ---
+mypy --config-file Tools/cases_generator/mypy.ini
+shell: /usr/bin/bash -e {0}
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+  FORCE_COLOR: 1
+  TERM: xterm-256color
+  pythonLocation: /opt/hostedtoolcache/Python/3.13.14/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.14/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.14/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.14/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.14/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.14/x64/lib
+Tools/cases_generator/tracer_generator.py:92: error:(B Item (B"Label"(B of
+(B"Uop | Label"(B has no attribute (B"annotations"(B  (B[union-attr](B
+            if "specializing" in uop.annotations:(B
+                                 ^~~~~~~~~~~~~~~(B
+Found 1 error in 1 file (checked 19 source files)(B
+##[error]Process completed with exit code 1.
+Post job cleanup.

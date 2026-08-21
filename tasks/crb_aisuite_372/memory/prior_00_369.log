@@ -1,0 +1,62 @@
+--- step: lint ---
+would reformat /home/runner/work/aisuite/aisuite/aisuite/utils/tools.py
+--- /home/runner/work/aisuite/aisuite/tests/utils/test_mcp_memory_integration.py	2026-08-13 01:46:51.092158+00:00
++++ /home/runner/work/aisuite/aisuite/tests/utils/test_mcp_memory_integration.py	2026-08-13 01:46:58.456799+00:00
+@@ -1,10 +1,11 @@
+ """
+ Integration test simulating the memory MCP server schema that was causing BadRequestError.
+ This test verifies that the fix for List[dict] schema conversion works correctly.
+ """
++
+ import unittest
+ from aisuite.utils.tools import Tools
+ class MockMemoryMCPTool:
+@@ -25,29 +26,27 @@
+... (60 lines omitted)
+-                            "observations": ["Unified API", "Multi-provider support"]
+-                        }
++                            "observations": ["Unified API", "Multi-provider support"],
++                        },
+                     ]
+-                }
+-            }
++                },
++            },
+         }
+         # This should execute successfully
+         results, messages = tool_manager.execute_tool(tool_call)
+would reformat /home/runner/work/aisuite/aisuite/tests/utils/test_mcp_memory_integration.py
+--- /home/runner/work/aisuite/aisuite/tests/utils/test_tools_mcp_schema.py	2026-08-13 01:46:51.092987+00:00
++++ /home/runner/work/aisuite/aisuite/tests/utils/test_tools_mcp_schema.py	2026-08-13 01:46:58.565201+00:00
+@@ -75,11 +75,13 @@
+         tools = self.tool_manager.tools()
+         tool_spec = tools[0]["function"]
+         # Verify complex array schema is preserved
+-        self.assertEqual(tool_spec["parameters"]["properties"]["entities"]["type"], "array")
++        self.assertEqual(
++            tool_spec["parameters"]["properties"]["entities"]["type"], "array"
++        )
+         self.assertIn("items", tool_spec["parameters"]["properties"]["entities"])
+         self.assertEqual(
+... (100 lines omitted)
+             "required": ["data"],
+         }
+         # Create a copy to verify immutability
+         import copy
+         schema_copy = copy.deepcopy(original_schema)
+-        tool = MockMCPToolWrapper("immutable_tool", "Test immutability", original_schema)
++        tool = MockMCPToolWrapper(
++            "immutable_tool", "Test immutability", original_schema
++        )
+         self.tool_manager._add_tool(tool)
+         # Verify original schema wasn't modified
+         self.assertEqual(original_schema, schema_copy)
+would reformat /home/runner/work/aisuite/aisuite/tests/utils/test_tools_mcp_schema.py
+Oh no! ð¥ ð ð¥
+7 files would be reformatted, 74 files would be left unchanged.
+##[error]Process completed with exit code 1.
+##[end-action id=__psf_black.__run;outcome=failure;conclusion=failure;duration_ms=7519]
+Post job cleanup.
+(node:2313) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+http.https://github.com/.extraheader

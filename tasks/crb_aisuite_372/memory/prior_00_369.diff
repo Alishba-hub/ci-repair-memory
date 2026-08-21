@@ -1,0 +1,215 @@
+diff --git a/aisuite/utils/tools.py b/aisuite/utils/tools.py
+index ca94d5d8..3ee6e024 100644
+--- a/aisuite/utils/tools.py
++++ b/aisuite/utils/tools.py
+@@ -149,12 +149,10 @@ def _convert_mcp_schema_to_tool_spec(self, func: Callable) -> Dict[str, Any]:
+         return {
+             "name": func.__name__,
+             "description": func.__doc__ or "",
+-            "parameters": input_schema  # Use original schema directly!
++            "parameters": input_schema,  # Use original schema directly!
+         }
+ 
+-    def _create_pydantic_model_from_mcp_schema(
+-        self, func: Callable
+-    ) -> Type[BaseModel]:
++    def _create_pydantic_model_from_mcp_schema(self, func: Callable) -> Type[BaseModel]:
+         """
+         Create a Pydantic model from MCP inputSchema for parameter validation.
+ 
+diff --git a/tests/utils/test_mcp_memory_integration.py b/tests/utils/test_mcp_memory_integration.py
+index f6f4cddf..4ce3fe5e 100644
+--- a/tests/utils/test_mcp_memory_integration.py
++++ b/tests/utils/test_mcp_memory_integration.py
+@@ -3,6 +3,7 @@
+ 
+ This test verifies that the fix for List[dict] schema conversion works correctly.
+ """
++
+ import unittest
+ from aisuite.utils.tools import Tools
+ 
+@@ -27,25 +28,23 @@ def __init__(self):
+                         "properties": {
+                             "name": {
+                                 "type": "string",
+-                                "description": "The name of the entity"
++                                "description": "The name of the entity",
+                             },
+                             "entityType": {
+                                 "type": "string",
+-                                "description": "The type of the entity"
++                                "description": "The type of the entity",
+                             },
+                             "observations": {
+                                 "type": "array",
+                                 "description": "An array of observation contents",
+-                                "items": {
+-                                    "type": "string"
+-                                }
+-                            }
++                                "items": {"type": "string"},
++                            },
+                         },
+-                        "required": ["name", "entityType", "observations"]
+-                    }
++                        "required": ["name", "entityType", "observations"],
++                    },
+                 }
+             },
+-            "required": ["entities"]
++            "required": ["entities"],
+         }
+ 
+     def __call__(self, **kwargs):
+@@ -97,6 +96,7 @@ def test_memory_tool_openai_format_validation(self):
+ 
+         # Check that there are no Python type strings in the schema
+         import json
++
+         schema_json = json.dumps(tool_spec["parameters"])
+ 
+         # These should NOT appear in valid OpenAI JSON Schema
+@@ -125,16 +125,19 @@ def test_memory_tool_execution(self):
+                         {
+                             "name": "MCP",
+                             "entityType": "Protocol",
+-                            "observations": ["Enables LLM tool calling", "Uses JSON Schema"]
++                            "observations": [
++                                "Enables LLM tool calling",
++                                "Uses JSON Schema",
++                            ],
+                         },
+                         {
+                             "name": "aisuite",
+                             "entityType": "Library",
+-                            "observations": ["Unified API", "Multi-provider support"]
+-                        }
++                            "observations": ["Unified API", "Multi-provider support"],
++                        },
+                     ]
+-                }
+-            }
++                },
++            },
+         }
+ 
+         # This should execute successfully
+diff --git a/tests/utils/test_tools_mcp_schema.py b/tests/utils/test_tools_mcp_schema.py
+index 7627a68e..039faccd 100644
+--- a/tests/utils/test_tools_mcp_schema.py
++++ b/tests/utils/test_tools_mcp_schema.py
+@@ -77,7 +77,9 @@ def test_mcp_tool_with_array_of_objects(self):
+         tool_spec = tools[0]["function"]
+ 
+         # Verify complex array schema is preserved
+-        self.assertEqual(tool_spec["parameters"]["properties"]["entities"]["type"], "array")
++        self.assertEqual(
++            tool_spec["parameters"]["properties"]["entities"]["type"], "array"
++        )
+         self.assertIn("items", tool_spec["parameters"]["properties"]["entities"])
+         self.assertEqual(
+             tool_spec["parameters"]["properties"]["entities"]["items"]["type"], "object"
+@@ -105,7 +107,9 @@ def test_mcp_tool_with_nested_objects(self):
+             "required": ["user"],
+         }
+ 
+-        tool = MockMCPToolWrapper("create_user", "Create user with address", input_schema)
++        tool = MockMCPToolWrapper(
++            "create_user", "Create user with address", input_schema
++        )
+         self.tool_manager._add_tool(tool)
+ 
+         tools = self.tool_manager.tools()
+@@ -113,7 +117,9 @@ def test_mcp_tool_with_nested_objects(self):
+ 
+         # Verify nested structure is preserved
+         self.assertEqual(tool_spec["parameters"], input_schema)
+-        self.assertIn("address", tool_spec["parameters"]["properties"]["user"]["properties"])
++        self.assertIn(
++            "address", tool_spec["parameters"]["properties"]["user"]["properties"]
++        )
+ 
+     def test_mcp_tool_with_array_of_strings(self):
+         """Test MCP tool with array of simple types (List[str])."""
+@@ -160,13 +166,21 @@ def test_mcp_tool_with_optional_parameters(self):
+         input_schema = {
+             "type": "object",
+             "properties": {
+-                "required_param": {"type": "string", "description": "Required parameter"},
+-                "optional_param": {"type": "integer", "description": "Optional parameter"},
++                "required_param": {
++                    "type": "string",
++                    "description": "Required parameter",
++                },
++                "optional_param": {
++                    "type": "integer",
++                    "description": "Optional parameter",
++                },
+             },
+             "required": ["required_param"],
+         }
+ 
+-        tool = MockMCPToolWrapper("mixed_params", "Tool with mixed params", input_schema)
++        tool = MockMCPToolWrapper(
++            "mixed_params", "Tool with mixed params", input_schema
++        )
+         self.tool_manager._add_tool(tool)
+ 
+         tools = self.tool_manager.tools()
+@@ -202,7 +216,9 @@ def test_mcp_schema_preserves_additional_fields(self):
+             "required": ["status"],
+         }
+ 
+-        tool = MockMCPToolWrapper("advanced_schema", "Tool with advanced schema", input_schema)
++        tool = MockMCPToolWrapper(
++            "advanced_schema", "Tool with advanced schema", input_schema
++        )
+         self.tool_manager._add_tool(tool)
+ 
+         tools = self.tool_manager.tools()
+@@ -217,7 +233,9 @@ def test_mcp_schema_preserves_additional_fields(self):
+ 
+         # Verify format is preserved
+         self.assertIn("format", tool_spec["parameters"]["properties"]["email"])
+-        self.assertEqual(tool_spec["parameters"]["properties"]["email"]["format"], "email")
++        self.assertEqual(
++            tool_spec["parameters"]["properties"]["email"]["format"], "email"
++        )
+ 
+         # Verify min/max are preserved
+         self.assertIn("minimum", tool_spec["parameters"]["properties"]["count"])
+@@ -234,7 +252,9 @@ def test_mcp_tool_execution_with_validation(self):
+             "required": ["name"],
+         }
+ 
+-        tool = MockMCPToolWrapper("validate_tool", "Tool for validation test", input_schema)
++        tool = MockMCPToolWrapper(
++            "validate_tool", "Tool for validation test", input_schema
++        )
+         self.tool_manager._add_tool(tool)
+ 
+         # Test valid execution
+@@ -297,7 +317,10 @@ def test_mcp_tool_schema_not_modified(self):
+             "properties": {
+                 "data": {
+                     "type": "array",
+-                    "items": {"type": "object", "properties": {"key": {"type": "string"}}},
++                    "items": {
++                        "type": "object",
++                        "properties": {"key": {"type": "string"}},
++                    },
+                 }
+             },
+             "required": ["data"],
+@@ -308,7 +331,9 @@ def test_mcp_tool_schema_not_modified(self):
+ 
+         schema_copy = copy.deepcopy(original_schema)
+ 
+-        tool = MockMCPToolWrapper("immutable_tool", "Test immutability", original_schema)
++        tool = MockMCPToolWrapper(
++            "immutable_tool", "Test immutability", original_schema
++        )
+         self.tool_manager._add_tool(tool)
+ 
+         # Verify original schema wasn't modified

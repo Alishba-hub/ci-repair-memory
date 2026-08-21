@@ -1,0 +1,10 @@
+diff --git a/poetry.lock b/poetry.lock
+index 1a5e16b..7441835 100644
+--- a/poetry.lock
++++ b/poetry.lock
+@@ -7393,4 +7393,4 @@ watsonx = ["ibm-watsonx-ai"]
+ [metadata]
+ lock-version = "2.1"
+ python-versions = "^3.10"
+-content-hash = "7dd8dc372c4bc96f5ba6d065c83ea504fc7a5a86b69bc04f337008c230fe75f0"
++content-hash = "264d983a9de5f57c7489c5e4de705660c251ea74e6bb7875d1c6bd22912971f3"

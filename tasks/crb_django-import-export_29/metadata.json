@@ -1,0 +1,63 @@
+{
+  "task_id": "crb_django-import-export_29",
+  "name": "CI failure in django-import-export (Code Formatting, Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "29",
+  "repo_name": "django-import-export",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "616eb3b10db94cf4a4c209377f36b2ce995bd01c",
+  "sha_success": "d4c71d44ed193e8c63b2409cac46f289903e769b",
+  "commit_date": "2023-12-14T10:20:37Z",
+  "error_type": [
+    "Code Formatting",
+    "Test Failure"
+  ],
+  "workflow_path": ".github/workflows/pre-commit.yml",
+  "target_files": [
+    "tests/core/tests/test_admin_integration.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "30",
+      "commit_date": "2023-12-07T09:31:28Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "pre-commit.yml",
+      "changed_files": [
+        "tests/core/tests/test_resources/test_resources.py"
+      ],
+      "log_file": "memory/prior_00_30.log",
+      "diff_file": "memory/prior_00_30.diff"
+    },
+    {
+      "instance_id": "33",
+      "commit_date": "2023-12-05T16:44:56Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "pre-commit.yml",
+      "changed_files": [
+        "docs/changelog.rst",
+        "import_export/admin.py",
+        "tests/core/tests/test_resources/test_resources.py",
+        "tests/core/tests/test_results.py"
+      ],
+      "log_file": "memory/prior_01_33.log",
+      "diff_file": "memory/prior_01_33.diff"
+    },
+    {
+      "instance_id": "32",
+      "commit_date": "2023-11-22T22:34:25Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "pre-commit.yml",
+      "changed_files": [
+        "import_export/resources.py"
+      ],
+      "log_file": "memory/prior_02_32.log",
+      "diff_file": "memory/prior_02_32.diff"
+    }
+  ]
+}

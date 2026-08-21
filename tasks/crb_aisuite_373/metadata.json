@@ -1,0 +1,64 @@
+{
+  "task_id": "crb_aisuite_373",
+  "name": "CI failure in aisuite (Package Installation Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "373",
+  "repo_name": "aisuite",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "bad6b76af688c10ecd094e8e7d9c14a20e1137a7",
+  "sha_success": "62b0d7c17b6c0aa43d34bfe53be3098b2a38b916",
+  "commit_date": "2025-11-10T20:37:40Z",
+  "error_type": [
+    "Package Installation Error"
+  ],
+  "workflow_path": ".github/workflows/run_pytest.yml",
+  "target_files": [
+    "poetry.lock"
+  ],
+  "memory": [
+    {
+      "instance_id": "369",
+      "commit_date": "2025-11-10T19:52:33Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "black.yml",
+      "changed_files": [
+        "aisuite/utils/tools.py",
+        "tests/utils/test_mcp_memory_integration.py",
+        "tests/utils/test_tools_mcp_schema.py"
+      ],
+      "log_file": "memory/prior_00_369.log",
+      "diff_file": "memory/prior_00_369.diff"
+    },
+    {
+      "instance_id": "371",
+      "commit_date": "2025-10-14T20:08:11Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "black.yml",
+      "changed_files": [
+        "aisuite/framework/asr_params.py"
+      ],
+      "log_file": "memory/prior_01_371.log",
+      "diff_file": "memory/prior_01_371.diff"
+    },
+    {
+      "instance_id": "370",
+      "commit_date": "2025-10-14T17:40:29Z",
+      "error_type": [
+        "Assertion Error",
+        "Runtime Error"
+      ],
+      "workflow_filename": "run_pytest.yml",
+      "changed_files": [
+        "aisuite/providers/deepgram_provider.py",
+        "aisuite/providers/openai_provider.py",
+        "tests/client/test_client.py"
+      ],
+      "log_file": "memory/prior_02_370.log",
+      "diff_file": "memory/prior_02_370.diff"
+    }
+  ]
+}

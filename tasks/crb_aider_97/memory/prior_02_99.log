@@ -1,0 +1,35 @@
+--- step: build (3.12) ---
+FAILED tests/basic/test_io.py::TestInputOutput::test_confirm_ask_allow_never - AttributeError: 'NoneType' object has no attribute 'default_buffer'
+FAILED tests/basic/test_io.py::TestInputOutput::test_confirm_ask_explicit_yes_required - AttributeError: 'NoneType' object has no attribute 'default_buffer'
+FAILED tests/basic/test_io.py::TestInputOutput::test_confirm_ask_with_group - AttributeError: 'NoneType' object has no attribute 'default_buffer'
+FAILED tests/basic/test_io.py::TestInputOutput::test_confirm_ask_yes_no - AttributeError: 'NoneType' object has no attribute 'default_buffer'
+FAILED tests/basic/test_models.py::TestModels::test_max_context_tokens - KeyError: 'max_input_tokens'
+FAILED tests/basic/test_repomap.py::TestRepoMapAllLanguages::test_language_csharp - AssertionError: 1 not greater than 1
+FAILED tests/scrape/test_scrape.py::TestScrape::test_cmd_web_imports_playwright - AssertionError: Expected 'mock' to not have been called. Called 1 times.
+Calls: [call.__bool__(),
+ call('Unable to install pandoc: Remote end closed connection without response')].
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scrape_actual_url_with_playwright - AssertionError: Expected 'mock' to not have been called. Called 1 times.
+Calls: [call.__bool__(),
+ call('Unable to install pandoc: Remote end closed connection without response')].
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scrape_self_signed_ssl - AssertionError: Expected 'mock' to not have been called. Called 1 times.
+Calls: [call.__bool__(),
+ call('Unable to install pandoc: Invalid pandoc version latest.')].
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scrape_with_playwright_error_handling - AssertionError: Expected 'mock' to not have been called. Called 1 times.
+Calls: [call('Unable to install pandoc: Invalid pandoc version latest.')].
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scraper_print_error_not_called - AssertionError: Expected 'mock' to not have been called. Called 1 times.
+Calls: [call.__bool__(),
+ call('Unable to install pandoc: Remote end closed connection without response')].
+ERROR tests/help/test_help.py::TestHelp::test_ask_without_mock - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_edge_cases - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_unix - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_windows - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_init - AssertionError: SwitchCoder exception was not raised
+assert False
+============= 17 failed, 434 passed, 5 errors in 193.32s (0:03:13) =============
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

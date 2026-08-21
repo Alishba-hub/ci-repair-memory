@@ -1,0 +1,26 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    services:
+      pypi_wayback:
+        image: ghcr.io/waleko/pypi-wayback
+        ports:
+          - 8629:8080
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - uses: pre-commit/action@v3.0.0
+    - uses: pre-commit-ci/lite-action@v1.0.1
+      if: always()
+
+env:
+  PIP_INDEX_URL: http://localhost:8629/2023-12-14
+  UV_INDEX_URL: http://localhost:8629/2023-12-14

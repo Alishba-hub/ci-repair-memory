@@ -1,0 +1,64 @@
+{
+  "task_id": "crb_aws-cli_146",
+  "name": "CI failure in aws-cli (Runtime Error, Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "146",
+  "repo_name": "aws-cli",
+  "repo_owner": "aws",
+  "sha_fail": "6daeaefa76ab8bfe9a6212b1e4263743079149ce",
+  "sha_success": "8a51cdab89ea8f3be7591d3b3f278006eafb18d6",
+  "commit_date": "2025-06-27T14:56:34Z",
+  "error_type": [
+    "Runtime Error",
+    "Test Failure"
+  ],
+  "workflow_path": ".github/workflows/run-tests.yml",
+  "target_files": [
+    "awscli/telemetry.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "145",
+      "commit_date": "2025-06-18T19:05:08Z",
+      "error_type": [
+        "Package Installation Error",
+        "Runtime Error"
+      ],
+      "workflow_filename": "run-tests.yml",
+      "changed_files": [
+        "awscli/customizations/s3/subcommands.py"
+      ],
+      "log_file": "memory/prior_00_145.log",
+      "diff_file": "memory/prior_00_145.diff"
+    },
+    {
+      "instance_id": "143",
+      "commit_date": "2025-05-20T20:02:01Z",
+      "error_type": [
+        "Syntax Error",
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "source-dist-tests.yml",
+      "changed_files": [
+        "tests/backends/build_system/functional/test_aws_cli_venv.py"
+      ],
+      "log_file": "memory/prior_01_143.log",
+      "diff_file": "memory/prior_01_143.diff"
+    },
+    {
+      "instance_id": "444",
+      "commit_date": "2025-05-20T19:46:00Z",
+      "error_type": [
+        "Configuration Error",
+        "Package Installation Error"
+      ],
+      "workflow_filename": "run-tests.yml",
+      "changed_files": [
+        "tests/backends/build_system/integration/test_makefile.py"
+      ],
+      "log_file": "memory/prior_02_444.log",
+      "diff_file": "memory/prior_02_444.diff"
+    }
+  ]
+}

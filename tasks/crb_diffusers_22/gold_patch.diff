@@ -1,0 +1,36 @@
+diff --git a/src/diffusers/loaders/__init__.py b/src/diffusers/loaders/__init__.py
+index 675246e40..7a6bb4dc4 100644
+--- a/src/diffusers/loaders/__init__.py
++++ b/src/diffusers/loaders/__init__.py
+@@ -52,6 +52,7 @@ if is_transformers_available():
+ 
+ 
+ _import_structure = {}
++_extra_objects = {}
+ 
+ if is_torch_available():
+     _import_structure["unet"] = ["UNet2DConditionLoadersMixin"]
+@@ -62,6 +63,8 @@ if is_torch_available():
+         _import_structure["lora"] = ["LoraLoaderMixin", "StableDiffusionXLLoraLoaderMixin"]
+         _import_structure["textual_inversion"] = ["TextualInversionLoaderMixin"]
+         _import_structure["ip_adapter"] = ["IPAdapterMixin"]
++    else:
++        _extra_objects["FromSingleFileMixin"] = object
+ 
+ _import_structure["peft"] = ["PeftAdapterMixin"]
+ 
+@@ -76,9 +79,13 @@ if TYPE_CHECKING or DIFFUSERS_SLOW_IMPORT:
+             from .lora import LoraLoaderMixin, StableDiffusionXLLoraLoaderMixin
+             from .single_file import FromSingleFileMixin
+             from .textual_inversion import TextualInversionLoaderMixin
++        else:
++            FromSingleFileMixin = object
+ 
+     from .peft import PeftAdapterMixin
+ else:
+     import sys
+ 
+-    sys.modules[__name__] = _LazyModule(__name__, globals()["__file__"], _import_structure, module_spec=__spec__)
++    sys.modules[__name__] = _LazyModule(
++        __name__, globals()["__file__"], _import_structure, module_spec=__spec__, extra_objects=_extra_objects
++    )

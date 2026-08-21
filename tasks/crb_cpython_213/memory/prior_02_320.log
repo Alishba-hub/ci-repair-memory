@@ -1,0 +1,19 @@
+--- step: lint ---
+             return self.with_name(stem + suffix)
+     def without_suffix(self):
+-        """Return a new path without the file suffix.  Readable alternative
++        """Return a new path without the file suffix.  Readable alternative
+         for providing empty string to with_suffix.
+         """
+         return self.with_suffix('')
+-
++
+     @property
+     def parts(self):
+         """An object providing sequence-like access to the
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=66727]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__38f3aad3-2605-40ad-831e-5c955a3cf533.__actions_cache]
+##[end-action id=__38f3aad3-2605-40ad-831e-5c955a3cf533.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.

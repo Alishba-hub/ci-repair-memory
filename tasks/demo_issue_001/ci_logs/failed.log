@@ -1,0 +1,13 @@
+============================= test session starts =============================
+collected 2 items
+
+tests/test_app.py .F
+
+=================================== FAILURES ===================================
+______________________ test_normalize_title_blank_input ________________________
+E       AssertionError: assert '   ' == ''
+E         - 
+E         +    
+
+=========================== short test summary info ===========================
+FAILED tests/test_app.py::test_normalize_title_blank_input - AssertionError

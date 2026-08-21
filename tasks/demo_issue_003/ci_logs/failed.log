@@ -1,0 +1,10 @@
+============================= test session starts =============================
+collected 1 item
+
+tests/test_app.py E
+
+==================================== ERRORS ====================================
+ImportError: No module named 'app'
+
+=========================== short test summary info ===========================
+ERROR tests/test_app.py - ImportError

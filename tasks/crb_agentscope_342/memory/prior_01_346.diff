@@ -1,0 +1,121 @@
+diff --git a/examples/functionality/rag/milvuslite_store.py b/examples/functionality/rag/milvuslite_store.py
+index 7bfcd480c5..699bd29b03 100644
+--- a/examples/functionality/rag/milvuslite_store.py
++++ b/examples/functionality/rag/milvuslite_store.py
+@@ -9,12 +9,12 @@
+ if str(src_path) not in sys.path:
+     sys.path.insert(0, str(src_path))
+ 
+-from agentscope.rag import (
+-    MilvusLiteStore,
+-    Document,
+-    DocMetadata,
+-)  # noqa: E402 pylint: disable=C0413
+ from agentscope.message import TextBlock  # noqa: E402 pylint: disable=C0413
++from agentscope.rag import (  # noqa: E402 pylint: disable=C0413
++    DocMetadata,
++    Document,
++    MilvusLiteStore,
++)
+ 
+ 
+ async def example_basic_operations() -> None:
+@@ -288,7 +288,7 @@ async def example_distance_metrics() -> None:
+ 
+     # Test with different metrics
+     metrics = ["COSINE", "L2", "IP"]
+-    
++
+     for metric in metrics:
+         print(f"\n--- Testing {metric} metric ---")
+         store = MilvusLiteStore(
+@@ -315,7 +315,7 @@ async def example_distance_metrics() -> None:
+             query_embedding=[0.1, 0.2, 0.3, 0.4],
+             limit=1,
+         )
+-        
++
+         print(f"✓ {metric} metric: Score = {results[0].score:.4f}")
+ 
+ 
+@@ -338,6 +338,7 @@ async def main() -> None:
+     except Exception as e:
+         print(f"\n✗ Test failed with error: {e}")
+         import traceback
++
+         traceback.print_exc()
+ 
+ 
+diff --git a/src/agentscope/rag/__init__.py b/src/agentscope/rag/__init__.py
+index 4788d20afc..80a58abeed 100644
+--- a/src/agentscope/rag/__init__.py
++++ b/src/agentscope/rag/__init__.py
+@@ -32,4 +32,4 @@
+     "MilvusLiteStore",
+     "KnowledgeBase",
+     "SimpleKnowledge",
+-]
+\ No newline at end of file
++]
+diff --git a/src/agentscope/rag/_store/__init__.py b/src/agentscope/rag/_store/__init__.py
+index ad744d2233..ceebe517ec 100644
+--- a/src/agentscope/rag/_store/__init__.py
++++ b/src/agentscope/rag/_store/__init__.py
+@@ -11,4 +11,4 @@
+     "VDBStoreBase",
+     "QdrantStore",
+     "MilvusLiteStore",
+-]
+\ No newline at end of file
++]
+diff --git a/src/agentscope/rag/_store/_milvuslite_store.py b/src/agentscope/rag/_store/_milvuslite_store.py
+index 81ad7be5bd..561f99f4a6 100644
+--- a/src/agentscope/rag/_store/_milvuslite_store.py
++++ b/src/agentscope/rag/_store/_milvuslite_store.py
+@@ -65,12 +65,12 @@ def __init__(
+             ) from e
+ 
+         client_kwargs = client_kwargs or {}
+-        
++
+         # Initialize MilvusClient with uri and optional token
+         init_params = {"uri": uri, **client_kwargs}
+         if token is not None:
+             init_params["token"] = token
+-            
++
+         self._client = MilvusClient(**init_params)
+ 
+         self.collection_name = collection_name
+@@ -107,8 +107,10 @@ async def add(self, documents: list[Document], **kwargs: Any) -> None:
+             # Generate a unique integer ID based on hash
+             # Use hash of doc_id + chunk_id to create a stable integer ID
+             id_str = f"{doc.metadata.doc_id}_{doc.metadata.chunk_id}"
+-            unique_id = abs(hash(id_str)) % (10 ** 10)  # Keep it within reasonable range
+-            
++            unique_id = abs(hash(id_str)) % (
++                10**10
++            )  # Keep it within reasonable range
++
+             # Prepare data entry with vector and metadata
+             entry = {
+                 "id": unique_id,
+@@ -170,13 +172,16 @@ async def search(
+         for hits in results:
+             for hit in hits:
+                 # Check score threshold
+-                if score_threshold is not None and hit["distance"] < score_threshold:
++                if (
++                    score_threshold is not None
++                    and hit["distance"] < score_threshold
++                ):
+                     continue
+ 
+                 # Get metadata from entity
+                 entity = hit["entity"]
+                 from ...message import TextBlock
+-                
++
+                 doc_metadata = DocMetadata(
+                     content=TextBlock(text=entity.get("content", "")),
+                     doc_id=entity.get("doc_id", ""),

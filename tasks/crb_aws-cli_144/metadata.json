@@ -1,0 +1,63 @@
+{
+  "task_id": "crb_aws-cli_144",
+  "name": "CI failure in aws-cli (Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "144",
+  "repo_name": "aws-cli",
+  "repo_owner": "aws",
+  "sha_fail": "0e6f97d05d68c3d66d270865c31e9060c5a5b4de",
+  "sha_success": "473490b868823cfabc06f09343f6ff4444d0b455",
+  "commit_date": "2025-07-14T17:14:11Z",
+  "error_type": [
+    "Test Failure"
+  ],
+  "workflow_path": ".github/workflows/run-tests.yml",
+  "target_files": [
+    "tests/functional/botocore/test_s3.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "146",
+      "commit_date": "2025-06-27T14:56:34Z",
+      "error_type": [
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "run-tests.yml",
+      "changed_files": [
+        "awscli/telemetry.py"
+      ],
+      "log_file": "memory/prior_00_146.log",
+      "diff_file": "memory/prior_00_146.diff"
+    },
+    {
+      "instance_id": "145",
+      "commit_date": "2025-06-18T19:05:08Z",
+      "error_type": [
+        "Package Installation Error",
+        "Runtime Error"
+      ],
+      "workflow_filename": "run-tests.yml",
+      "changed_files": [
+        "awscli/customizations/s3/subcommands.py"
+      ],
+      "log_file": "memory/prior_01_145.log",
+      "diff_file": "memory/prior_01_145.diff"
+    },
+    {
+      "instance_id": "143",
+      "commit_date": "2025-05-20T20:02:01Z",
+      "error_type": [
+        "Syntax Error",
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "source-dist-tests.yml",
+      "changed_files": [
+        "tests/backends/build_system/functional/test_aws_cli_venv.py"
+      ],
+      "log_file": "memory/prior_02_143.log",
+      "diff_file": "memory/prior_02_143.diff"
+    }
+  ]
+}

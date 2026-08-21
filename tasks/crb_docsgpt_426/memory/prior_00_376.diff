@@ -1,0 +1,31 @@
+diff --git a/tests/test_todo_tool.py b/tests/test_todo_tool.py
+index 73c7f6c2c..15359f910 100644
+--- a/tests/test_todo_tool.py
++++ b/tests/test_todo_tool.py
+@@ -1,7 +1,6 @@
+-import datetime
+ import pytest
+ from application.agents.tools.todo_list import TodoListTool
+-
++from application.core.settings import settings
+ 
+ @pytest.fixture
+ def todo_tool(monkeypatch) -> TodoListTool:
+@@ -42,7 +41,7 @@ def delete_one(self, query):
+             return type("res", (), {"deleted_count": 0})
+ 
+     fake_collection = FakeCollection()
+-    fake_client = {"my_db": {"todos": fake_collection}}
++    fake_client = {settings.MONGO_DB_NAME: {"todos": fake_collection}}
+ 
+     monkeypatch.setattr("application.core.mongo_db.MongoDB.get_client", lambda: fake_client)
+ 
+@@ -114,7 +113,7 @@ def delete_one(self, query):
+             return type("res", (), {"deleted_count": 0})
+ 
+     fake_collection = FakeCollection()
+-    fake_client = {"my_db": {"todos": fake_collection}}
++    fake_client = {settings.MONGO_DB_NAME: {"todos": fake_collection}}
+ 
+     monkeypatch.setattr("application.core.mongo_db.MongoDB.get_client", lambda: fake_client)
+ 

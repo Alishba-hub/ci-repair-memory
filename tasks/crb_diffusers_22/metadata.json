@@ -1,0 +1,60 @@
+{
+  "task_id": "crb_diffusers_22",
+  "name": "CI failure in diffusers (Dependency Issues, Runtime Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "22",
+  "repo_name": "diffusers",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "ba66fb81a0c8db48fed7abe833409f447b95708b",
+  "sha_success": "79537f417a44dc517956059d7ad4f18d0943e6d0",
+  "commit_date": "2024-01-19T09:08:23Z",
+  "error_type": [
+    "Dependency Issues",
+    "Runtime Error"
+  ],
+  "workflow_path": ".github/workflows/pr_torch_dependency_test.yml",
+  "target_files": [
+    "src/diffusers/loaders/__init__.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "21",
+      "commit_date": "2024-01-19T08:16:52Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "pr_quality.yml",
+      "changed_files": [
+        "src/diffusers/loaders/single_file_utils.py"
+      ],
+      "log_file": "memory/prior_00_21.log",
+      "diff_file": "memory/prior_00_21.diff"
+    },
+    {
+      "instance_id": "1",
+      "commit_date": "2024-01-10T20:03:01Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "pr_quality.yml",
+      "changed_files": [
+        "examples/community/ip_adapter_face_id.py"
+      ],
+      "log_file": "memory/prior_01_1.log",
+      "diff_file": "memory/prior_01_1.diff"
+    },
+    {
+      "instance_id": "2",
+      "commit_date": "2023-12-26T09:43:43Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "pr_quality.yml",
+      "changed_files": [
+        "src/diffusers/loaders/ip_adapter.py"
+      ],
+      "log_file": "memory/prior_02_2.log",
+      "diff_file": "memory/prior_02_2.diff"
+    }
+  ]
+}

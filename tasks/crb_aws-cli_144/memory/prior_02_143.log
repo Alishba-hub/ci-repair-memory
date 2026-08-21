@@ -1,0 +1,49 @@
+--- step: build (ubuntu-latest, 3.12) ---
+invalid syntax (<skipif condition>, line 1)
+During handling of the above exception, another exception occurred:
+Error evaluating 'skipif' condition
+    Python binary location on posix
+            ^
+SyntaxError: invalid syntax
+=========================== short test summary info ============================
+ERROR backends/build_system/functional/test_aws_cli_venv.py::TestAwsCliVenv::test_create - Failed: Error evaluating 'skipif' condition
+    Posix virtualenv
+           ^
+SyntaxError: invalid syntax
+ERROR backends/build_system/functional/test_aws_cli_venv.py::TestAwsCliVenv::test_bootstrap - Failed: Error evaluating 'skipif' condition
+    Posix bootstrap
+           ^
+SyntaxError: invalid syntax
+ERROR backends/build_system/functional/test_aws_cli_venv.py::TestAwsCliVenv::test_bin_dir - Failed: Error evaluating 'skipif' condition
+    No bin dir on windows
+        ^
+SyntaxError: invalid syntax
+ERROR backends/build_system/functional/test_aws_cli_venv.py::TestAwsCliVenv::test_python_exe - Failed: Error evaluating 'skipif' condition
+    Python binary location on posix
+            ^
+SyntaxError: invalid syntax
+============= 71 passed, 11 skipped, 4 errors in 609.05s (0:10:09) =============
+Traceback (most recent call last):
+CDing to /home/runner/work/aws-cli/aws-cli/tests
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-tests", line 129, in <module>
+    run(cmd, allow_repo_root_on_path=raw_args.allow_repo_root_on_path)
+Running pytest --numprocesses=auto --dist=loadfile --maxprocesses=4 backends/build_system/...
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-tests", line 31, in run
+    return check_call(command, shell=True, env=env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/subprocess.py", line 413, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command 'pytest --numprocesses=auto --dist=loadfile --maxprocesses=4 backends/build_system/' returned non-zero exit status 1.
+Traceback (most recent call last):
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-build-system-tests", line 43, in <module>
+    main(args.tests_path)
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-build-system-tests", line 32, in main
+    run(
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-build-system-tests", line 25, in run
+    return check_call(command, shell=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/subprocess.py", line 413, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command '/opt/hostedtoolcache/Python/3.12.13/x64/bin/python /home/runner/work/aws-cli/aws-cli/scripts/ci/run-tests --tests-path /home/runner/work/aws-cli/aws-cli/tests backends/build_system/ --allow-repo-root-on-path' returned non-zero exit status 1.
+##[error]Process completed with exit code 1.
+Post job cleanup

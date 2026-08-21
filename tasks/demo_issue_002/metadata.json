@@ -1,0 +1,7 @@
+{
+  "task_id": "demo_issue_002",
+  "name": "Handle None input in slug helper",
+  "language": "python",
+  "target_files": ["slug.py"],
+  "description": "A small repository issue that demonstrates a second independent benchmark task."
+}

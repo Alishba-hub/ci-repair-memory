@@ -1,0 +1,42 @@
+--- step: run (ubuntu-latest) ---
+examples/functionality/rag/milvuslite_store.py:254: note: Use "-> None" if function does not return a value
+examples/functionality/rag/milvuslite_store.py:293: error: Function is missing a return type annotation  [no-untyped-def]
+examples/functionality/rag/milvuslite_store.py:293: note: Use "-> None" if function does not return a value
+Found 5 errors in 1 file (checked 215 source files)
+black....................................................................Failed
+- hook id: black
+- files were modified by this hook
+reformatted examples/functionality/rag/milvuslite_store.py
+reformatted src/agentscope/rag/__init__.py
+reformatted src/agentscope/rag/_store/__init__.py
+reformatted src/agentscope/rag/_store/_milvuslite_store.py
+All done! â¨ ð° â¨
+4 files reformatted, 267 files left unchanged.
+flake8...................................................................Failed
+... (19 lines omitted)
+examples/functionality/rag/milvuslite_store.py:14:0: C0413: Import "from agentscope.message import TextBlock" should be placed at the top of the module (wrong-import-position)
+examples/functionality/rag/milvuslite_store.py:261:10: W1309: Using an f-string that does not have any interpolated variables (f-string-without-interpolation)
+examples/functionality/rag/milvuslite_store.py:6:0: W0611: Unused List imported from typing (unused-import)
+************* Module agentscope.rag._store._milvuslite_store
+src/agentscope/rag/_store/_milvuslite_store.py:108:12: W0612: Unused variable 'idx' (unused-variable)
+src/agentscope/rag/_store/_milvuslite_store.py:208:8: W0622: Redefining built-in 'filter' (redefined-builtin)
+src/agentscope/rag/_store/_milvuslite_store.py:3:0: W0611: Unused import json (unused-import)
+src/agentscope/rag/_store/_milvuslite_store.py:9:0: W0611: Unused _map_text_to_uuid imported from _utils._common (unused-import)
+-----------------------------------
+Your code has been rated at 9.99/10
+Check package with Pyroma................................................Passed
+  [**FAIL**] Please install pre-commit and format your code first.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+Removing SSH command configuration
+Removing HTTP extra header
+Removing includeIf entries pointing to credentials config files
+includeif.gitdir:/home/runner/work/agentscope/agentscope/.git.path
+includeif.gitdir:/home/runner/work/agentscope/agentscope/.git/worktrees/*.path
+includeif.gitdir:/github/workspace/.git.path
+includeif.gitdir:/github/workspace/.git/worktrees/*.path
+/home/runner/work/_temp/git-credentials-19b834ff-e0e6-409f-8b5b-a80c8a6841b7.config
+/home/runner/work/_temp/git-credentials-19b834ff-e0e6-409f-8b5b-a80c8a6841b7.config
+/github/runner_temp/git-credentials-19b834ff-e0e6-409f-8b5b-a80c8a6841b7.config
+/github/runner_temp/git-credentials-19b834ff-e0e6-409f-8b5b-a80c8a6841b7.config
+Removing credentials config '/home/runner/work/_temp/git-credentials-19b834ff-e0e6-409f-8b5b-a80c8a6841b7.config'

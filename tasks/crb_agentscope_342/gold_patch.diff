@@ -1,0 +1,27 @@
+diff --git a/src/agentscope/rag/_store/_milvuslite_store.py b/src/agentscope/rag/_store/_milvuslite_store.py
+index 6d31830fa4..b5601dceb0 100644
+--- a/src/agentscope/rag/_store/_milvuslite_store.py
++++ b/src/agentscope/rag/_store/_milvuslite_store.py
+@@ -24,6 +24,8 @@ class MilvusLiteStore(VDBStoreBase):
+     including the document ID, chunk ID, and original content. The new
+     MilvusClient API is used for simplified operations.
+ 
++    .. note:: Milvus Lite is not supported on Windows OS for now (2025-10-21).
++
+     """
+ 
+     def __init__(
+diff --git a/tests/rag_store_test.py b/tests/rag_store_test.py
+index dad4ed0a0d..afbd083726 100644
+--- a/tests/rag_store_test.py
++++ b/tests/rag_store_test.py
+@@ -75,6 +75,9 @@ async def test_qdrant_store(self) -> None:
+ 
+     async def test_milvus_lite_store(self) -> None:
+         """Test the MilvusLiteStore implementation."""
++        if os.name == "nt":
++            self.skipTest("Milvus Lite is not supported on Windows.")
++
+         store = MilvusLiteStore(
+             uri="./milvus_demo.db",
+             collection_name="test_milvus",

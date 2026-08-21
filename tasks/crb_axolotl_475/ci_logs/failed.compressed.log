@@ -1,0 +1,29 @@
+--- step: PyTest (3.11, 2.9.0) ---
+[2026-08-12 21:35:39,634] [WARNING] [axolotl.utils.schemas.config.hint_lora_8bit:861] [PID:2678] [RANK:0] We recommend setting `load_in_8bit: true` for LORA finetuning
+[2026-08-12 21:35:39,822] [INFO] [axolotl.utils.config.log_gpu_memory_usage:107] [PID:2678] [RANK:0] cpu memory usage baseline: 0.000GB ()
+[2026-08-12 21:35:40,299] [INFO] [axolotl.loaders.tokenizer.load_tokenizer:278] [PID:2678] [RANK:0] No Chat template selected. Consider adding a chat template for easier inference.
+[2026-08-12 21:35:40,300] [INFO] [axolotl.utils.data.sft.load_tokenized_prepared_datasets:270] [PID:2678] [RANK:0] Unable to find prepared dataset in last_run_prepared/e2300d989c397f9e11d7a0df41af1961
+[2026-08-12 21:35:40,300] [INFO] [axolotl.utils.data.sft.load_tokenized_prepared_datasets:271] [PID:2678] [RANK:0] Loading raw datasets...
+[2026-08-12 21:35:40,300] [WARNING] [axolotl.utils.data.sft.load_tokenized_prepared_datasets:273] [PID:2678] [RANK:0] Processing datasets during training can lead to VRAM instability. Please pre-process your dataset.
+[2026-08-12 21:35:40,300] [INFO] [axolotl.utils.data.sft.load_tokenized_prepared_datasets:280] [PID:2678] [RANK:0] No seed provided, using default seed of 42
+[2026-08-12 21:35:41,979] [INFO] [axolotl.utils.data.sft.get_dataset_wrapper:485] [PID:2678] [RANK:0] Loading dataset: mhenrichsen/alpaca_2k_test with base_type: alpaca and prompt_style: None
+... (95 lines omitted)
+============================= slowest 10 durations =============================
+66.03s setup    tests/core/test_builders.py::TestHFRLTrainerBuilder::test_dpo_training_arguments
+64.72s setup    tests/prompt_strategies/test_chat_template_utils.py::TestGetChatTemplateUtils::test_known_chat_template
+60.10s setup    tests/prompt_strategies/test_chat_templates_advanced.py::TestChatTemplateConfigurations::test_train_on_inputs_true[llama3_tokenizer-llama3-None-None]
+58.34s setup    tests/test_packed_batch_sampler.py::TestBatchedSamplerPacking::test_packing[True-4096-1-0]
+57.87s setup    tests/test_datasets.py::TestDatasetPreparation::test_load_from_save_to_disk
+57.66s setup    tests/test_loaders.py::TestModelsUtils::test_set_device_map_config
+57.51s setup    tests/test_exact_deduplication.py::TestDeduplicateIndividualFunctions::test_combined_duplicates_empty
+57.43s setup    tests/test_freeze.py::TestFreezeLayersExcept::test_all_layers_frozen
+25.66s call     tests/test_packed_dataset.py::TestPacking::test_lora_packing
+25.38s call     tests/test_tokenizers.py::TestTokenizers::test_added_tokens_overrides_gemma3
+=========================== short test summary info ============================
+FAILED tests/test_packed_dataset.py::TestPacking::test_lora_packing - AttributeError: 'AxolotlTrainingArguments' object has no attribute 'dataset_num_proc'
+======= 1 failed, 258 passed, 9 skipped, 7 warnings in 243.62s (0:04:03) =======
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step:

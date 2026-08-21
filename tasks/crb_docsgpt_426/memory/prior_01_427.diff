@@ -1,0 +1,23 @@
+diff --git a/tests/security/test_encryption.py b/tests/security/test_encryption.py
+index 659924aa2..9b99eb2ff 100644
+--- a/tests/security/test_encryption.py
++++ b/tests/security/test_encryption.py
+@@ -1,6 +1,5 @@
+ import base64
+ 
+-import pytest
+ from cryptography.hazmat.backends import default_backend
+ from cryptography.hazmat.primitives import hashes
+ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+diff --git a/tests/storage/test_local_storage.py b/tests/storage/test_local_storage.py
+index 61f9fb973..4277af3ac 100644
+--- a/tests/storage/test_local_storage.py
++++ b/tests/storage/test_local_storage.py
+@@ -2,7 +2,6 @@
+ """
+ 
+ import io
+-import os
+ import pytest
+ from unittest.mock import patch, MagicMock, mock_open
+ 

@@ -1,0 +1,7 @@
+{
+  "task_id": "demo_issue_003",
+  "name": "Fix CI workflow install step",
+  "language": "yaml",
+  "target_files": [".github/workflows/ci.yml"],
+  "description": "A repository-style CI task that focuses on workflow configuration."
+}

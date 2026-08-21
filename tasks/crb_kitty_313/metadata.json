@@ -1,0 +1,72 @@
+{
+  "task_id": "crb_kitty_313",
+  "name": "CI failure in kitty (Dependency Issues, Runtime Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "313",
+  "repo_name": "kitty",
+  "repo_owner": "kovidgoyal",
+  "sha_fail": "4ffacbbe801b90aa147af206809b8c610ccbcefb",
+  "sha_success": "4771de3f95c05f3c119290712f920eeae553e271",
+  "commit_date": "2025-09-24T07:20:06Z",
+  "error_type": [
+    "Dependency Issues",
+    "Runtime Error"
+  ],
+  "workflow_path": ".github/workflows/depscan.yml",
+  "target_files": [
+    ".github/workflows/ci.py",
+    "bypy/sources.json"
+  ],
+  "memory": [
+    {
+      "instance_id": "225",
+      "commit_date": "2025-08-17T09:02:38Z",
+      "error_type": [
+        "Code Linting",
+        "Test Failure",
+        "Code Formatting"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "docs/conf.py",
+        "docs/sessions.rst",
+        "kitty/boss.py",
+        "kitty/session.py"
+      ],
+      "log_file": "memory/prior_00_225.log",
+      "diff_file": "memory/prior_00_225.diff"
+    },
+    {
+      "instance_id": "224",
+      "commit_date": "2025-08-13T01:11:35Z",
+      "error_type": [
+        "Test Failure",
+        "Code Formatting",
+        "Code Linting"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "setup.py"
+      ],
+      "log_file": "memory/prior_01_224.log",
+      "diff_file": "memory/prior_01_224.diff"
+    },
+    {
+      "instance_id": "223",
+      "commit_date": "2025-08-04T10:21:46Z",
+      "error_type": [
+        "Code Linting",
+        "Test Failure"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "kitty/layout/grid.py",
+        "kitty/layout/tall.py",
+        "kitty/layout/vertical.py",
+        "kitty/typing_compat.pyi"
+      ],
+      "log_file": "memory/prior_02_223.log",
+      "diff_file": "memory/prior_02_223.diff"
+    }
+  ]
+}

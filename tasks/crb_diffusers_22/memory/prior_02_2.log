@@ -1,0 +1,24 @@
+--- step: check_code_quality ---
+env:
+  PIP_INDEX_URL: http://localhost:8629/2023-12-26
+  UV_INDEX_URL: http://localhost:8629/2023-12-26
+  pythonLocation: /opt/hostedtoolcache/Python/3.8.18/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.8.18/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.8.18/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.8.18/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.8.18/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.8.18/x64/lib
+src/diffusers/loaders/ip_adapter.py:15:26: F401 [*] `typing.Optional` imported but unused
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:2601) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+http.https://github.com/.extraheader
+ [2026-08-12 20:29:09 +0000] [7] [INFO] Starting gunicorn 23.0.0
+ [2026-08-12 20:29:09 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:29:09 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:29:09 +0000] [10] [INFO] Booting worker with pid: 10
+fc5d2d2f6268a003fb9b22856760a26368c7d6567031fd8fada2921758604508
+github_network_b528deb2c100457397ba3bb7c883f826

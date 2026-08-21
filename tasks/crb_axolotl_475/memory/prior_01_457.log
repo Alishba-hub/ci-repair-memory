@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+************* Module src.axolotl.integrations.stablemax.args
+src/axolotl/integrations/stablemax/args.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+************* Module src.axolotl.integrations.stablemax.stablemax
+src/axolotl/integrations/stablemax/stablemax.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+src/axolotl/integrations/stablemax/stablemax.py:16:4: W0622: Redefining built-in 'input' (redefined-builtin)
+src/axolotl/integrations/stablemax/stablemax.py:86:4: R1705: Unnecessary "elif" after "return", remove the leading "el" from "elif" (no-else-return)
+src/axolotl/integrations/stablemax/stablemax.py:20:4: W0613: Unused argument 'size_average' (unused-argument)
+src/axolotl/integrations/stablemax/stablemax.py:21:4: W0613: Unused argument 'reduce' (unused-argument)
+------------------------------------
+Your code has been rated at 10.00/10
+mypy.....................................................................Passed
+bandit...................................................................Passed
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=77189]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__857d17b0-5950-47c3-b199-4bc90649328b.__actions_cache]
+##[end-action id=__857d17b0-5950-47c3-b199-4bc90649328b.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

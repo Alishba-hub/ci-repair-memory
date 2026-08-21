@@ -1,0 +1,40 @@
+diff --git a/src/openai/resources/chat/completions/completions.py b/src/openai/resources/chat/completions/completions.py
+index 14a755a50e..168cf04dbc 100644
+--- a/src/openai/resources/chat/completions/completions.py
++++ b/src/openai/resources/chat/completions/completions.py
+@@ -106,7 +106,7 @@ def parse(
+         safety_identifier: str | NotGiven = NOT_GIVEN,
+         seed: Optional[int] | NotGiven = NOT_GIVEN,
+         service_tier: Optional[Literal["auto", "default", "flex", "scale", "priority"]] | NotGiven = NOT_GIVEN,
+-        stop: Union[Optional[str], List[str], None] | NotGiven = NOT_GIVEN,
++        stop: Union[Optional[str], SequenceNotStr[str], None] | NotGiven = NOT_GIVEN,
+         store: Optional[bool] | NotGiven = NOT_GIVEN,
+         stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
+         temperature: Optional[float] | NotGiven = NOT_GIVEN,
+@@ -1400,7 +1400,7 @@ def stream(
+         safety_identifier: str | NotGiven = NOT_GIVEN,
+         seed: Optional[int] | NotGiven = NOT_GIVEN,
+         service_tier: Optional[Literal["auto", "default", "flex", "scale", "priority"]] | NotGiven = NOT_GIVEN,
+-        stop: Union[Optional[str], List[str], None] | NotGiven = NOT_GIVEN,
++        stop: Union[Optional[str], SequenceNotStr[str], None] | NotGiven = NOT_GIVEN,
+         store: Optional[bool] | NotGiven = NOT_GIVEN,
+         stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
+         temperature: Optional[float] | NotGiven = NOT_GIVEN,
+@@ -1542,7 +1542,7 @@ async def parse(
+         safety_identifier: str | NotGiven = NOT_GIVEN,
+         seed: Optional[int] | NotGiven = NOT_GIVEN,
+         service_tier: Optional[Literal["auto", "default", "flex", "scale", "priority"]] | NotGiven = NOT_GIVEN,
+-        stop: Union[Optional[str], List[str], None] | NotGiven = NOT_GIVEN,
++        stop: Union[Optional[str], SequenceNotStr[str], None] | NotGiven = NOT_GIVEN,
+         store: Optional[bool] | NotGiven = NOT_GIVEN,
+         stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
+         temperature: Optional[float] | NotGiven = NOT_GIVEN,
+@@ -2836,7 +2836,7 @@ def stream(
+         safety_identifier: str | NotGiven = NOT_GIVEN,
+         seed: Optional[int] | NotGiven = NOT_GIVEN,
+         service_tier: Optional[Literal["auto", "default", "flex", "scale", "priority"]] | NotGiven = NOT_GIVEN,
+-        stop: Union[Optional[str], List[str], None] | NotGiven = NOT_GIVEN,
++        stop: Union[Optional[str], SequenceNotStr[str], None] | NotGiven = NOT_GIVEN,
+         store: Optional[bool] | NotGiven = NOT_GIVEN,
+         stream_options: Optional[ChatCompletionStreamOptionsParam] | NotGiven = NOT_GIVEN,
+         temperature: Optional[float] | NotGiven = NOT_GIVEN,

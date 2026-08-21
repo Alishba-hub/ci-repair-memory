@@ -1,0 +1,50 @@
+diff --git a/dask/dataframe/tseries/tests/test_resample.py b/dask/dataframe/tseries/tests/test_resample.py
+index 9aa4499cfaa..d45beac065f 100644
+--- a/dask/dataframe/tseries/tests/test_resample.py
++++ b/dask/dataframe/tseries/tests/test_resample.py
+@@ -18,6 +18,10 @@ def resample(df, freq, how="mean", **kwargs):
+     return getattr(df.resample(freq, **kwargs), how)()
+ 
+ 
++# XFAIL_PANDAS_3_RESAMPLE = pytest.mark.xfail(
++#     PANDAS_GE_300, reason="Pandas 3 resample is buggy"
++# )
++
+ ME = "ME" if PANDAS_GE_220 else "M"
+ 
+ 
+@@ -35,6 +39,10 @@ def resample(df, freq, how="mean", **kwargs):
+     ),
+ )
+ def test_series_resample(obj, method, npartitions, freq, closed, label):
++    if PANDAS_GE_300 and freq == "D" and closed == "right":
++        # Temporary xfail until the upstream issue is resolved
++        pytest.xfail("https://github.com/pandas-dev/pandas/issues/62200")
++
+     index = pd.date_range("1-1-2000", "2-15-2000", freq="h")
+     index = index.union(pd.date_range("4-15-2000", "5-15-2000", freq="h"))
+     if obj == "series":
+diff --git a/dask/dataframe/tseries/tests/test_resample_expr.py b/dask/dataframe/tseries/tests/test_resample_expr.py
+index afc765d8dab..9388082f424 100644
+--- a/dask/dataframe/tseries/tests/test_resample_expr.py
++++ b/dask/dataframe/tseries/tests/test_resample_expr.py
+@@ -4,7 +4,7 @@
+ 
+ import pytest
+ 
+-from dask.dataframe._compat import PANDAS_GE_220
++from dask.dataframe._compat import PANDAS_GE_220, PANDAS_GE_300
+ from dask.dataframe.dask_expr import from_pandas
+ from dask.dataframe.dask_expr.tests._util import _backend_library, assert_eq
+ 
+@@ -83,6 +83,10 @@ def test_resample_apis(df, pdf, api, kwargs):
+     ),
+ )
+ def test_series_resample(obj, method, npartitions, freq, closed, label):
++    if PANDAS_GE_300 and freq == "D" and closed == "right":
++        # Temporary xfail until the upstream issue is resolved
++        pytest.xfail("https://github.com/pandas-dev/pandas/issues/62200")
++
+     index = pd.date_range("1-1-2000", "2-15-2000", freq="h")
+     index = index.union(pd.date_range("4-15-2000", "5-15-2000", freq="h"))
+     if obj == "series":

@@ -1,0 +1,176 @@
+diff --git a/Lib/pathlib/types.py b/Lib/pathlib/types.py
+index 559677bc..0577799d 100644
+--- a/Lib/pathlib/types.py
++++ b/Lib/pathlib/types.py
+@@ -9,13 +9,17 @@
+ #
+ # Three ABCs are provided -- _JoinablePath, _ReadablePath and _WritablePath
+ 
+-
+ from abc import ABC, abstractmethod
+ from glob import _GlobberBase
+ from io import text_encoding
+-from pathlib._os import (vfsopen, vfspath, ensure_distinct_paths,
+-                         ensure_different_files, copyfileobj)
+-from pathlib import PurePath, Path
++from pathlib import Path, PurePath
++from pathlib._os import (
++    copyfileobj,
++    ensure_different_files,
++    ensure_distinct_paths,
++    vfsopen,
++    vfspath,
++)
+ from typing import Optional, Protocol, runtime_checkable
+ 
+ 
+@@ -45,6 +49,7 @@ class _PathParser(Protocol):
+ 
+     sep: str
+     altsep: Optional[str]
++
+     def split(self, path: str) -> tuple[str, str]: ...
+     def splitext(self, path: str) -> tuple[str, str]: ...
+     def normcase(self, path: str) -> str: ...
+@@ -55,6 +60,7 @@ class PathInfo(Protocol):
+     """Protocol for path info objects, which support querying the file type.
+     Methods may return cached results.
+     """
++
+     def exists(self, *, follow_symlinks: bool = True) -> bool: ...
+     def is_dir(self, *, follow_symlinks: bool = True) -> bool: ...
+     def is_file(self, *, follow_symlinks: bool = True) -> bool: ...
+@@ -62,8 +68,7 @@ def is_symlink(self) -> bool: ...
+ 
+ 
+ class _PathGlobber(_GlobberBase):
+-    """Provides shell-style pattern matching and globbing for ReadablePath.
+-    """
++    """Provides shell-style pattern matching and globbing for ReadablePath."""
+ 
+     @staticmethod
+     def lexists(path):
+@@ -87,6 +92,7 @@ class _JoinablePath(ABC):
+     its implementation PurePath. They are: __init__, __fspath__, __bytes__,
+     __reduce__, __hash__, __eq__, __lt__, __le__, __gt__, __ge__.
+     """
++
+     __slots__ = ()
+ 
+     @property
+@@ -178,17 +184,17 @@ def with_suffix(self, suffix):
+         if not stem:
+             # If the stem is empty, we can't make the suffix non-empty.
+             raise ValueError(f"{self!r} has an empty name")
+-        elif suffix and not suffix.startswith('.'):
++        elif suffix and not suffix.startswith("."):
+             raise ValueError(f"Invalid suffix {suffix!r}")
+         else:
+             return self.with_name(stem + suffix)
+ 
+     def without_suffix(self):
+-        """Return a new path without the file suffix.  Readable alternative 
++        """Return a new path without the file suffix.  Readable alternative
+         for providing empty string to with_suffix.
+         """
+-        return self.with_suffix('')
+-    
++        return self.with_suffix("")
++
+     @property
+     def parts(self):
+         """An object providing sequence-like access to the
+@@ -245,7 +251,7 @@ def full_match(self, pattern):
+         Return True if this path matches the given glob-style pattern. The
+         pattern is matched against the entire path.
+         """
+-        case_sensitive = self.parser.normcase('Aa') == 'Aa'
++        case_sensitive = self.parser.normcase("Aa") == "Aa"
+         globber = _PathGlobber(self.parser.sep, case_sensitive, recursive=True)
+         match = globber.compile(pattern, altsep=self.parser.altsep)
+         return match(vfspath(self)) is not None
+@@ -258,6 +264,7 @@ class _ReadablePath(_JoinablePath):
+     create subclasses to implement readable virtual filesystem paths, such as
+     paths in archive files or on remote storage systems.
+     """
++
+     __slots__ = ()
+ 
+     @property
+@@ -281,7 +288,7 @@ def read_bytes(self):
+         """
+         Open the file in bytes mode, read it, and close the file.
+         """
+-        with vfsopen(self, mode='rb') as f:
++        with vfsopen(self, mode="rb") as f:
+             return f.read()
+ 
+     def read_text(self, encoding=None, errors=None, newline=None):
+@@ -291,7 +298,9 @@ def read_text(self, encoding=None, errors=None, newline=None):
+         # Call io.text_encoding() here to ensure any warning is raised at an
+         # appropriate stack level.
+         encoding = text_encoding(encoding)
+-        with vfsopen(self, mode='r', encoding=encoding, errors=errors, newline=newline) as f:
++        with vfsopen(
++            self, mode="r", encoding=encoding, errors=errors, newline=newline
++        ) as f:
+             return f.read()
+ 
+     @abstractmethod
+@@ -314,10 +323,10 @@ def glob(self, pattern, *, recurse_symlinks=True):
+             raise ValueError(f"Unacceptable pattern: {pattern!r}")
+         elif not recurse_symlinks:
+             raise NotImplementedError("recurse_symlinks=False is unsupported")
+-        case_sensitive = self.parser.normcase('Aa') == 'Aa'
++        case_sensitive = self.parser.normcase("Aa") == "Aa"
+         globber = _PathGlobber(self.parser.sep, case_sensitive, recursive=True)
+         select = globber.selector(parts)
+-        return select(self.joinpath(''))
++        return select(self.joinpath(""))
+ 
+     def walk(self, top_down=True, on_error=None, follow_symlinks=False):
+         """Walk the directory tree from this directory, similar to os.walk()."""
+@@ -382,6 +391,7 @@ class _WritablePath(_JoinablePath):
+     create subclasses to implement writable virtual filesystem paths, such as
+     paths in archive files or on remote storage systems.
+     """
++
+     __slots__ = ()
+ 
+     @abstractmethod
+@@ -413,7 +423,7 @@ def write_bytes(self, data):
+         """
+         # type-check for the buffer interface before truncating the file
+         view = memoryview(data)
+-        with vfsopen(self, mode='wb') as f:
++        with vfsopen(self, mode="wb") as f:
+             return f.write(view)
+ 
+     def write_text(self, data, encoding=None, errors=None, newline=None):
+@@ -424,9 +434,12 @@ def write_text(self, data, encoding=None, errors=None, newline=None):
+         # appropriate stack level.
+         encoding = text_encoding(encoding)
+         if not isinstance(data, str):
+-            raise TypeError('data must be str, not %s' %
+-                            data.__class__.__name__)
+-        with vfsopen(self, mode='w', encoding=encoding, errors=errors, newline=newline) as f:
++            raise TypeError(
++                "data must be str, not %s" % data.__class__.__name__
++            )
++        with vfsopen(
++            self, mode="w", encoding=encoding, errors=errors, newline=newline
++        ) as f:
+             return f.write(data)
+ 
+     def _copy_from(self, source, follow_symlinks=True):
+@@ -445,8 +458,8 @@ def _copy_from(self, source, follow_symlinks=True):
+                     stack.append((child, dst.joinpath(child.name)))
+             else:
+                 ensure_different_files(src, dst)
+-                with vfsopen(src, 'rb') as source_f:
+-                    with vfsopen(dst, 'wb') as target_f:
++                with vfsopen(src, "rb") as source_f:
++                    with vfsopen(dst, "wb") as target_f:
+                         copyfileobj(source_f, target_f)
+ 
+ 

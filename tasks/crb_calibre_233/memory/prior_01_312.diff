@@ -1,0 +1,64 @@
+diff --git a/recipes/el_diplo.recipe b/recipes/el_diplo.recipe
+index a445412df9a5..0f1960decf5b 100644
+--- a/recipes/el_diplo.recipe
++++ b/recipes/el_diplo.recipe
+@@ -110,7 +110,7 @@ class ElDiplo2023(BasicNewsRecipe):
+             p['style'] = f'font-size: {font_size};'
+ 
+         # remove extra text
+-        extra_text = soup.find(string="POST TYPE: post")
++        extra_text = soup.find(string='POST TYPE: post')
+         if extra_text:
+             extra_text.parent.decompose()
+ 
+diff --git a/src/calibre/gui2/actions/column_tooltips.py b/src/calibre/gui2/actions/column_tooltips.py
+index d612bb06b4b8..881be9136709 100644
+--- a/src/calibre/gui2/actions/column_tooltips.py
++++ b/src/calibre/gui2/actions/column_tooltips.py
+@@ -2,7 +2,7 @@
+ # License: GPLv3 Copyright: 2022, Charles Haley
+ #
+ 
+-from qt.core import Qt, QDialogButtonBox, QVBoxLayout
++from qt.core import QDialogButtonBox, Qt, QVBoxLayout
+ 
+ from calibre.gui2 import error_dialog
+ from calibre.gui2.actions import InterfaceAction
+@@ -22,7 +22,7 @@ class ToolTipDialog(Dialog):
+ 
+     def __init__(self, title, prefs):
+         super().__init__(title, 'show_tooltip_dialog',
+-                         prefs = prefs,
++                         prefs=prefs,
+                          default_buttons=QDialogButtonBox.StandardButton.Ok)
+ 
+     def setup_ui(self):
+diff --git a/src/calibre/gui2/library/models.py b/src/calibre/gui2/library/models.py
+index 79fec7bb2ffc..b5d008ab6851 100644
+--- a/src/calibre/gui2/library/models.py
++++ b/src/calibre/gui2/library/models.py
+@@ -16,9 +16,21 @@
+ from itertools import groupby
+ 
+ from qt.core import (
+-    QAbstractTableModel, QApplication, QColor, QDateTime,
+-    QFont, QFontMetrics, QIcon, QImage, QLocale, QModelIndex, QPainter,
+-    QPixmap, Qt, pyqtSignal)
++    QAbstractTableModel,
++    QApplication,
++    QColor,
++    QDateTime,
++    QFont,
++    QFontMetrics,
++    QIcon,
++    QImage,
++    QLocale,
++    QModelIndex,
++    QPainter,
++    QPixmap,
++    Qt,
++    pyqtSignal,
++)
+ 
+ from calibre import fit_image, human_readable, isbytestring, prepare_string_for_xml, strftime
+ from calibre.constants import DEBUG, config_dir, dark_link_color, filesystem_encoding

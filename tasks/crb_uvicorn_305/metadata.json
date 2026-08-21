@@ -1,0 +1,65 @@
+{
+  "task_id": "crb_uvicorn_305",
+  "name": "CI failure in uvicorn (Test Failure, Environment Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "305",
+  "repo_name": "uvicorn",
+  "repo_owner": "encode",
+  "sha_fail": "207b861fbc10acc867a6f04eae0b4c866d1e508d",
+  "sha_success": "622bb4b4f0faf02f326e2016d1ab18914285084f",
+  "commit_date": "2025-11-09T19:11:51Z",
+  "error_type": [
+    "Test Failure",
+    "Environment Error"
+  ],
+  "workflow_path": ".github/workflows/main.yml",
+  "target_files": [
+    "tests/test_main.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "306",
+      "commit_date": "2025-11-08T21:28:09Z",
+      "error_type": [
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "pyproject.toml",
+        "tests/supervisors/test_multiprocess.py",
+        "uvicorn/protocols/http/h11_impl.py"
+      ],
+      "log_file": "memory/prior_00_306.log",
+      "diff_file": "memory/prior_00_306.diff"
+    },
+    {
+      "instance_id": "307",
+      "commit_date": "2025-10-15T07:02:46Z",
+      "error_type": [
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "pyproject.toml",
+        "tests/supervisors/test_multiprocess.py"
+      ],
+      "log_file": "memory/prior_01_307.log",
+      "diff_file": "memory/prior_01_307.diff"
+    },
+    {
+      "instance_id": "54",
+      "commit_date": "2024-01-17T22:42:54Z",
+      "error_type": [
+        "Syntax Error",
+        "Test Failure",
+        "Runtime Error"
+      ],
+      "workflow_filename": "test-suite.yml",
+      "changed_files": [
+        "uvicorn/protocols/websockets/websockets_impl.py"
+      ],
+      "log_file": "memory/prior_02_54.log",
+      "diff_file": "memory/prior_02_54.diff"
+    }
+  ]
+}

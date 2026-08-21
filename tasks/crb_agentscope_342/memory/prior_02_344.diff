@@ -1,0 +1,549 @@
+diff --git a/setup.py b/setup.py
+index f4fe981af8..dd2cc3f70f 100644
+--- a/setup.py
++++ b/setup.py
+@@ -43,6 +43,7 @@
+     "jinja2",
+     "ray",
+     "mem0ai",
++    "zai-sdk",
+ ]
+ 
+ dev_requires = [
+diff --git a/src/agentscope/formatter/_zhipu_formatter.py b/src/agentscope/formatter/_zhipu_formatter.py
+index 100548f964..1902312aaa 100644
+--- a/src/agentscope/formatter/_zhipu_formatter.py
++++ b/src/agentscope/formatter/_zhipu_formatter.py
+@@ -80,8 +80,8 @@ class ZhipuChatFormatter(TruncatedFormatterBase):
+     """Supported message blocks for Zhipu AI API"""
+ 
+     async def _format(
+-            self,
+-            msgs: list[Msg],
++        self,
++        msgs: list[Msg],
+     ) -> list[dict[str, Any]]:
+         """Format message objects into Zhipu AI API required format.
+ 
+@@ -107,10 +107,12 @@ async def _format(
+                     content_blocks.append({**block})
+ 
+                 elif typ == "thinking":
+-                    content_blocks.append({
+-                        "type": "text",
+-                        "text": f"[Thinking] {block.get('thinking', '')}"
+-                    })
++                    content_blocks.append(
++                        {
++                            "type": "text",
++                            "text": f"[Thinking] {block.get('thinking', '')}",
++                        }
++                    )
+ 
+                 elif typ == "tool_use":
+                     tool_calls.append(
+@@ -128,12 +130,14 @@ async def _format(
+                     )
+ 
+                 elif typ == "tool_result":
+-                    content_blocks.append({
+-                        "type": "text",
+-                        "text": self.convert_tool_result_to_string(
+-                            block.get("output"),  # type: ignore[arg-type]
+-                        ),
+-                    })
++                    content_blocks.append(
++                        {
++                            "type": "text",
++                            "text": self.convert_tool_result_to_string(
++                                block.get("output"),  # type: ignore[arg-type]
++                            ),
++                        }
++                    )
+ 
+                 elif typ == "image":
+                     source_type = block["source"]["type"]
+@@ -166,7 +170,10 @@ async def _format(
+                 "role": msg.role,
+             }
+ 
+-            if len(content_blocks) == 1 and content_blocks[0]["type"] == "text":
++            if (
++                len(content_blocks) == 1
++                and content_blocks[0]["type"] == "text"
++            ):
+                 message["content"] = content_blocks[0]["text"]
+             elif content_blocks:
+                 message["content"] = content_blocks
+@@ -185,8 +192,8 @@ class ZhipuMultiAgentFormatter(ZhipuChatFormatter):
+     format for multi-agent conversation."""
+ 
+     async def _format(
+-            self,
+-            msgs: list[Msg],
++        self,
++        msgs: list[Msg],
+     ) -> list[dict[str, Any]]:
+         """Format message objects into Zhipu AI API required format for
+         multi-agent conversation.
+diff --git a/src/agentscope/model/_zhipu_model.py b/src/agentscope/model/_zhipu_model.py
+index 24609b7354..d336f60545 100644
+--- a/src/agentscope/model/_zhipu_model.py
++++ b/src/agentscope/model/_zhipu_model.py
+@@ -26,13 +26,13 @@ class ZhipuChatModel(ChatModelBase):
+     """The Zhipu chat model class."""
+ 
+     def __init__(
+-            self,
+-            model_name: str,
+-            api_key: str | None = None,
+-            stream: bool = True,
+-            base_url: str | None = None,
+-            generate_kwargs: dict[str, JSONSerializableObject] | None = None,
+-            **kwargs: Any,
++        self,
++        model_name: str,
++        api_key: str | None = None,
++        stream: bool = True,
++        base_url: str | None = None,
++        generate_kwargs: dict[str, JSONSerializableObject] | None = None,
++        **kwargs: Any,
+     ) -> None:
+         """Initialize the Zhipu chat model.
+ 
+@@ -60,7 +60,7 @@ def __init__(
+         except ImportError as e:
+             raise ImportError(
+                 "The package zai-sdk is not found. Please install it by "
+-                'running command `pip install zai-sdk`',
++                "running command `pip install zai-sdk`",
+             ) from e
+ 
+         super().__init__(model_name, stream)
+@@ -74,14 +74,14 @@ def __init__(
+ 
+     @trace_llm
+     async def __call__(
+-            self,
+-            messages: list[dict[str, Any]],
+-            tools: list[dict] | None = None,
+-            tool_choice: Literal["auto", "none", "any", "required"]
+-                         | str
+-                         | None = None,
+-            structured_model: Type[BaseModel] | None = None,
+-            **kwargs: Any,
++        self,
++        messages: list[dict[str, Any]],
++        tools: list[dict] | None = None,
++        tool_choice: Literal["auto", "none", "any", "required"]
++        | str
++        | None = None,
++        structured_model: Type[BaseModel] | None = None,
++        **kwargs: Any,
+     ) -> ChatResponse | AsyncGenerator[ChatResponse, None]:
+         """Get the response from Zhipu AI chat completions API by the given
+         arguments.
+@@ -169,10 +169,10 @@ async def __call__(
+         return parsed_response
+ 
+     async def _parse_zhipu_stream_completion_response(
+-            self,
+-            start_datetime: datetime,
+-            response: Any,
+-            structured_model: Type[BaseModel] | None = None,
++        self,
++        start_datetime: datetime,
++        response: Any,
++        structured_model: Type[BaseModel] | None = None,
+     ) -> AsyncGenerator[ChatResponse, None]:
+         """Given a Zhipu AI streaming completion response, extract the
+         content blocks and usages from it and yield ChatResponse objects.
+@@ -209,7 +209,7 @@ async def _parse_zhipu_stream_completion_response(
+                 accumulated_text += delta.content
+ 
+             # Handle thinking/reasoning content
+-            if hasattr(delta, 'reasoning_content') and delta.reasoning_content:
++            if hasattr(delta, "reasoning_content") and delta.reasoning_content:
+                 accumulated_thinking += str(delta.reasoning_content)
+ 
+             # Handle tool calls
+@@ -227,12 +227,14 @@ async def _parse_zhipu_stream_completion_response(
+                     if tool_call.function.name:
+                         tool_calls[tool_id]["name"] = tool_call.function.name
+                     if tool_call.function.arguments:
+-                        tool_calls[tool_id]["input"] += tool_call.function.arguments
++                        tool_calls[tool_id][
++                            "input"
++                        ] += tool_call.function.arguments
+ 
+             # Calculate usage statistics
+             current_time = (datetime.now() - start_datetime).total_seconds()
+             usage = None
+-            if hasattr(chunk, 'usage') and chunk.usage:
++            if hasattr(chunk, "usage") and chunk.usage:
+                 usage = ChatUsage(
+                     input_tokens=chunk.usage.prompt_tokens or 0,
+                     output_tokens=chunk.usage.completion_tokens or 0,
+@@ -283,10 +285,10 @@ async def _parse_zhipu_stream_completion_response(
+                 yield res
+ 
+     def _parse_zhipu_completion_response(
+-            self,
+-            start_datetime: datetime,
+-            response: Any,
+-            structured_model: Type[BaseModel] | None = None,
++        self,
++        start_datetime: datetime,
++        response: Any,
++        structured_model: Type[BaseModel] | None = None,
+     ) -> ChatResponse:
+         """Given a Zhipu AI chat completion response object, extract the content
+         blocks and usages from it.
+@@ -343,7 +345,7 @@ def _parse_zhipu_completion_response(
+ 
+         # Calculate usage
+         usage = None
+-        if hasattr(response, 'usage') and response.usage:
++        if hasattr(response, "usage") and response.usage:
+             usage = ChatUsage(
+                 input_tokens=response.usage.prompt_tokens or 0,
+                 output_tokens=response.usage.completion_tokens or 0,
+@@ -359,15 +361,15 @@ def _parse_zhipu_completion_response(
+         return parsed_response
+ 
+     def _format_tools_json_schemas(
+-            self,
+-            schemas: list[dict[str, Any]],
++        self,
++        schemas: list[dict[str, Any]],
+     ) -> list[dict[str, Any]]:
+         """Format the tools JSON schemas to the Zhipu AI format."""
+         return schemas
+ 
+     def _format_tool_choice(
+-            self,
+-            tool_choice: str,
++        self,
++        tool_choice: str,
+     ) -> str | dict[str, Any]:
+         """Format tool choice to Zhipu AI format."""
+         if tool_choice in ["auto", "none"]:
+@@ -375,18 +377,18 @@ def _format_tool_choice(
+         elif tool_choice == "any":
+             # Zhipu AI doesn't support "any", use "auto" instead
+             logger.warning(
+-                "Zhipu AI doesn't support tool_choice='any', using 'auto' instead."
++                "Zhipu AI doesn't support tool_choice='any', using 'auto' instead.",
+             )
+             return "auto"
+         elif tool_choice == "required":
+             # Zhipu AI doesn't support "required", use "auto" instead
+             logger.warning(
+-                "Zhipu AI doesn't support tool_choice='required', using 'auto' instead."
++                "Zhipu AI doesn't support tool_choice='required', using 'auto' instead.",
+             )
+             return "auto"
+         else:
+             # Specific tool name
+             return {
+                 "type": "function",
+-                "function": {"name": tool_choice}
++                "function": {"name": tool_choice},
+             }
+diff --git a/src/agentscope/token/_zhipu_token_counter.py b/src/agentscope/token/_zhipu_token_counter.py
+index 493329eb6f..48bd4327db 100644
+--- a/src/agentscope/token/_zhipu_token_counter.py
++++ b/src/agentscope/token/_zhipu_token_counter.py
+@@ -7,8 +7,8 @@
+ 
+ 
+ def _calculate_tokens_for_tools(
+-        tools: list[dict],
+-        encoding: Any,
++    tools: list[dict],
++    encoding: Any,
+ ) -> int:
+     """Calculate the tokens for the given tools JSON schema."""
+     if not tools:
+@@ -19,8 +19,8 @@ def _calculate_tokens_for_tools(
+ 
+ 
+ def _count_content_tokens_for_zhipu_vision_model(
+-        content: list[dict],
+-        encoding: Any,
++    content: list[dict],
++    encoding: Any,
+ ) -> int:
+     """Count the number of tokens for the content of a Zhipu vision model.
+ 
+@@ -51,9 +51,9 @@ class ZhipuTokenCounter(TokenCounterBase):
+     """The Zhipu AI token counter."""
+ 
+     def __init__(
+-            self,
+-            model_name: str,
+-            **kwargs: Any,
++        self,
++        model_name: str,
++        **kwargs: Any,
+     ) -> None:
+         """Initialize the Zhipu AI token counter.
+ 
+@@ -67,15 +67,16 @@ def __init__(
+ 
+         try:
+             import tiktoken
++
+             self.encoding = tiktoken.encoding_for_model("glm-4.5")
+         except Exception:
+             self.encoding = None
+ 
+     async def count(
+-            self,
+-            messages: list[dict],
+-            tools: list[dict] | None = None,
+-            **kwargs: Any,
++        self,
++        messages: list[dict],
++        tools: list[dict] | None = None,
++        **kwargs: Any,
+     ) -> int:
+         """Count the number of tokens in the given messages and tools.
+ 
+@@ -108,16 +109,23 @@ async def count(
+                 token_count += len(self.encoding.encode(content))
+             elif isinstance(content, list):
+                 if self._is_vision_model():
+-                    token_count += _count_content_tokens_for_zhipu_vision_model(
+-                        content, self.encoding
++                    token_count += (
++                        _count_content_tokens_for_zhipu_vision_model(
++                            content,
++                            self.encoding,
++                        )
+                     )
+                 else:
+                     for item in content:
+                         if item.get("type") == "text":
+-                            token_count += len(self.encoding.encode(item["text"]))
++                            token_count += len(
++                                self.encoding.encode(item["text"])
++                            )
+ 
+             if "tool_calls" in message:
+-                tool_calls_str = json.dumps(message["tool_calls"], ensure_ascii=False)
++                tool_calls_str = json.dumps(
++                    message["tool_calls"], ensure_ascii=False
++                )
+                 token_count += len(self.encoding.encode(tool_calls_str))
+ 
+         if tools:
+@@ -128,9 +136,9 @@ async def count(
+         return token_count
+ 
+     def _simple_count(
+-            self,
+-            messages: list[dict],
+-            tools: list[dict] | None = None,
++        self,
++        messages: list[dict],
++        tools: list[dict] | None = None,
+     ) -> int:
+         """Simple character-based token counting fallback."""
+         total_chars = 0
+@@ -145,7 +153,9 @@ def _simple_count(
+                         total_chars += len(item.get("text", ""))
+ 
+             if "tool_calls" in message:
+-                tool_calls_str = json.dumps(message["tool_calls"], ensure_ascii=False)
++                tool_calls_str = json.dumps(
++                    message["tool_calls"], ensure_ascii=False
++                )
+                 total_chars += len(tool_calls_str)
+ 
+         if tools:
+@@ -157,4 +167,6 @@ def _simple_count(
+     def _is_vision_model(self) -> bool:
+         """Check if the model is a vision model."""
+         vision_models = ["glm-4v", "glm-4v-plus"]
+-        return any(self.model_name.startswith(model) for model in vision_models)
++        return any(
++            self.model_name.startswith(model) for model in vision_models
++        )
+diff --git a/tests/formatter_zhipu_test.py b/tests/formatter_zhipu_test.py
+index f883cd5f1d..9da9b184e5 100644
+--- a/tests/formatter_zhipu_test.py
++++ b/tests/formatter_zhipu_test.py
+@@ -193,7 +193,8 @@ async def asyncSetUp(self) -> None:
+             },
+             {
+                 "role": "user",
+-                "content": "- The capital of Japan is Tokyo.\n- The returned image can be found at: " + self.image_path,
++                "content": "- The capital of Japan is Tokyo.\n- The returned image can be found at: "
++                + self.image_path,
+             },
+             {
+                 "role": "assistant",
+@@ -366,7 +367,10 @@ async def test_zhipu_formatter_mixed_content(self) -> None:
+                         type="image",
+                         source=URLSource(type="url", url=self.image_path),
+                     ),
+-                    ThinkingBlock(type="thinking", thinking="User wants me to analyze the image"),
++                    ThinkingBlock(
++                        type="thinking",
++                        thinking="User wants me to analyze the image",
++                    ),
+                 ],
+                 "user",
+             ),
+@@ -379,7 +383,9 @@ async def test_zhipu_formatter_mixed_content(self) -> None:
+         self.assertEqual(len(formatted), 1)
+         self.assertEqual(formatted[0]["role"], "user")
+         self.assertIsInstance(formatted[0]["content"], list)
+-        self.assertEqual(len(formatted[0]["content"]), 3)  # text + image + thinking
++        self.assertEqual(
++            len(formatted[0]["content"]), 3
++        )  # text + image + thinking
+ 
+     async def test_zhipu_formatter_tool_only_message(self) -> None:
+         """Test ZhipuChatFormatter with tool-only messages."""
+diff --git a/tests/model_zhipu_test.py b/tests/model_zhipu_test.py
+index 84d0e86b4d..2a568904c4 100644
+--- a/tests/model_zhipu_test.py
++++ b/tests/model_zhipu_test.py
+@@ -131,11 +131,15 @@ async def test_call_with_tools_integration(self) -> None:
+             self.assertEqual(call_args["tool_choice"], "auto")
+             self.assertEqual(len(result.content), 2)
+             self.assertEqual(result.content[0]["type"], "text")
+-            self.assertEqual(result.content[0]["text"], "I'll check the weather for you.")
++            self.assertEqual(
++                result.content[0]["text"], "I'll check the weather for you."
++            )
+             self.assertEqual(result.content[1]["type"], "tool_use")
+             self.assertEqual(result.content[1]["id"], "call_123")
+             self.assertEqual(result.content[1]["name"], "get_weather")
+-            self.assertEqual(result.content[1]["input"], {"location": "Beijing"})
++            self.assertEqual(
++                result.content[1]["input"], {"location": "Beijing"}
++            )
+ 
+     async def test_call_with_structured_model_integration(self) -> None:
+         """Test full integration of a structured model."""
+@@ -183,7 +187,9 @@ async def test_streaming_response_processing(self) -> None:
+             messages = [{"role": "user", "content": "Hello"}]
+             chunks = [
+                 self._create_mock_chunk(content="Hello", finish_reason=None),
+-                self._create_mock_chunk(content=" there!", finish_reason="stop"),
++                self._create_mock_chunk(
++                    content=" there!", finish_reason="stop"
++                ),
+             ]
+ 
+             mock_client.chat.completions.create = Mock(
+@@ -234,7 +240,9 @@ async def test_non_streaming_response_processing(self) -> None:
+             model.client = mock_client
+ 
+             messages = [{"role": "user", "content": "Hello"}]
+-            mock_response = self._create_mock_response("Hello! Nice to meet you.")
++            mock_response = self._create_mock_response(
++                "Hello! Nice to meet you."
++            )
+             mock_client.chat.completions.create = Mock(
+                 return_value=mock_response,
+             )
+@@ -245,7 +253,9 @@ async def test_non_streaming_response_processing(self) -> None:
+             self.assertEqual(call_args["messages"], messages)
+             self.assertFalse(call_args["stream"])
+             self.assertIsInstance(result, ChatResponse)
+-            self.assertEqual(result.content[0]["text"], "Hello! Nice to meet you.")
++            self.assertEqual(
++                result.content[0]["text"], "Hello! Nice to meet you."
++            )
+ 
+     async def test_tool_call_response_processing(self) -> None:
+         """Test processing of tool call response."""
+@@ -260,7 +270,9 @@ async def test_tool_call_response_processing(self) -> None:
+             )
+             model.client = mock_client
+ 
+-            messages = [{"role": "user", "content": "What's the weather in NY?"}]
++            messages = [
++                {"role": "user", "content": "What's the weather in NY?"}
++            ]
+             mock_response = self._create_mock_response_with_tools(
+                 "I'll check the weather for you.",
+                 [
+@@ -304,7 +316,9 @@ async def test_structured_output_response_processing(self) -> None:
+             model.client = mock_client
+ 
+             messages = [{"role": "user", "content": "Generate a person"}]
+-            mock_response = self._create_mock_response('{"name": "Alice", "age": 25}')
++            mock_response = self._create_mock_response(
++                '{"name": "Alice", "age": 25}'
++            )
+             mock_client.chat.completions.create = Mock(
+                 return_value=mock_response,
+             )
+@@ -327,9 +341,9 @@ def _create_mock_response(self, content: str) -> Mock:
+         return mock_response
+ 
+     def _create_mock_response_with_tools(
+-            self,
+-            content: str,
+-            tool_calls: list[dict],
++        self,
++        content: str,
++        tool_calls: list[dict],
+     ) -> Mock:
+         """Create a mock response with tool calls for testing."""
+         mock_tool_calls = []
+@@ -355,17 +369,17 @@ def _create_mock_response_with_tools(
+         return mock_response
+ 
+     def _create_mock_chunk(
+-            self,
+-            content: str = "",
+-            finish_reason: str | None = None,
++        self,
++        content: str = "",
++        finish_reason: str | None = None,
+     ) -> Mock:
+         """Create a mock streaming chunk for testing."""
+         mock_delta = Mock()
+         mock_delta.content = content
+         mock_delta.tool_calls = None
+         # Ensure reasoning_content is not present or is None
+-        if hasattr(mock_delta, 'reasoning_content'):
+-            delattr(mock_delta, 'reasoning_content')
++        if hasattr(mock_delta, "reasoning_content"):
++            delattr(mock_delta, "reasoning_content")
+ 
+         mock_choice = Mock()
+         mock_choice.delta = mock_delta
+diff --git a/tests/token_zhipu_test.py b/tests/token_zhipu_test.py
+index 887475cbdb..856d8344b0 100644
+--- a/tests/token_zhipu_test.py
++++ b/tests/token_zhipu_test.py
+@@ -170,7 +170,9 @@ async def test_zhipu_token_counter_tool_calls_in_messages(self) -> None:
+         )
+ 
+         # Only count messages containing tool calls
+-        tool_call_messages = [msg for msg in self.messages if msg.get("tool_calls")]
++        tool_call_messages = [
++            msg for msg in self.messages if msg.get("tool_calls")
++        ]
+         n_tokens = await counter.count(tool_call_messages)
+         self.assertIsInstance(n_tokens, int)
+         self.assertGreater(n_tokens, 0)
+@@ -182,7 +184,10 @@ async def test_zhipu_token_counter_mixed_content(self) -> None:
+                 "role": "user",
+                 "content": [
+                     {"type": "text", "text": "Please analyze this image"},
+-                    {"type": "image_url", "image_url": {"url": "data:image/png;base64,test"}},
++                    {
++                        "type": "image_url",
++                        "image_url": {"url": "data:image/png;base64,test"},
++                    },
+                 ],
+             },
+             {

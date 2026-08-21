@@ -1,0 +1,56 @@
+--- step: Interpreter (Debug) ---
+0:04:57 load avg: 8.51 [184/495/1] test_docxmlrpc passed -- running (1): test_compileall (46.6 sec)
+0:04:58 load avg: 8.51 [185/495/1] test_ensurepip passed -- running (1): test_compileall (47.8 sec)
+0:04:59 load avg: 8.51 [186/495/1] test_dict passed -- running (1): test_compileall (47.9 sec)
+0:04:59 load avg: 8.51 [187/495/1] test_doctest passed -- running (1): test_compileall (48.8 sec)
+0:05:00 load avg: 8.51 [188/495/1] test_enumerate passed -- running (1): test_compileall (49.4 sec)
+... (345 lines omitted)
+    test_urllib2net test_urllibnet test_winsound test_zipfile64
+1 test failed:
+    test_capi
+455 tests OK.
+0:09:17 load avg: 6.07 Re-running 1 failed tests in verbose mode in subprocesses
+0:09:17 load avg: 6.07 Run 1 test in parallel using 1 worker process (timeout: 1 hour 15 min, worker timeout: 1 hour 20 min)
+0:09:17 load avg: 6.07 [1/1/1] test_capi failed (1 error)
+Re-running test_capi in verbose mode (matching: test_guard_type_version_removed_invalidation)
+test_guard_type_version_removed_invalidation (test.test_capi.test_opt.TestUopsOptimization.test_guard_type_version_removed_invalidation) ... ERROR
+======================================================================
+ERROR: test_guard_type_version_removed_invalidation (test.test_capi.test_opt.TestUopsOptimization.test_guard_type_version_removed_invalidation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/runner/work/cpython/cpython/Lib/test/test_capi/test_opt.py", line 1244, in test_guard_type_version_removed_invalidation
+    opnames = list(iter_opnames(ex))
+  File "/home/runner/work/cpython/cpython/Lib/test/test_capi/test_opt.py", line 45, in iter_opnames
+    for item in ex:
+                ^^
+TypeError: 'NoneType' object is not iterable
+----------------------------------------------------------------------
+Ran 1 test in 0.015s
+FAILED (errors=1)
+test test_capi failed
+1 test failed again:
+    test_capi
+== Tests result: FAILURE then FAILURE ==
+31 tests skipped:
+    test.test_asyncio.test_windows_events
+    test.test_asyncio.test_windows_utils test.test_gdb.test_backtrace
+    test.test_gdb.test_cfunction test.test_gdb.test_cfunction_full
+    test.test_gdb.test_misc test.test_gdb.test_pretty_print
+    test.test_os.test_windows test_android test_apple test_bz2
+    test_dbm_gnu test_dbm_ndbm test_devpoll test_free_threading
+    test_idle test_kqueue test_launcher test_lzma test_msvcrt
+... (3 lines omitted)
+8 tests skipped (resource denied):
+    test_curses test_peg_generator test_smtpnet test_socketserver
+    test_urllib2net test_urllibnet test_winsound test_zipfile64
+1 re-run test:
+    test_capi
+1 test failed:
+    test_capi
+455 tests OK.
+Total duration: 9 min 17 sec
+Total tests: run=46,377 skipped=2,604
+Total test files: run=488/495 failed=1 skipped=31 resource_denied=8 rerun=1
+Result: FAILURE then FAILURE
+##[error]Process completed with exit code 2.
+Post job cleanup.

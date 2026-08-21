@@ -1,0 +1,16 @@
+diff --git a/import_export/resources.py b/import_export/resources.py
+index 7d7ad475..91500297 100644
+--- a/import_export/resources.py
++++ b/import_export/resources.py
+@@ -1357,8 +1357,9 @@ class ModelDeclarativeMetaclass(DeclarativeMetaclass):
+                     continue
+ 
+                 if f.name in declared_fields:
+-                    # If model field is declared in `ModelResource`, remove it from `declared_fields`
+-                    # to keep exact order of model fields
++                    # If a model field is declared in ModelResource,
++                    # remove it from `declared_fields` to keep the
++                    # exact order of model fields
+                     field = declared_fields.pop(f.name)
+                 else:
+                     field = new_class.field_from_django_field(f.name, f, readonly=False)

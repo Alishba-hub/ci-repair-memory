@@ -1,0 +1,57 @@
+--- step: Python 3.10 windows-latest ---
+shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+env:
+  UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+  UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+  UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+  UV_PYTHON: 3.10
++ uv build
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist\uvicorn-0.38.0.tar.gz
+Successfully built dist\uvicorn-0.38.0-py3-none-any.whl
++ uv run twine check dist/uvicorn-0.38.0-py3-none-any.whl dist/uvicorn-0.38.0.tar.gz
+Checking dist/uvicorn-0.38.0-py3-none-any.whl: ERROR    InvalidDistribution: Invalid distribution metadata: '2.5' is not a
+         valid metadata version
+##[error]Process completed with exit code 1.
+Post job cleanup.
+[command]"C:\Program Files\Git\bin\git.exe" version
+[command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\uvicorn\uvicorn
+[command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+[command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+[command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+http.https://github.com/.extraheader
+[command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+[command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+
+--- step: Python 3.10 ubuntu-latest ---
+scripts/build
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+  UV_PYTHON: 3.10
+  UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
++ uv build
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist/uvicorn-0.38.0.tar.gz
+Successfully built dist/uvicorn-0.38.0-py3-none-any.whl
++ uv run twine check dist/uvicorn-0.38.0-py3-none-any.whl dist/uvicorn-0.38.0.tar.gz
+Checking dist/uvicorn-0.38.0-py3-none-any.whl: ERROR    InvalidDistribution: Invalid distribution metadata: '2.5' is not a
+         valid metadata version
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: Python 3.14 windows-latest ---
+shell: C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail {0}
+env:
+  UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+  UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+  UV_PYTHON_INSTALL_DIR: D:\a\_temp\uv-python-dir
+  UV_PYTHON: 3.14
++ uv build
+Building source distribution...
+Building wheel from source distribution...
+Successfully built dist\uvicorn-0.38.0.tar.gz
+Successfully built dist\uvicorn-0.38.0-py3-none-any

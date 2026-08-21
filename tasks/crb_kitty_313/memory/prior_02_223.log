@@ -1,0 +1,35 @@
+--- step: macOS Brew ---
+======================================================================
+FAIL: test_fish_integration (kitty_tests.shell_integration.ShellIntegrationWithKitten.test_fish_integration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/runner/work/kitty/kitty/kitty/launcher/kitty.app/Contents/MacOS/../../../../../kitty_tests/shell_integration.py", line 203, in test_fish_integration
+    self.ae(pty.screen_contents(), q)
+    completions_dir = '/Users/runner/work/kitty/kitty/shell-integration/fish/vendor_completions.d'
+    fish_prompt = 'left>'
+    pty = <kitty_tests.PTY object at 0x318ced4d0>
+    q = 'left>                                                                                                                                                                         <right'
+    right_prompt = '<right'
+    self = <kitty_tests.shell_integration.ShellIntegrationWithKitten testMethod=test_fish_integration>
+AssertionError: "warning: fish could not read response to[472 chars]ight" != 'left>                                   [136 chars]ight'
+- warning: fish could not read response to Primary Device Attribute query after waiting for 10 seconds. This is often due to a missing feature in your terminal. See 'help terminal-co
+- mpatibility' or 'man fish-terminal-compatibility'. This fish process will no longer wait for outstanding queries, which disables some optional features.
+  left>                                                                                                                                                                         <right
+----------------------------------------------------------------------
+Ran 157 tests in 48.454s
+FAILED (failures=2, skipped=5)
+The following process failed with exit code: 1:
+./test.py
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:8713) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[command]/opt/homebrew/bin/git version
+Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/e0e77d29-4190-4b06-91db-c1dc441479b2/.gitconfig'
+[command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/kitty/kitty
+[command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+[command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+
+--- step

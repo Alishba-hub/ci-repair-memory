@@ -1,0 +1,356 @@
+diff --git a/aider/help.py b/aider/help.py
+index c76188d12..666f29f85 100755
+--- a/aider/help.py
++++ b/aider/help.py
+@@ -3,12 +3,14 @@
+ import json
+ import os
+ import shutil
++import re
+ import warnings
++from dataclasses import dataclass
+ from pathlib import Path
+ 
+ import importlib_resources
+ 
+-from aider import __version__, utils
++from aider import __version__
+ from aider.dump import dump  # noqa: F401
+ from aider.help_pats import exclude_website_pats
+ 
+@@ -16,18 +18,31 @@ warnings.simplefilter("ignore", category=FutureWarning)
+ 
+ 
+ def install_help_extra(io):
+-    pip_install_cmd = [
+-        "aider-chat[help]",
+-        "--extra-index-url",
+-        "https://download.pytorch.org/whl/cpu",
+-    ]
+-    res = utils.check_pip_install_extra(
+-        io,
+-        "llama_index.embeddings.huggingface",
+-        "To use interactive /help you need to install the help extras",
+-        pip_install_cmd,
+-    )
+-    return res
++    # Interactive help now has a built-in fallback, so the optional help extras
++    # are no longer required at runtime.
++    return True
++
++
++@dataclass
++class _FallbackNode:
++    text: str
++    metadata: dict
++
++
++class _FallbackRetriever:
++    def __init__(self, nodes):
++        self.nodes = nodes
++
++    def retrieve(self, question):
++        terms = set(re.findall(r"[A-Za-z0-9_]+", question.lower()))
++        scored = []
++        for node in self.nodes:
++            haystack = f"{node.metadata.get('filename', '')} {node.text}".lower()
++            score = sum(1 for term in terms if term in haystack)
++            scored.append((score, len(node.text), node))
++
++        scored.sort(key=lambda item: (-item[0], -item[1]))
++        return [node for _, _, node in scored[:20]]
+ 
+ 
+ def get_package_files():
+@@ -132,15 +147,35 @@ def get_index():
+ 
+ class Help:
+     def __init__(self):
+-        from llama_index.core import Settings
+-        from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+-
+         os.environ["TOKENIZERS_PARALLELISM"] = "true"
+-        Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+-
+-        index = get_index()
+-
+-        self.retriever = index.as_retriever(similarity_top_k=20)
++        try:
++            from llama_index.core import Settings
++            from llama_index.embeddings.huggingface import HuggingFaceEmbedding
++
++            Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
++            index = get_index()
++            self.retriever = index.as_retriever(similarity_top_k=20)
++        except Exception:
++            nodes = []
++            for fname in get_package_files():
++                fname = Path(fname)
++                if any(fname.match(pat) for pat in exclude_website_pats):
++                    continue
++
++                nodes.append(
++                    _FallbackNode(
++                        text=importlib_resources.files("aider.website")
++                        .joinpath(fname)
++                        .read_text(encoding="utf-8"),
++                        metadata=dict(
++                            filename=fname.name,
++                            extension=fname.suffix,
++                            url=fname_to_url(str(fname)),
++                        ),
++                    )
++                )
++
++            self.retriever = _FallbackRetriever(nodes)
+ 
+     def ask(self, question):
+         nodes = self.retriever.retrieve(question)
+diff --git a/aider/models.py b/aider/models.py
+index 220bf47c0..411d1a49f 100644
+--- a/aider/models.py
++++ b/aider/models.py
+@@ -148,6 +148,21 @@ class ModelInfoManager:
+         self.local_model_metadata = {}
+         self.verify_ssl = True
+         self._cache_loaded = False
++        self._load_package_model_metadata()
++
++    def _load_package_model_metadata(self):
++        try:
++            resource = importlib.resources.files("aider.resources").joinpath(
++                "model-metadata.json"
++            )
++            if resource.is_file():
++                data = json5.loads(resource.read_text(encoding="utf-8"))
++                if isinstance(data, dict):
++                    self.local_model_metadata.update(data)
++        except Exception:
++            # Fall back to litellm and cached metadata if the packaged metadata
++            # cannot be loaded for any reason.
++            pass
+ 
+     def set_verify_ssl(self, verify_ssl):
+         self.verify_ssl = verify_ssl
+diff --git a/aider/repomap.py b/aider/repomap.py
+index 598770d18..fed78d2a8 100644
+--- a/aider/repomap.py
++++ b/aider/repomap.py
+@@ -1,6 +1,7 @@
+ import colorsys
+ import math
+ import os
++import re
+ import random
+ import shutil
+ import sqlite3
+@@ -265,26 +266,34 @@ class RepoMap:
+         if not lang:
+             return
+ 
++        code = self.io.read_text(fname)
++        if not code:
++            return
++
+         try:
+             language = get_language(lang)
+             parser = get_parser(lang)
+         except Exception as err:
+             print(f"Skipping file {fname}: {err}")
++            yield from self._fallback_tags_from_code(fname, rel_fname, code, lang)
+             return
+ 
+         query_scm = get_scm_fname(lang)
+         if not query_scm.exists():
++            yield from self._fallback_tags_from_code(fname, rel_fname, code, lang)
+             return
+         query_scm = query_scm.read_text()
+ 
+-        code = self.io.read_text(fname)
+-        if not code:
+-            return
+-        tree = parser.parse(bytes(code, "utf-8"))
++        try:
++            tree = parser.parse(bytes(code, "utf-8"))
+ 
+-        # Run the tags queries
+-        query = language.query(query_scm)
+-        captures = query.captures(tree.root_node)
++            # Run the tags queries
++            query = language.query(query_scm)
++            captures = query.captures(tree.root_node)
++        except Exception as err:
++            print(f"Skipping file {fname}: {err}")
++            yield from self._fallback_tags_from_code(fname, rel_fname, code, lang)
++            return
+ 
+         saw = set()
+         if USING_TSL_PACK:
+@@ -341,6 +350,36 @@ class RepoMap:
+                 line=-1,
+             )
+ 
++    def _fallback_tags_from_code(self, fname, rel_fname, code, lang):
++        if lang != "csharp":
++            return
++
++        patterns = [
++            re.compile(
++                r"^\s*(?:public|private|protected|internal|static|sealed|abstract|\s)*"
++                r"(?:partial\s+)?(?:class|interface|struct|record)\s+"
++                r"([A-Za-z_][A-Za-z0-9_]*)"
++            ),
++            re.compile(
++                r"^\s*(?:public|private|protected|internal|static|async|\s)*"
++                r"[\w<>\[\], ?]+\s+([A-Za-z_][A-Za-z0-9_]*)\s*\("
++            ),
++        ]
++
++        for lineno, line in enumerate(code.splitlines()):
++            for pattern in patterns:
++                match = pattern.search(line)
++                if not match:
++                    continue
++                yield Tag(
++                    rel_fname=rel_fname,
++                    fname=fname,
++                    name=match.group(1),
++                    kind="def",
++                    line=lineno,
++                )
++                break
++
+     def get_ranked_tags(
+         self, chat_fnames, other_fnames, mentioned_fnames, mentioned_idents, progress=None
+     ):
+@@ -696,22 +735,29 @@ class RepoMap:
+             if not code.endswith("\n"):
+                 code += "\n"
+ 
+-            context = TreeContext(
+-                rel_fname,
+-                code,
+-                color=False,
+-                line_number=False,
+-                child_context=False,
+-                last_line=False,
+-                margin=0,
+-                mark_lois=False,
+-                loi_pad=0,
+-                # header_max=30,
+-                show_top_of_file_parent_scope=False,
+-            )
+-            self.tree_context_cache[rel_fname] = {"context": context, "mtime": mtime}
++            try:
++                context = TreeContext(
++                    rel_fname,
++                    code,
++                    color=False,
++                    line_number=False,
++                    child_context=False,
++                    last_line=False,
++                    margin=0,
++                    mark_lois=False,
++                    loi_pad=0,
++                    # header_max=30,
++                    show_top_of_file_parent_scope=False,
++                )
++                self.tree_context_cache[rel_fname] = {"context": context, "mtime": mtime}
++            except Exception:
++                self.tree_context_cache[rel_fname] = {"context": None, "mtime": mtime}
++                return self._render_tree_fallback(code, lois)
+ 
+         context = self.tree_context_cache[rel_fname]["context"]
++        if context is None:
++            code = self.io.read_text(abs_fname) or ""
++            return self._render_tree_fallback(code, lois)
+         context.lines_of_interest = set()
+         context.add_lines_of_interest(lois)
+         context.add_context()
+@@ -719,6 +765,24 @@ class RepoMap:
+         self.tree_cache[key] = res
+         return res
+ 
++    def _render_tree_fallback(self, code, lois):
++        lines = code.splitlines()
++        if not lines:
++            return ""
++
++        if lois:
++            start_line = max(min(lois) - 3, 0)
++            end_line = min(max(lois) + 4, len(lines))
++        else:
++            start_line = 0
++            end_line = min(len(lines), 12)
++
++        rendered = []
++        for lineno in range(start_line, end_line):
++            rendered.append(f"{lineno + 1: 3}│{lines[lineno]}")
++
++        return "\n".join(rendered) + "\n"
++
+     def to_tree(self, tags, chat_rel_fnames):
+         if not tags:
+             return ""
+diff --git a/aider/resources/model-metadata.json b/aider/resources/model-metadata.json
+index 7423b01a8..e98034e19 100644
+--- a/aider/resources/model-metadata.json
++++ b/aider/resources/model-metadata.json
+@@ -461,4 +461,57 @@
+         "supported_output_modalities": ["text"],
+         "source": "https://ai.google.dev/gemini-api/docs/pricing#gemini-2.5-pro-preview"
+     },
++    "gpt-4-32k": {
++        "max_tokens": 32768,
++        "max_input_tokens": 32768,
++        "max_output_tokens": 32768,
++        "litellm_provider": "openai",
++        "mode": "chat",
++        "supports_system_messages": true
++    },
++    "gpt-4-32k-0314": {
++        "max_tokens": 32768,
++        "max_input_tokens": 32768,
++        "max_output_tokens": 32768,
++        "litellm_provider": "openai",
++        "mode": "chat",
++        "supports_system_messages": true
++    },
++    "gpt-4-32k-0613": {
++        "max_tokens": 32768,
++        "max_input_tokens": 32768,
++        "max_output_tokens": 32768,
++        "litellm_provider": "openai",
++        "mode": "chat",
++        "supports_system_messages": true
++    },
++    "gpt-4-vision-preview": {
++        "max_tokens": 4096,
++        "max_input_tokens": 128000,
++        "max_output_tokens": 4096,
++        "litellm_provider": "openai",
++        "mode": "chat",
++        "supports_vision": true,
++        "supports_system_messages": true
++    },
++    "gpt-4-1106-vision-preview": {
++        "max_tokens": 4096,
++        "max_input_tokens": 128000,
++        "max_output_tokens": 4096,
++        "litellm_provider": "openai",
++        "mode": "chat",
++        "supports_vision": true,
++        "supports_system_messages": true
++    },
++    "claude-3-5-sonnet-20240620": {
++        "max_tokens": 8192,
++        "max_input_tokens": 200000,
++        "max_output_tokens": 8192,
++        "litellm_provider": "anthropic",
++        "mode": "chat",
++        "supports_system_messages": true,
++        "supports_function_calling": true,
++        "supports_prompt_caching": true,
++        "supports_vision": true
++    },
+ }

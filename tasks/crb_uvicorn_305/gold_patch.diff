@@ -1,0 +1,28 @@
+diff --git a/tests/test_main.py b/tests/test_main.py
+index a69aa93..9fb30fd 100644
+--- a/tests/test_main.py
++++ b/tests/test_main.py
+@@ -41,7 +41,7 @@ def _has_ipv6(host: str):
+     "host, url",
+     [
+         pytest.param(None, "http://127.0.0.1", id="default"),
+-        pytest.param("localhost", "http://127.0.0.1", id="hostname"),
++        pytest.param("localhost", "http://localhost", id="hostname"),
+         pytest.param(
+             "::1",
+             "http://[::1]",
+@@ -54,7 +54,13 @@ async def test_run(host, url: str, unused_tcp_port: int):
+     config = Config(app=app, host=host, loop="asyncio", limit_max_requests=1, port=unused_tcp_port)
+     async with run_server(config):
+         async with httpx.AsyncClient() as client:
+-            response = await client.get(f"{url}:{unused_tcp_port}")
++            if host:
++                # For literal IPv6 hosts, bracket them in the URL
++                host_part = f"[{host}]" if ":" in host else host
++                request_url = f"http://{host_part}:{unused_tcp_port}"
++            else:
++                request_url = f"{url}:{unused_tcp_port}"
++            response = await client.get(request_url)
+     assert response.status_code == 204
+ 
+ 

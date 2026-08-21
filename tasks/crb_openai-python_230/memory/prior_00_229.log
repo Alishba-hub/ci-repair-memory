@@ -1,0 +1,17 @@
+--- step: lint ---
+ + websockets==15.0.1
+ + yarl==1.20.1
+ + zipp==3.17.0
+warning: `multidict==6.5.0` is yanked (reason: "The version has a regression in 'md.update()' in certain conditions")
+Done!
+./scripts/lint
+shell: /usr/bin/bash -e {0}
+==> Running lints
+tests/utils.py:
+  1:1 I001 [*] Import block is un-sorted or un-formatted
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+error: script failed with exit status: 1
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

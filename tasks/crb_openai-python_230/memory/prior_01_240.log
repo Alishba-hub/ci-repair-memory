@@ -1,0 +1,43 @@
+--- step: lint ---
+  Â Â Â Â Type "ResponseCustomToolCallInputDeltaEvent" is not assignable to type "ResponseStreamEvent[TextFormatT@ResponseStreamState]"
+  Â Â Â Â Â Â "ResponseCustomToolCallInputDeltaEvent" is not assignable to "ResponseAudioDeltaEvent"
+  Â Â Â Â Â Â "ResponseCustomToolCallInputDeltaEvent" is not assignable to "ResponseAudioDoneEvent"
+  Â Â Â Â Â Â "ResponseCustomToolCallInputDeltaEvent" is not assignable to "ResponseAudioTranscriptDeltaEvent"
+  Â Â Â Â Â Â "ResponseCustomToolCallInputDeltaEvent" is not assignable to "ResponseAudioTranscriptDoneEvent"
+  Â Â Â Â Â Â "ResponseCustomToolCallInputDeltaEvent" is not assignable to "ResponseCodeInterpreterCallCodeDeltaEvent"
+  Â Â Â Â Â Â "ResponseCustomToolCallInputDeltaEvent" is not assignable to "ResponseCodeInterpreterCallCodeDoneEvent"
+    ... (reportArgumentType)
+/home/runner/work/openai-python/openai-python/src/openai/resources/responses/responses.py
+  /home/runner/work/openai-python/openai-python/src/openai/resources/responses/responses.py:2922:36 - error: Argument of type "FileSearchToolParam | WebSearchToolParam | ComputerToolParam | Mcp | CodeInterpreter | ImageGeneration | LocalShell | CustomToolParam | ChatCompletionCustomToolParam" cannot be assigned to parameter "object" of type "ToolParam" in function "append"
+  Â Â Type "FileSearchToolParam | WebSearchToolParam | ComputerToolParam | Mcp | CodeInterpreter | ImageGeneration | LocalShell | CustomToolParam | ChatCompletionCustomToolParam" is not assignable to type "ToolParam"
+  Â Â Â Â Type "ChatCompletionCustomToolParam" is not assignable to type "ToolParam"
+  Â Â Â Â Â Â "name" is missing from "ChatCompletionCustomToolParam"
+  Â Â Â Â Â Â "parameters" is missing from "ChatCompletionCustomToolParam"
+  Â Â Â Â Â Â "strict" is missing from "ChatCompletionCustomToolParam"
+  Â Â Â Â Â Â "type" is an incompatible type
+  Â Â Â Â Â Â Â Â "Literal['custom']" is not assignable to type "Literal['function']"
+  Â Â Â Â Â Â "description" is missing from "ChatCompletionCustomToolParam"
+    ... (reportArgumentType)
+2 errors, 0 warnings, 0 informations
+WARNING: there is a new pyright version available (v1.1.399 -> v1.1.411).
+Please install the new version or set PYRIGHT_PYTHON_FORCE_VERSION to `latest`
+error: script failed with exit status: 1
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: build ---
+  RYE_INSTALL_OPTION: --yes
+This script will automatically download and install rye (0.44.0) for you.
+#=#=#
+######################################################################## 100.0%
+Welcome to Rye!
+This installer will install rye to /home/runner/.rye
+This path can be changed by exporting the RYE_HOME environment variable.
+Details:
+  Rye Version: 0.44.0
+  Platform: linux (x86_64)
+Installed binary to /home/runner/.rye/shims/rye
+Bootstrapping rye internals
+error: download of https://github.com/astral-sh/uv/releases/download/0.6.3/uv-x86_64-unknown-linux-gnu.tar.gz failed
+Cause

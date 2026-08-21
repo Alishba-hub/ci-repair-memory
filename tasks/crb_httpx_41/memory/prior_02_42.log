@@ -1,0 +1,22 @@
+--- step: Python 3.9 ---
+grep: warning: ? at start of expression
+grep: warning: ? at start of expression
+CHANGELOG_VERSION: 0.26.0
+VERSION: 0.26.0
++ ruff format httpx tests --diff
+60 files left unchanged
++ mypy httpx tests
+Success: no issues found in 60 source files
++ ruff check httpx tests
+httpx/__init__.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+ [2026-08-12 20:28:36 +0000] [7] [INFO] Starting gunicorn 23.0.0
+ [2026-08-12 20:28:36 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:28:36 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:28:36 +0000] [10] [INFO] Booting worker with pid: 10
+f6999bd01fb2a10058b74bb711340a31b52854f3715ec51250c65f2b57e5c163
+github_network_ca2368cf561f4e1d87ccee9fabb3b3f3

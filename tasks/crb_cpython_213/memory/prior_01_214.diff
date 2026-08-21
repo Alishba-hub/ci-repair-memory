@@ -1,0 +1,24 @@
+diff --git a/Tools/cases_generator/tier2_generator.py b/Tools/cases_generator/tier2_generator.py
+index 0f7284fadf79e5..87b26b1c732599 100644
+--- a/Tools/cases_generator/tier2_generator.py
++++ b/Tools/cases_generator/tier2_generator.py
+@@ -93,7 +93,7 @@ def deopt_if(
+         self.emit("}\n")
+         return not always_true(first_tkn)
+ 
+-    def exit_if(     # type: ignore[override]
++    def exit_if(
+         self,
+         tkn: Token,
+         tkn_iter: TokenIterator,
+diff --git a/Tools/cases_generator/tracer_generator.py b/Tools/cases_generator/tracer_generator.py
+index 5594d0bd4b7c03..30a34a91d65b2e 100644
+--- a/Tools/cases_generator/tracer_generator.py
++++ b/Tools/cases_generator/tracer_generator.py
+@@ -165,4 +165,4 @@ def generate_tracer_from_files(
+         args.input.append(DEFAULT_INPUT)
+     data = analyze_files(args.input)
+     with open(args.output, "w") as outfile:
+-        generate_tracer(args.input, data, outfile, args.emit_line_directives)
+\ No newline at end of file
++        generate_tracer(args.input, data, outfile, args.emit_line_directives)

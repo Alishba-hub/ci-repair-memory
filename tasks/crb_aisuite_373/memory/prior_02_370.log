@@ -1,0 +1,29 @@
+--- step: build_and_test (3.10) ---
+    @pytest.mark.asyncio
+tests/providers/test_openai_provider.py:158
+  /home/runner/work/aisuite/aisuite/tests/providers/test_openai_provider.py:158: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+tests/providers/test_openai_provider.py:194
+  /home/runner/work/aisuite/aisuite/tests/providers/test_openai_provider.py:194: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+... (123 lines omitted)
+tests/providers/test_openai_provider.py::TestOpenAIASR::test_audio_transcriptions_create_stream_output
+tests/providers/test_openai_provider.py::TestOpenAIASR::test_timestamp_granularities_error_handling
+  /home/runner/.cache/pypoetry/virtualenvs/aisuite-10tK6cXX-py3.10/lib/python3.10/site-packages/_pytest/python.py:148: PytestUnhandledCoroutineWarning: async def functions are not natively supported and have been skipped.
+  You need to install a suitable plugin for your async framework, for example:
+    - anyio
+    - pytest-asyncio
+    - pytest-tornasync
+    - pytest-trio
+    - pytest-twisted
+    warnings.warn(PytestUnhandledCoroutineWarning(msg.format(nodeid)))
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/client/test_client.py::TestClientASR::test_transcriptions_unsupported_provider - AssertionError: Regex pattern did not match.
+ Regex: 'is not available'
+ Input: "Invalid provider key 'unsupported'. Supported providers: {'sambanova', 'fireworks', 'groq', 'cerebras', 'nebius', 'aws', 'anthropic', 'huggingface', 'inception', 'cohere', 'lmstudio', 'ollama', 'mistral', 'xai', 'google', 'openai', 'deepseek', 'watsonx', 'deepgram', 'azure', 'together'}"
+FAILED tests/providers/test_deepgram_provider.py::TestDeepgramProvider::test_audio_transcriptions_create_with_options - aisuite.provider.ASRError: Deepgram transcription error: PrerecordedOptions.__init__() got an unexpected keyword argument 'options'
+FAILED tests/providers/test_openai_provider.py::TestOpenAIASR::test_audio_transcriptions_create_with_options - AssertionError: assert 'language' in {'file': <MagicMock name='open()' id='140664435750704'>, 'model': 'openai:whisper-1', 'options': TranscriptionOptions(...ax_alternatives=None, temperature=None, interim_results=None, vad_sensitivity=None, stream=None, custom_parameters={})}
+===== 3 failed, 165 passed, 5 skipped, 8 deselected, 48 warnings in 17.74s =====
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

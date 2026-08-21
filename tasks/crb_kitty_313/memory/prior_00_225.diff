@@ -1,0 +1,93 @@
+diff --git a/docs/conf.py b/docs/conf.py
+index 41f8c01209c..7ee8b06dafe 100644
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -237,6 +237,13 @@ def write_cli_docs(all_kitten_names: Iterable[str]) -> None:
+             usage='file-or-dir-to-copy ...', message=copy_message
+         ))
+     del sys.modules['kittens.ssh.main']
++    from kitty.session import save_as_session_message, save_as_session_options
++    with open('generated/save-as-session.rst', 'w') as f:
++        f.write(option_spec_as_rst(
++            appname='save_as_session', ospec=save_as_session_options, heading_char='^',
++            usage='[path-to-save-session-file-at]',
++            message=save_as_session_message,
++        ))
+ 
+     from kitty.launch import options_spec as launch_options_spec
+     with open('generated/launch.rst', 'w') as f:
+diff --git a/docs/sessions.rst b/docs/sessions.rst
+index d1cfbe4ab86..fa96607bf38 100644
+--- a/docs/sessions.rst
++++ b/docs/sessions.rst
+@@ -210,10 +210,10 @@ documentation for them.
+     title behaves just as for a regular tab in kitty.
+ 
+ ``os_window_class``
+-    Set the :option:`class part of WM_CLASS or Wayland Application Id <kitty --class>` for the current OS Window
++    Set the class part of WM_CLASS or Wayland Application Id for the current OS Window
+ 
+ ``os_window_name``
+-    Set the :option:`name part of WM_CLASS or Wayland Window tag <kitty --name>` for the current OS Window
++    Set the name part of WM_CLASS or Wayland Window tag for the current OS Window
+ 
+ ``os_window_size``
+     Set the size of the current OS Window, can be specified in pixels or cells.
+@@ -236,3 +236,14 @@ documentation for them.
+     instead.
+ 
+ 
++.. _save_as_session:
++
++The save_as_session action
++------------------------------
++
++This action can be mapped to a key press in :file:`kitty.conf`. It will save
++the currently open OS Windows, tabs, windows, running programs, working
++directories, etc. into a session file. It is a convenient way to
++:ref:`complex_sessions`. The options this action takes are documented below.
++
++.. include:: generated/save-as-session.rst
+diff --git a/kitty/boss.py b/kitty/boss.py
+index af34cbe522e..a6aa3db82e6 100644
+--- a/kitty/boss.py
++++ b/kitty/boss.py
+@@ -3043,11 +3043,11 @@ def done2(target_window_id: int, self: Boss) -> None:
+         )
+         return q if isinstance(q, Window) else None
+ 
+-    @ac('misc', 'Switch to the specified session, creating it if not already present.')
++    @ac('misc', 'Switch to the specified session, creating it if not already present. See :ref:`goto_session`.')
+     def goto_session(self, *cmdline: str) -> None:
+         goto_session(self, cmdline)
+ 
+-    @ac('misc', 'Save the current kitty state as a session file')
++    @ac('misc', 'Save the current kitty state as a session file. See :ref:`save_as_session`.')
+     def save_as_session(self, *cmdline: str) -> None:
+         save_as_session(self, cmdline)
+ 
+diff --git a/kitty/session.py b/kitty/session.py
+index 9a1dc9e6e52..42f1f29cc47 100644
+--- a/kitty/session.py
++++ b/kitty/session.py
+@@ -479,6 +479,11 @@ def goto_session(boss: BossType, cmdline: Sequence[str]) -> None:
+         append_to_session_history(session_name)
+ 
+ 
++save_as_session_message = '''\
++Save the current state of kitty as a session file for easy re-use. If the path at which to save the session
++file is not specified, kitty will prompt you for one.'''
++
++
+ def save_as_session_options() -> str:
+     return '''
+ --save-only
+@@ -490,7 +495,7 @@ def save_as_session_options() -> str:
+ type=bool-set
+ When saving windows that were started with the default shell but are currently running some
+ other process inside that shell, save that process so that when the session is used
+-both the shell :bold:`and` the process running inside it are re-started. This is most useful
++both the shell **and** the process running inside it are re-started. This is most useful
+ when you have opened programs like editors or similar inside windows that started out running
+ the shell and you want to preserve that. WARNING: Be careful when using this option, if you are
+ running some dangerous command like :file:`rm` or :file:`mv` or similar in a shell, it will be re-run when

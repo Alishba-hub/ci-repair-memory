@@ -1,0 +1,32 @@
+--- step: build (3.12) ---
+Skipping file /tmp/tmpg4eme7lj/test.cs: Incompatible Language version 15. Must be between 13 and 14
+lang: csharp
+result:
+test.cs
+=========================== short test summary info ============================
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_add - UnboundLocalError: cannot access local variable 'orig_buf_append' where it is not associated with a value
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_add_from_subdir_again - UnboundLocalError: cannot access local variable 'orig_buf_append' where it is not associated with a value
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_add_no_match_but_make_it - UnboundLocalError: cannot access local variable 'orig_buf_append' where it is not associated with a value
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_read_only_with_image_file - AssertionError: 0 != 1
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_tokens - UnboundLocalError: cannot access local variable 'orig_buf_append' where it is not associated with a value
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_tokens_output - AssertionError: False is not true
+FAILED tests/basic/test_io.py::TestInputOutput::test_confirm_ask_allow_never - UnboundLocalError: cannot access local variable 'orig_buf_append' where it is not associated with a value
+FAILED tests/basic/test_io.py::TestInputOutput::test_confirm_ask_explicit_yes_required - UnboundLocalError: cannot access local variable 'orig_buf_append' where it is not associated with a value
+FAILED tests/basic/test_io.py::TestInputOutput::test_confirm_ask_with_group - UnboundLocalError: cannot access local variable 'orig_buf_append' where it is not associated with a value
+FAILED tests/basic/test_io.py::TestInputOutput::test_confirm_ask_yes_no - UnboundLocalError: cannot access local variable 'orig_buf_append' where it is not associated with a value
+FAILED tests/basic/test_models.py::TestModels::test_max_context_tokens - KeyError: 'max_input_tokens'
+FAILED tests/basic/test_repomap.py::TestRepoMapAllLanguages::test_language_csharp - AssertionError: 1 not greater than 1
+ERROR tests/help/test_help.py::TestHelp::test_ask_without_mock - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_edge_cases - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_unix - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_windows - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_init - AssertionError: SwitchCoder exception was not raised
+assert False
+============= 12 failed, 439 passed, 5 errors in 204.03s (0:03:24) =============
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

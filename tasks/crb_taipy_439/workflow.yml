@@ -1,0 +1,209 @@
+name: Overall Test Workflow
+
+on: push
+
+permissions:
+  contents: read
+
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+
+jobs:
+  # -------------------------
+  # 1) Lint (mypy + ruff)
+  # -------------------------
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jpetrucciani/mypy-check@master
+        with:
+          mypy_flags: "--ignore-missing-imports --implicit-optional --disable-error-code attr-defined --no-namespace-packages --exclude (taipy/templates/|tools/|doc/gui/examples/.*/builder.py|taipy/common/config/config.pyi) --follow-imports skip --disable-error-code import-untyped"
+
+      - uses: astral-sh/ruff-action@v3
+        with:
+          version: "0.6.4"
+
+  # -----------------------------------
+  # 2) Partial / targeted Python tests
+  # -----------------------------------
+  partial-tests:
+    needs: linter
+    timeout-minutes: 70
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            common:
+              - 'taipy/common/**'
+            core:
+              - 'taipy/core/**'
+            gui-core:
+              - 'taipy/gui_core/**'
+            rest:
+              - 'taipy/rest/**'
+            templates:
+              - 'taipy/templates/**'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pipenv'
+          cache-dependency-path: 'Pipfile'
+
+      - name: Install Setuptools and wheel
+        run: pip install --upgrade setuptools wheel
+
+      - name: Install pipenv
+        run: pip install "pipenv<2025.0.0"
+
+      - name: Install Dependencies
+        run: pipenv install --dev --python=${{ matrix.python-version }}
+
+      - name: Pytest Common
+        if: steps.changes.outputs.common == 'true'
+        run: pipenv run pytest tests/common
+
+      - name: Pytest Core
+        if: steps.changes.outputs.core == 'true'
+        run: pipenv run pytest -m "not orchestrator_dispatcher and not standalone" tests/core
+
+      - name: Pytest GUI Core
+        if: steps.changes.outputs.gui-core == 'true'
+        run: pipenv run pytest tests/gui_core
+
+      - name: Pytest Rest
+        if: steps.changes.outputs.rest == 'true'
+        run: pipenv run pytest tests/rest
+
+      - name: Pytest Templates
+        if: steps.changes.outputs.templates == 'true'
+        run: pipenv run pytest tests/templates
+
+  # -------------------------
+  # 3) Coverage checks
+  # -------------------------
+  coverage:
+    needs: linter
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    env:
+      BASE_BRANCH: ${{ github.event.repository.default_branch }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        id: install-dependencies
+        uses: ./.github/actions/install
+        with:
+          python-version: '3.11'
+          os: ubuntu-latest
+          pipfile-version: min
+
+      - name: Pytest with coverage
+        run: |
+          python -m pip install xmltodict
+          pipenv run pytest \
+            --cov=taipy \
+            --cov-report=xml:${{ github.workspace }}/coverage.xml \
+            --cov-config=.coveragerc
+
+      - name: Fetch base branch
+        run: |
+          git fetch origin "$BASE_BRANCH":refs/remotes/origin/"$BASE_BRANCH"
+
+      - name: Check total project coverage
+        run: |
+          python tools/coverage_check.py check-total \
+            --coverage-file ${{ github.workspace }}/coverage.xml \
+            --threshold 80
+
+      - name: Check changed files coverage
+        run: |
+          python tools/coverage_check.py check-changed \
+            --coverage-file ${{ github.workspace }}/coverage.xml \
+            --threshold 80 \
+            --base-branch "$BASE_BRANCH"
+
+  # ---------------------------------
+  # 4) Full test matrix (core suite)
+  # ---------------------------------
+  overall-tests:
+    needs: [linter]
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+        os: [ubuntu-latest]
+        pipfile-version: [min, max]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        id: install-dependencies
+        uses: ./.github/actions/install
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          pipfile-version: ${{ matrix.pipfile-version }}
+
+      - name: Pytest
+        run: |
+          pipenv run pytest -m "not orchestrator_dispatcher and not standalone and not teste2e" tests
+
+  # -------------------------------------------------
+  # 5) Intermittent / orchestrator / standalone tests
+  # -------------------------------------------------
+  intermittent-tests:
+    needs: [linter]
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+        os: [ubuntu-latest]
+        orchestrator: [orchestrator_dispatcher, standalone]
+        pipfile-version: [min, max]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        uses: ./.github/actions/install
+        with:
+          os: ${{ matrix.os }}
+          install-gui: false
+          python-version: ${{ matrix.python-version }}
+          pipfile-version: ${{ matrix.pipfile-version }}
+
+      - name: Pytest Core orchestrator/standalone
+        run: |
+          pipenv run pytest -m "${{ matrix.orchestrator }}" tests/core

@@ -1,0 +1,84 @@
+diff --git a/docs/changelog.rst b/docs/changelog.rst
+index d20ed2e..09dc80c 100644
+--- a/docs/changelog.rst
++++ b/docs/changelog.rst
+@@ -13,6 +13,7 @@ Please refer to :doc:`release notes<release_notes>`.
+ - Import form defaults to read-only field if only one format defined (#1690)
+ - Refactored :module:`~import_export.resources` into separate modules for ``declarative`` and ``options`` (#1695)
+ - fix multiple inheritance not setting options (#1696)
++- Refactored tests to remove dependencies between tests (#1703)
+ 
+ 4.0.0-beta.1 (2023-11-16)
+ --------------------------
+diff --git a/import_export/admin.py b/import_export/admin.py
+index 66964e4..167a4fe 100644
+--- a/import_export/admin.py
++++ b/import_export/admin.py
+@@ -207,7 +207,7 @@ class ImportMixin(BaseImportMixin, ImportExportMixinBase):
+     def generate_log_entries(self, result, request):
+         if not self.get_skip_admin_log():
+             # Add imported objects to LogEntry
+-            if django.VERSION >= (6, 0):
++            if django.VERSION >= (5, 0):
+                 self._log_actions(result, request)
+             else:
+                 logentry_map = {
+diff --git a/tests/core/tests/test_resources/test_resources.py b/tests/core/tests/test_resources/test_resources.py
+index 408317c..82ef08b 100644
+--- a/tests/core/tests/test_resources/test_resources.py
++++ b/tests/core/tests/test_resources/test_resources.py
+@@ -1092,8 +1092,15 @@ class ModelResourceTest(TestCase):
+ 
+     @ignore_widget_deprecation_warning
+     def test_import_data_skip_unchanged(self):
+-        def attempted_save(instance, new, using_transactions, real_dry_run):
+-            self.fail("Resource attempted to save instead of skipping")
++        class MyBookResource(resources.ModelResource):
++            save_count = 0
++
++            def save_instance(self, instance, is_create, row, **kwargs):
++                self.save_count += 1
++
++            class Meta:
++                skip_unchanged = True
++                model = Book
+ 
+         # Make sure we test with ManyToMany related objects
+         cat1 = Category.objects.create(name="Cat 1")
+@@ -1104,16 +1111,15 @@ class ModelResourceTest(TestCase):
+ 
+         # Create a new resource that attempts to reimport the data currently
+         # in the database while skipping unchanged rows (i.e. all of them)
+-        resource = deepcopy(self.resource)
+-        resource._meta.skip_unchanged = True
+-        # Fail the test if the resource attempts to save the row
+-        resource.save_instance = attempted_save
++        resource = MyBookResource()
+         result = resource.import_data(dataset, raise_errors=True)
+         self.assertFalse(result.has_errors())
+         self.assertEqual(len(result.rows), len(dataset))
+         self.assertTrue(result.rows[0].diff)
+         self.assertEqual(result.rows[0].import_type, results.RowResult.IMPORT_TYPE_SKIP)
+         self.assertEqual(result.rows[0].object_id, self.book.pk)
++        if resource.save_count > 0:
++            self.fail("Resource attempted to save instead of skipping")
+ 
+         # Test that we can suppress reporting of skipped rows
+         resource._meta.report_skipped = False
+diff --git a/tests/core/tests/test_results.py b/tests/core/tests/test_results.py
+index fa2e487..35db026 100644
+--- a/tests/core/tests/test_results.py
++++ b/tests/core/tests/test_results.py
+@@ -56,12 +56,8 @@ class ResultTest(TestCase):
+         self.assertEqual("", row_result.object_repr)
+ 
+     def test_add_instance_info(self):
+-        class BookWithObjectRepr(Book):
+-            def __str__(self):
+-                return self.name
+-
+         row_result = RowResult()
+-        row_result.add_instance_info(BookWithObjectRepr(pk=1, name="some book"))
++        row_result.add_instance_info(Book(pk=1, name="some book"))
+         self.assertEqual(1, row_result.object_id)
+         self.assertEqual("some book", row_result.object_repr)

@@ -1,0 +1,13 @@
+diff --git a/Tools/cases_generator/tracer_generator.py b/Tools/cases_generator/tracer_generator.py
+index 7039079dd895f3..912056b6212a04 100644
+--- a/Tools/cases_generator/tracer_generator.py
++++ b/Tools/cases_generator/tracer_generator.py
+@@ -89,7 +89,7 @@ def dispatch_same_oparg(
+             raise analysis_error("stack_pointer needs reloading before dispatch", tkn)
+         storage.stack.flush(self.out)
+         self.out.start_line()
+-        if "specializing" in uop.annotations:
++        if isinstance(uop, Uop) and "specializing" in uop.annotations:
+             self.emit("TRACING_SPECIALIZE_DISPATCH_SAME_OPARG")
+         else:
+             self.emit(tkn)

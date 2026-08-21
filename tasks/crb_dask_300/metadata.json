@@ -1,0 +1,66 @@
+{
+  "task_id": "crb_dask_300",
+  "name": "CI failure in dask (Test Failure, Runtime Error, Dependency Issues)",
+  "source": "ci-repair-bench",
+  "instance_id": "300",
+  "repo_name": "dask",
+  "repo_owner": "dask",
+  "sha_fail": "260605eb6e21f340badc76485a05dea891e88613",
+  "sha_success": "4736a38df16a9058932994db6034f44feb81d043",
+  "commit_date": "2025-10-03T18:13:00Z",
+  "error_type": [
+    "Test Failure",
+    "Runtime Error",
+    "Dependency Issues"
+  ],
+  "workflow_path": ".github/workflows/tests.yml",
+  "target_files": [
+    "dask/array/core.py",
+    "dask/array/tests/test_routines.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "299",
+      "commit_date": "2025-08-29T02:11:05Z",
+      "error_type": [
+        "Test Failure",
+        "Runtime Error"
+      ],
+      "workflow_filename": "tests.yml",
+      "changed_files": [
+        "dask/dataframe/tseries/tests/test_resample.py",
+        "dask/dataframe/tseries/tests/test_resample_expr.py"
+      ],
+      "log_file": "memory/prior_00_299.log",
+      "diff_file": "memory/prior_00_299.diff"
+    },
+    {
+      "instance_id": "147",
+      "commit_date": "2025-07-28T15:54:11Z",
+      "error_type": [
+        "Test Failure",
+        "Runtime Error"
+      ],
+      "workflow_filename": "tests.yml",
+      "changed_files": [
+        "dask/dataframe/io/tests/test_parquet.py"
+      ],
+      "log_file": "memory/prior_01_147.log",
+      "diff_file": "memory/prior_01_147.diff"
+    },
+    {
+      "instance_id": "50",
+      "commit_date": "2024-01-22T11:17:55Z",
+      "error_type": [
+        "Code Formatting",
+        "Code Linting"
+      ],
+      "workflow_filename": "pre-commit.yml",
+      "changed_files": [
+        "dask/utils.py"
+      ],
+      "log_file": "memory/prior_02_50.log",
+      "diff_file": "memory/prior_02_50.diff"
+    }
+  ]
+}

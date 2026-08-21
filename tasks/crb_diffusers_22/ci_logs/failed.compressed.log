@@ -1,0 +1,40 @@
+--- step: check_torch_dependencies ---
+>       all_classes = inspect.getmembers(diffusers, inspect.isclass)
+tests/others/test_dependencies.py:46:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/inspect.py:350: in getmembers
+    value = getattr(object, key)
+src/diffusers/utils/import_utils.py:684: in __getattr__
+    value = getattr(module, name)
+... (1 lines omitted)
+    module = self._get_module(self._class_to_module[name])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+self = <module 'diffusers.models' from '/home/runner/work/diffusers/diffusers/src/diffusers/models/__init__.py'>
+module_name = 'autoencoders.autoencoder_kl'
+    def _get_module(self, module_name: str):
+        try:
+            return importlib.import_module("." + module_name, self.__name__)
+        except Exception as e:
+>           raise RuntimeError(
+                f"Failed to import {self.__name__}.{module_name} because of the following error (look up to see its"
+                f" traceback):\n{e}"
+            ) from e
+E           RuntimeError: Failed to import diffusers.models.autoencoders.autoencoder_kl because of the following error (look up to see its traceback):
+E           cannot import name 'FromSingleFileMixin' from 'diffusers.loaders' (/home/runner/work/diffusers/diffusers/src/diffusers/loaders/__init__.py)
+src/diffusers/utils/import_utils.py:695: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/others/test_dependencies.py::DependencyTester::test_backend_registration - RuntimeError: Failed to import diffusers.models.autoencoders.autoencoder_asym_kl because of the following error (look up to see its traceback):
+cannot import name 'FromSingleFileMixin' from 'diffusers.loaders' (/home/runner/work/diffusers/diffusers/src/diffusers/loaders/__init__.py)
+FAILED tests/others/test_dependencies.py::DependencyTester::test_pipeline_imports - RuntimeError: Failed to import diffusers.models.autoencoders.autoencoder_kl because of the following error (look up to see its traceback):
+cannot import name 'FromSingleFileMixin' from 'diffusers.loaders' (/home/runner/work/diffusers/diffusers/src/diffusers/loaders/__init__.py)
+========================= 2 failed, 1 passed in 0.41s ==========================
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:2614) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+http.https://github.com/.extraheader
+ [2026-08-12 20:34:10 +0000] [7] [INFO] Starting gunicorn 23.0.0
+ [2026-08-12 20:34:10 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:34:10 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:34:10 +0000] [10] [INFO] Booting worker with pid: 10
+458606da9af20df065426a13053367ff1d880e5abaa70685acfd5c3

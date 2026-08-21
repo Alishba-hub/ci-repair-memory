@@ -1,0 +1,32 @@
+--- step: main ---
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+black....................................................................Passed
+isort....................................................................Passed
+flake8...................................................................Failed
+- hook id: flake8
+- exit code: 1
+tests/core/tests/test_resources/test_resources.py:4:1: F401 'copy.deepcopy' imported but unused
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=3631]
+with:
+  msg: [pre-commit.ci lite] apply automatic fixes
+env:
+  PIP_INDEX_URL: http://localhost:8629/2023-12-07
+  UV_INDEX_URL: http://localhost:8629/2023-12-07
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+... (9 lines omitted)
+ [2026-08-12 20:24:29 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:24:29 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:24:29 +0000] [10] [INFO] Booting worker with pid: 10
+ca6e2a5ed61e345c165c9424abeb62587d564b362d256072132a9c53ef51866b
+github_network_c78c00c724584a8b80fe1bb3ec52fcdf

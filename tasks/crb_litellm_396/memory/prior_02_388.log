@@ -1,0 +1,18 @@
+--- step: lint ---
+cd litellm
+poetry run mypy . --ignore-missing-imports
+cd ..
+shell: /usr/bin/bash -e {0}
+env:
+  pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+  VENV: .venv/bin/activate
+llms/mistral/mistral_chat_transformation.py:259: error: Incompatible types in assignment (expression has type "list[dict[str, str]]", variable has type "str")  [assignment]
+Found 1 error in 1 file (checked 876 source files)
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

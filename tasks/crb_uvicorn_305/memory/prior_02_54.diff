@@ -1,0 +1,18 @@
+diff --git a/uvicorn/protocols/websockets/websockets_impl.py b/uvicorn/protocols/websockets/websockets_impl.py
+index 57350f6..44994b4 100644
+--- a/uvicorn/protocols/websockets/websockets_impl.py
++++ b/uvicorn/protocols/websockets/websockets_impl.py
+@@ -271,12 +271,11 @@ class WebSocketProtocol(WebSocketServerProtocol):
+                 msg = "ASGI callable returned without sending handshake."
+                 self.logger.error(msg)
+                 self.send_500_response()
+-                self.transport.close()
+             elif result is not None:
+                 msg = "ASGI callable should return None, but returned '%s'."
+                 self.logger.error(msg, result)
+                 await self.handshake_completed_event.wait()
+-                self.transport.close()
++            self.transport.close()
+ 
+     async def asgi_send(self, message: "ASGISendEvent") -> None:
+         message_type = message["type"]

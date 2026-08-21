@@ -1,0 +1,67 @@
+diff --git a/litellm/llms/mistral/mistral_chat_transformation.py b/litellm/llms/mistral/mistral_chat_transformation.py
+index 8fc8b93c794a..9a5a94db0041 100644
+--- a/litellm/llms/mistral/mistral_chat_transformation.py
++++ b/litellm/llms/mistral/mistral_chat_transformation.py
+@@ -252,18 +252,25 @@ def _add_reasoning_system_prompt_if_needed(
+                     existing_content = msg.get("content", "")
+                     reasoning_prompt = self._get_mistral_reasoning_system_prompt()
+                     
+-                    # Handle both string and list content
++                    # Handle both string and list content - convert everything to string
++                    # since Mistral API expects string content
+                     if isinstance(existing_content, str):
+                         # String content - prepend reasoning prompt
+-                        new_content = f"{reasoning_prompt}\n\n{existing_content}"
++                        content_str = existing_content
+                     elif isinstance(existing_content, list):
+-                        # List content - prepend reasoning prompt as text block
+-                        new_content = [
+-                            {"type": "text", "text": reasoning_prompt + "\n\n"}
+-                        ] + existing_content
++                        # List content - convert to string first
++                        content_str = ""
++                        for item in existing_content:
++                            if isinstance(item, dict) and item.get("type") == "text":
++                                content_str += item.get("text", "")
++                            else:
++                                content_str += str(item)
+                     else:
+                         # Fallback for any other type - convert to string
+-                        new_content = f"{reasoning_prompt}\n\n{str(existing_content)}"
++                        content_str = str(existing_content)
++                    
++                    # Create the final content with reasoning prompt
++                    new_content = f"{reasoning_prompt}\n\n{content_str}"
+                     
+                     messages[i] = cast(AllMessageValues, {
+                         **msg,
+diff --git a/tests/test_litellm/llms/mistral/test_mistral_chat_transformation.py b/tests/test_litellm/llms/mistral/test_mistral_chat_transformation.py
+index 390de07d734f..bccfd56c4cc1 100644
+--- a/tests/test_litellm/llms/mistral/test_mistral_chat_transformation.py
++++ b/tests/test_litellm/llms/mistral/test_mistral_chat_transformation.py
+@@ -163,18 +163,17 @@ def test_add_reasoning_system_prompt_with_existing_list_content(self):
+         
+         result = mistral_config._add_reasoning_system_prompt_if_needed(messages, optional_params)
+         
+-        # Should modify existing system message with list content
++        # Should modify existing system message with list content converted to string
+         assert len(result) == 2
+         assert result[0]["role"] == "system"
+-        assert isinstance(result[0]["content"], list)
++        assert isinstance(result[0]["content"], str)
+         
+-        # First item should be the reasoning prompt
+-        assert result[0]["content"][0]["type"] == "text"
+-        assert "<think>" in result[0]["content"][0]["text"]
++        # Should contain the reasoning prompt
++        assert "<think>" in result[0]["content"]
+         
+-        # Original content should be preserved
+-        assert "You are a helpful assistant." in result[0]["content"][1]["text"]
+-        assert "You always provide detailed explanations." in result[0]["content"][2]["text"]
++        # Original content should be preserved (converted from list to string)
++        assert "You are a helpful assistant." in result[0]["content"]
++        assert "You always provide detailed explanations." in result[0]["content"]
+         
+         assert result[1]["role"] == "user"
+         

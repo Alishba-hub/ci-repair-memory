@@ -1,0 +1,11 @@
+============================= test session starts =============================
+collected 2 items
+
+tests/test_slug.py .F
+
+=================================== FAILURES ===================================
+___________________________ test_slugify_none_value ____________________________
+E       AttributeError: 'NoneType' object has no attribute 'strip'
+
+=========================== short test summary info ===========================
+FAILED tests/test_slug.py::test_slugify_none_value - AttributeError

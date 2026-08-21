@@ -1,0 +1,50 @@
+--- step: pre-commit hooks ---
+pyupgrade................................................................Passed
+black....................................................................Failed
+- hook id: black
+- files were modified by this hook
+reformatted dask/utils.py
+All done! â¨ ð° â¨
+1 file reformatted, 257 files left unchanged.
+flake8...................................................................Passed
+codespell................................................................Passed
+mypy.....................................................................Failed
+- hook id: mypy
+- exit code: 1
+dask/utils.py:231: error: Unsupported operand types for + ("str" and "None")  [operator]
+dask/utils.py:231: note: Right operand is of type "Optional[str]"
+dask/utils.py:257: error: Unsupported operand types for + ("str" and "None")  [operator]
+dask/utils.py:257: note: Right operand is of type "Optional[str]"
+Found 2 errors in 1 file (checked 258 source files)
+pre-commit hook(s) made changes.
+If you are seeing this message in CI, reproduce locally with: `pre-commit run --all-files`.
+To run `pre-commit` as part of git workflow, use `pre-commit install`.
+All changes made by hooks:
+diff --git a/dask/utils.py b/dask/utils.py
+index 80ea6e8..26f1176 100644
+--- a/dask/utils.py
++++ b/dask/utils.py
+@@ -148,7 +148,7 @@ def _deprecated_kwarg(
+     new_arg_name: str | None = None,
+     mapping: Mapping[Any, Any] | Callable[[Any], Any] | None = None,
+     stacklevel: int = 2,
+-    comment: str | None = None
++    comment: str | None = None,
+ ) -> Callable[[F], F]:
+     """
+     Decorator to deprecate a keyword argument of a function.
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=107934]
+Post job cleanup.
+##[start-action display=Run actions/cache@v3;id=__2b82242d-c043-49f1-9454-3a3e783b6d26.__actions_cache]
+##[end-action id=__2b82242d-c043-49f1-9454-3a3e783b6d26.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+(node:3626) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+http.https://github.com/.extraheader
+ [2026-08-12 20:36:29 +0000] [7] [INFO] Starting gunicorn 23.0.0
+ [2026-08-12 20:36:29 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:36:29 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:36:29 +0000] [10] [INFO] Booting worker with pid: 10
+5da655cca74edeb5beef4e8426167b64f23cea9ae7c54aa09446dedd541cae33
+github_network_ca3d6bc5940449efbcd70bed56d7fdd5

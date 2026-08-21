@@ -1,0 +1,71 @@
+{
+  "task_id": "crb_agno_180",
+  "name": "CI failure in agno (Syntax Error, Dependency Issues)",
+  "source": "ci-repair-bench",
+  "instance_id": "180",
+  "repo_name": "agno",
+  "repo_owner": "agno-agi",
+  "sha_fail": "6f19da809ef086cec3d81173f2c1b849e81c896d",
+  "sha_success": "3dfb9f487ea3a6e040ce73ce9eaab202d80fde54",
+  "commit_date": "2025-05-07T18:22:24Z",
+  "error_type": [
+    "Syntax Error",
+    "Dependency Issues"
+  ],
+  "workflow_path": ".github/workflows/test.yml",
+  "target_files": [
+    "libs/agno/agno/models/cerebras/cerebras.py",
+    "libs/agno/agno/workspace/helpers.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "90",
+      "commit_date": "2025-05-06T19:51:58Z",
+      "error_type": [
+        "Dependency Issues",
+        "Syntax Error"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/workspace/helpers.py",
+        "libs/agno/agno/document/reader/pdf_reader.py",
+        "libs/agno/pyproject.toml"
+      ],
+      "log_file": "memory/prior_00_90.log",
+      "diff_file": "memory/prior_00_90.diff"
+    },
+    {
+      "instance_id": "197",
+      "commit_date": "2025-05-05T21:40:06Z",
+      "error_type": [
+        "Dependency Issues",
+        "Syntax Error",
+        "Code Linting"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/agent/agent.py",
+        "libs/agno/agno/workspace/helpers.py",
+        "libs/agno/tests/unit/tools/models/test_gemini.py"
+      ],
+      "log_file": "memory/prior_01_197.log",
+      "diff_file": "memory/prior_01_197.diff"
+    },
+    {
+      "instance_id": "196",
+      "commit_date": "2025-05-05T21:12:20Z",
+      "error_type": [
+        "Code Linting",
+        "Syntax Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/tests/unit/tools/models/test_gemini.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_02_196.log",
+      "diff_file": "memory/prior_02_196.diff"
+    }
+  ]
+}

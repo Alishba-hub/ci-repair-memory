@@ -1,0 +1,63 @@
+{
+  "task_id": "crb_axolotl_459",
+  "name": "CI failure in axolotl (Package Installation Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "459",
+  "repo_name": "axolotl",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "6af171ff8190efbbd9b72aa19b11564279fd37f2",
+  "sha_success": "18cd96b551d599ad01841bae175caf79d997d1c7",
+  "commit_date": "2025-07-13T11:55:46Z",
+  "error_type": [
+    "Package Installation Error"
+  ],
+  "workflow_path": ".github/workflows/tests.yml",
+  "target_files": [
+    "setup.py",
+    "src/setuptools_axolotl_dynamic_dependencies.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "478",
+      "commit_date": "2025-07-13T01:30:17Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "src/axolotl/monkeypatch/relora.py"
+      ],
+      "log_file": "memory/prior_00_478.log",
+      "diff_file": "memory/prior_00_478.diff"
+    },
+    {
+      "instance_id": "463",
+      "commit_date": "2025-07-12T09:21:01Z",
+      "error_type": [
+        "Code Formatting",
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "src/axolotl/prompt_strategies/chat_template.py",
+        "tests/prompt_strategies/test_chat_template_ds_schema_unification.py"
+      ],
+      "log_file": "memory/prior_01_463.log",
+      "diff_file": "memory/prior_01_463.diff"
+    },
+    {
+      "instance_id": "483",
+      "commit_date": "2025-07-11T10:59:48Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "src/axolotl/loaders/model.py",
+        "src/axolotl/utils/config/__init__.py"
+      ],
+      "log_file": "memory/prior_02_483.log",
+      "diff_file": "memory/prior_02_483.diff"
+    }
+  ]
+}

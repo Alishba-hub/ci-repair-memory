@@ -1,0 +1,74 @@
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b72123a..b9394c5138d 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,10 +39,11 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            if agno_conf_workspace_dir_str is not None:
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)
+diff --git a/libs/agno/agno/document/reader/pdf_reader.py b/libs/agno/agno/document/reader/pdf_reader.py
+index d9aadbc950..6c8f8a3213 100644
+--- a/libs/agno/agno/document/reader/pdf_reader.py
++++ b/libs/agno/agno/document/reader/pdf_reader.py
+@@ -152,11 +152,14 @@ class PDFReader(BasePDFReader):
+     def read(self, pdf: Union[str, Path, IO[Any]]) -> List[Document]:
+         try:
+             if isinstance(pdf, str):
+-                # Use the full path to ensure uniqueness
+-                doc_name = pdf.replace("/", "_").replace(" ", "_")
++                # Extract filename from path
++                doc_name = Path(pdf).stem.replace(" ", "_")
++            elif isinstance(pdf, Path):
++                # Use just the filename without extension
++                doc_name = pdf.stem.replace(" ", "_")
+             else:
+-                # Use the full path for file objects as well
+-                doc_name = pdf.name.replace("/", "_").replace(" ", "_")
++                # Use the filename for file objects
++                doc_name = Path(pdf.name).stem.replace(" ", "_")
+         except Exception:
+             doc_name = "pdf"
+ 
+@@ -187,11 +190,14 @@ def read(self, pdf: Union[str, Path, IO[Any]]) -> List[Document]:
+     async def async_read(self, pdf: Union[str, Path, IO[Any]]) -> List[Document]:
+         try:
+             if isinstance(pdf, str):
+-                # Use the full path to ensure uniqueness
+-                doc_name = pdf.replace("/", "_").replace(" ", "_")
++                # Extract filename from path
++                doc_name = Path(pdf).stem.replace(" ", "_")
++            elif isinstance(pdf, Path):
++                # Use just the filename without extension
++                doc_name = pdf.stem.replace(" ", "_")
+             else:
+-                # Use the full path for file objects as well
+-                doc_name = pdf.name.replace("/", "_").replace(" ", "_")
++                # Use the filename for file objects
++                doc_name = Path(pdf.name).stem.replace(" ", "_")
+         except Exception:
+             doc_name = "pdf"
+ 
+diff --git a/libs/agno/pyproject.toml b/libs/agno/pyproject.toml
+index 332aca3116..9dc6a229e6 100644
+--- a/libs/agno/pyproject.toml
++++ b/libs/agno/pyproject.toml
+@@ -312,6 +312,7 @@ module = [
+   "openai.*",
+   "openbb.*",
+   "pandas.*",
++  "pdfplumber.*",
+   "pgvector.*",
+   "PIL.*",
+   "pinecone_text.*",

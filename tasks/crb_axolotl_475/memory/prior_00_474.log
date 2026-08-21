@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+All changes made by hooks:
+diff --git a/src/axolotl/core/builders/rl.py b/src/axolotl/core/builders/rl.py
+index ca555ad..c5f01dd 100644
+--- a/src/axolotl/core/builders/rl.py
++++ b/src/axolotl/core/builders/rl.py
+@@ -151,7 +151,6 @@ class HFRLTrainerBuilder(TrainerBuilderBase):
+             if blocklist_key in training_args_kwargs:
+                 del training_args_kwargs[blocklist_key]
+-
+         if self.cfg.plugins:
+             plugin_manager = PluginManager.get_instance()
+             plugin_training_args = plugin_manager.get_training_args(self.cfg)
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=81086]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__7413ae08-9006-4cca-8e66-798929d266bb.__actions_cache]
+##[end-action id=__7413ae08-9006-4cca-8e66-798929d266bb.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

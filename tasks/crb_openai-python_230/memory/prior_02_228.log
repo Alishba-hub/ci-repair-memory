@@ -1,0 +1,18 @@
+--- step: test ---
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_path_params_retrieve_overload_2[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_method_delete[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_raw_response_delete[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_streaming_response_delete[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_path_params_delete[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_method_cancel[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_raw_response_cancel[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_streaming_response_cancel[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+FAILED tests/api_resources/test_responses.py::TestAsyncResponses::test_path_params_cancel[aiohttp] - ImportError: cannot import name 'ResponseReasoningSummaryDoneEvent' from 'openai.types.responses' (/home/runner/work/openai-python/openai-python/src/openai/types/responses/__init__.py)
+================ 157 failed, 2967 passed, 10 skipped in 31.93s =================
+Stopped 2611.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: lint ---
+  /home/runner/work/openai-python/openai-python/src/openai/lib/streaming/responses/_responses.py:323:16 - error: Return type, "List[ResponseTextDeltaEvent | ResponseTextDone

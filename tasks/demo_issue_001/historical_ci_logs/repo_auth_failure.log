@@ -1,0 +1,13 @@
+============================= test session starts =============================
+collected 3 items
+
+tests/test_auth.py .F.
+
+=================================== FAILURES ===================================
+______________________ test_normalize_username_blank ___________________________
+E       AssertionError: assert '   ' == ''
+E         - 
+E         +    
+
+=========================== short test summary info ===========================
+FAILED tests/test_auth.py::test_normalize_username_blank - AssertionError

@@ -1,0 +1,73 @@
+{
+  "task_id": "crb_litellm_396",
+  "name": "CI failure in litellm (Assertion Error, Runtime Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "396",
+  "repo_name": "litellm",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "c18a9ef7091afb77bfdcc44b11809cd8c9274652",
+  "sha_success": "8374fedf5f571a15fc76e6378c0de7a617662c98",
+  "commit_date": "2025-06-25T04:14:39Z",
+  "error_type": [
+    "Assertion Error",
+    "Runtime Error"
+  ],
+  "workflow_path": ".github/workflows/test-litellm.yml",
+  "target_files": [
+    "litellm/llms/volcengine.py",
+    "tests/test_litellm/test_main.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "390",
+      "commit_date": "2025-06-15T16:41:11Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/llms/ollama/completion/handler.py"
+      ],
+      "log_file": "memory/prior_00_390.log",
+      "diff_file": "memory/prior_00_390.diff"
+    },
+    {
+      "instance_id": "392",
+      "commit_date": "2025-06-14T04:38:31Z",
+      "error_type": [
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test-litellm.yml",
+      "changed_files": [
+        "litellm/types/utils.py",
+        "litellm/llms/vertex_ai/common_utils.py",
+        "tests/test_litellm/llms/vertex_ai/test_vertex_ai_common_utils.py",
+        "litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py",
+        "tests/test_litellm/litellm_core_utils/llm_cost_calc/test_tool_call_cost_tracking.py",
+        "litellm/utils.py",
+        "litellm/litellm_core_utils/get_llm_provider_logic.py",
+        "litellm/litellm_core_utils/prompt_templates/factory.py",
+        "litellm/llms/anthropic/chat/handler.py",
+        "litellm/llms/bedrock/chat/converse_handler.py",
+        "litellm/llms/custom_httpx/llm_http_handler.py",
+        "litellm/llms/openai/chat/o_series_transformation.py"
+      ],
+      "log_file": "memory/prior_01_392.log",
+      "diff_file": "memory/prior_01_392.diff"
+    },
+    {
+      "instance_id": "388",
+      "commit_date": "2025-06-12T17:17:48Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/llms/mistral/mistral_chat_transformation.py",
+        "tests/test_litellm/llms/mistral/test_mistral_chat_transformation.py"
+      ],
+      "log_file": "memory/prior_02_388.log",
+      "diff_file": "memory/prior_02_388.diff"
+    }
+  ]
+}

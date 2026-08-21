@@ -1,0 +1,32 @@
+--- step: main ---
+[INFO] Installing environment for https://github.com/PyCQA/isort.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+[INFO] Installing environment for https://github.com/PyCQA/flake8.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+black....................................................................Passed
+isort....................................................................Passed
+flake8...................................................................Failed
+- hook id: flake8
+- exit code: 1
+import_export/resources.py:1360:89: E501 line too long (101 > 88 characters)
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=23735]
+with:
+  msg: [pre-commit.ci lite] apply automatic fixes
+env:
+  PIP_INDEX_URL: http://localhost:8629/2023-11-22
+  UV_INDEX_URL: http://localhost:8629/2023-11-22
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+... (9 lines omitted)
+ [2026-08-12 20:22:33 +0000] [7] [INFO] Listening at: http://0.0.0.0:8080 (7)
+ [2026-08-12 20:22:33 +0000] [7] [INFO] Using worker: sync
+ [2026-08-12 20:22:33 +0000] [10] [INFO] Booting worker with pid: 10
+05e073eb86b6d189b9c77453fb2b4283ebfc0e05f31f276f1ab315781f0ef8e7
+github_network_6bc9b1eb00094e4184d50c10ccd904c3

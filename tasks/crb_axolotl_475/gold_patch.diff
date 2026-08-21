@@ -1,0 +1,41 @@
+diff --git a/src/axolotl/core/builders/causal.py b/src/axolotl/core/builders/causal.py
+index 7a81616ba7..681c024b03 100644
+--- a/src/axolotl/core/builders/causal.py
++++ b/src/axolotl/core/builders/causal.py
+@@ -251,6 +251,8 @@ def build(self, total_num_steps):
+         training_arguments_kwargs["eval_sample_packing"] = bool(
+             self.cfg.eval_sample_packing
+         )
++        if self.cfg.dataset_processes is not None:
++            training_arguments_kwargs["dataset_num_proc"] = self.cfg.dataset_processes
+         if self.cfg.sample_packing_bin_size is not None:
+             training_arguments_kwargs["sample_packing_bin_size"] = (
+                 self.cfg.sample_packing_bin_size
+diff --git a/src/axolotl/core/trainers/base.py b/src/axolotl/core/trainers/base.py
+index 13fb406eb3..3830f0e726 100644
+--- a/src/axolotl/core/trainers/base.py
++++ b/src/axolotl/core/trainers/base.py
+@@ -111,7 +111,7 @@ def _create_multipack_sampler(
+             bin_size=self.args.sample_packing_bin_size,
+             sequential=self.args.sample_packing_sequentially,
+             drop_last=True,
+-            num_processes=self.args.dataset_num_proc,
++            num_processes=getattr(self.args, "dataset_num_proc", None),
+         )
+ 
+     def _get_train_sampler(
+diff --git a/src/axolotl/core/training_args.py b/src/axolotl/core/training_args.py
+index 42488e643d..7dd28db52b 100644
+--- a/src/axolotl/core/training_args.py
++++ b/src/axolotl/core/training_args.py
+@@ -112,6 +112,10 @@ class AxolotlTrainingMixins:
+         default=None,
+         metadata={"help": "prefetch_factor argument to the dataloader"},
+     )
++    dataset_num_proc: Optional[int] = field(
++        default=None,
++        metadata={"help": "Number of processes to use for dataset operations."},
++    )
+     cosine_min_lr_ratio: Optional[float] = field(
+         default=None,
+         metadata={"help": "Minimum learning rate is min_lr_ratio * learning_rate"},

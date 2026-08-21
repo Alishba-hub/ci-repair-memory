@@ -1,0 +1,28 @@
+diff --git a/src/axolotl/loaders/model.py b/src/axolotl/loaders/model.py
+index 2c5a64c2d8..03678e1b4a 100644
+--- a/src/axolotl/loaders/model.py
++++ b/src/axolotl/loaders/model.py
+@@ -615,7 +615,10 @@ def _build_model(self) -> bool:
+             if self.cfg.fsdp_config.cpu_ram_efficient_loading:
+                 skip_move_to_device = True
+                 # Don't delete device_map for QLoRA + FSDP - it was set correctly in _set_device_map
+-                if "device_map" in self.model_kwargs and not self.is_qlora_and_fsdp_enabled:
++                if (
++                    "device_map" in self.model_kwargs
++                    and not self.is_qlora_and_fsdp_enabled
++                ):
+                     del self.model_kwargs["device_map"]
+             elif self.is_qlora_and_fsdp_enabled:
+                 skip_move_to_device = True
+diff --git a/src/axolotl/utils/config/__init__.py b/src/axolotl/utils/config/__init__.py
+index 57b044a66f..fb17b259ff 100644
+--- a/src/axolotl/utils/config/__init__.py
++++ b/src/axolotl/utils/config/__init__.py
+@@ -115,7 +115,6 @@ def normalize_config(cfg):
+         "chrf",
+     ]
+     choose_device(cfg)
+-    # cfg.ddp = cfg.ddp if cfg.ddp is not None else cfg.world_size != 1
+     if cfg.world_size != 1:
+         cfg.device_map = {"": int(os.environ.get("LOCAL_RANK", 0))}
+         if cfg.fsdp or cfg.fsdp_config or cfg.ddp:

@@ -1,0 +1,7 @@
+{
+  "task_id": "demo_issue_001",
+  "name": "Fix title normalization for blank input",
+  "language": "python",
+  "target_files": ["app.py"],
+  "description": "A small repository issue that demonstrates how to compare a buggy version with a fixed version."
+}

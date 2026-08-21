@@ -1,0 +1,75 @@
+--- step: ruff ---
+  --> application/vectorstore/qdrant.py:63:21
+   |
+61 |                 # Index might already exist, which is fine
+62 |                 if "already exists" not in str(index_error).lower():
+63 |                     logging.warning(f"Could not create index for metadata.source_id: {index_error}")
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+64 |
+... (1807 lines omitted)
+1 | import sys
+2 | import types
+3 + from pathlib import Path
+4 + from unittest.mock import MagicMock, patch
+5 +
+6 + import pytest
+7 |
+  |
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests/parser/file/test_epub_parser.py:25:5
+   |
+23 |   def test_epub_parser_ebooklib_import_error(epub_parser):
+24 |       """Test that ImportError is raised when ebooklib is not available."""
+25 | /     with patch.dict(sys.modules, {"ebooklib": None}):
+26 | |         with pytest.raises(ValueError, match="`EbookLib` is required to read Epub files"):
+   | |__________________________________________________________________________________________^
+27 |               epub_parser.parse_file(Path("test.epub"))
+   |
+help: Combine `with` statements
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests/parser/file/test_epub_parser.py:36:5
+   |
+34 |       fake_ebooklib.epub = fake_epub
+35 |
+36 | /     with patch.dict(sys.modules, {"ebooklib": fake_ebooklib, "ebooklib.epub": fake_epub}):
+... (172 lines omitted)
+2 | from unittest.mock import patch
+3 |
+4 + import pytest
+5 +
+6 | from application.parser.file.pptx_parser import PPTXParser
+  |
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+  --> tests/parser/file/test_pptx_parser.py:60:5
+   |
+58 |       parser = PPTXParser()
+59 |       import sys
+60 | /     with patch.dict(sys.modules, {"pptx": None}):
+61 | |         with pytest.raises(ImportError, match="pptx module is required to read .PPTX files"):
+   | |_____________________________________________________________________________________________^
+62 |               parser.parse_file(Path("missing.pptx"))
+   |
+help: Combine `with` statements
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/parser/file/test_rst_parser.py:1:1
+  |
+1 | / import pytest
+2 | | from pathlib import Path
+3 | | from unittest.mock import patch, mock_open
+4 | |
+5 | | from application.parser.file.rst_parser import RstParser
+... (336 lines omitted)
+1 | import datetime
+  |        ^^^^^^^^
+2 | import pytest
+3 | from application.agents.tools.todo_list import TodoListTool
+  |
+help: Remove unused import: `datetime`
+  |
+  - import datetime
+1 | import pytest
+  |
+Found 1207 errors.
+[*] 630 fixable with the `--fix` option (47 hidden fixes can be enabled with the `--unsafe-fixes` option).
+##[error]Process completed with exit code 1.
+##[end-action id=__chartboost_ruff-action.__run;outcome=failure;conclusion=fai

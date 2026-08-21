@@ -1,0 +1,13 @@
+diff --git a/httpx/_client.py b/httpx/_client.py
+index e5cff5d..4dd2d07 100644
+--- a/httpx/_client.py
++++ b/httpx/_client.py
+@@ -1455,8 +1455,6 @@ class AsyncClient(BaseClient):
+     ) -> AsyncBaseTransport:
+         return AsyncHTTPTransport(
+             ssl_context=ssl_context,
+-            verify=verify,
+-            cert=cert,
+             http1=http1,
+             http2=http2,
+             limits=limits,

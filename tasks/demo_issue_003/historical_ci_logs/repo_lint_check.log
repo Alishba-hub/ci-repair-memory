@@ -1,0 +1,11 @@
+============================= test session starts =============================
+collected 2 items
+
+tests/test_lint.py E
+
+==================================== ERRORS ====================================
+ImportError: No module named 'lint_rules'
+Hint: the package was not installed before the test step ran.
+
+=========================== short test summary info ===========================
+ERROR tests/test_lint.py - ImportError

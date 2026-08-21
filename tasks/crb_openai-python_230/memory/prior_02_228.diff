@@ -1,0 +1,47 @@
+diff --git a/examples/image_stream.py b/examples/image_stream.py
+index c188e68717..eab5932534 100644
+--- a/examples/image_stream.py
++++ b/examples/image_stream.py
+@@ -50,4 +50,4 @@ def main() -> None:
+     try:
+         main()
+     except Exception as error:
+-        print(f"Error generating image: {error}")
+\ No newline at end of file
++        print(f"Error generating image: {error}")
+diff --git a/src/openai/lib/streaming/responses/_events.py b/src/openai/lib/streaming/responses/_events.py
+index 4c8a588944..de3342ec9d 100644
+--- a/src/openai/lib/streaming/responses/_events.py
++++ b/src/openai/lib/streaming/responses/_events.py
+@@ -31,11 +31,9 @@
+     ResponseAudioTranscriptDoneEvent,
+     ResponseAudioTranscriptDeltaEvent,
+     ResponseMcpCallArgumentsDoneEvent,
+-    ResponseReasoningSummaryDoneEvent,
+     ResponseImageGenCallCompletedEvent,
+     ResponseMcpCallArgumentsDeltaEvent,
+     ResponseMcpListToolsCompletedEvent,
+-    ResponseReasoningSummaryDeltaEvent,
+     ResponseImageGenCallGeneratingEvent,
+     ResponseImageGenCallInProgressEvent,
+     ResponseMcpListToolsInProgressEvent,
+@@ -59,6 +57,8 @@
+     ResponseCodeInterpreterCallInProgressEvent,
+     ResponseCodeInterpreterCallInterpretingEvent,
+ )
++from ....types.responses.response_reasoning_text_done_event import ResponseReasoningTextDoneEvent
++from ....types.responses.response_reasoning_text_delta_event import ResponseReasoningTextDeltaEvent
+ 
+ TextFormatT = TypeVar(
+     "TextFormatT",
+@@ -137,8 +137,8 @@ class ResponseCompletedEvent(RawResponseCompletedEvent, GenericModel, Generic[Te
+         ResponseMcpListToolsInProgressEvent,
+         ResponseOutputTextAnnotationAddedEvent,
+         ResponseQueuedEvent,
+-        ResponseReasoningSummaryDeltaEvent,
+-        ResponseReasoningSummaryDoneEvent,
++        ResponseReasoningTextDeltaEvent,
++        ResponseReasoningTextDoneEvent,
+     ],
+     PropertyInfo(discriminator="type"),
+ ]

@@ -1,0 +1,25 @@
+--- step: test ---
+poetry run pytest tests/test_litellm -x -vv -n 4
+shell: /usr/bin/bash -e {0}
+env:
+  pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+  VENV: .venv/bin/activate
+/home/runner/.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/_pytest/config/__init__.py:331: PluggyTeardownRaisedWarning: A plugin raised an exception during an old-style hookwrapper teardown.
+Plugin: helpconfig, Hook: pytest_cmdline_parse
+ConftestImportFailure: ImportError: cannot import name 'get_valid_models' from 'litellm.types.utils' (/home/runner/work/litellm/litellm/litellm/types/utils.py) (from /home/runner/work/litellm/litellm/tests/test_litellm/conftest.py)
+For more information see https://pluggy.readthedocs.io/en/stable/api_reference.html#pluggy.PluggyTeardownRaisedWarning
+  config = pluginmanager.hook.pytest_cmdline_parse(
+ImportError while loading conftest '/home/runner/work/litellm/litellm/tests/test_litellm/conftest.py'.
+tests/test_litellm/conftest.py:12: in <module>
+    import litellm
+litellm/__init__.py:13: in <module>
+    from litellm.types.utils import (
+E   ImportError: cannot import name 'get_valid_models' from 'litellm.types.utils' (/home/runner/work/litellm/litellm/litellm/types/utils.py)
+##[error]Process completed with exit code 4.
+Post job cleanup.
+http.https://github.com/.extraheader

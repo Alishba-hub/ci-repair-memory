@@ -1,0 +1,35 @@
+--- step: tests (3.12) ---
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/runner/work/agno/agno/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+.venv/lib/python3.12/site-packages/zep_cloud/external_clients/ontology.py:46
+  /home/runner/work/agno/agno/.venv/lib/python3.12/site-packages/zep_cloud/external_clients/ontology.py:46: PydanticDeprecatedSince20: Using extra keyword arguments on `Field` is deprecated and will be removed. Use `json_schema_extra` instead. (Extra keys: 'entity_type'). Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    Field(..., entity_type=EntityPropertyType.Text),
+.venv/lib/python3.12/site-packages/zep_cloud/external_clients/ontology.py:53
+... (12 lines omitted)
+  /home/runner/work/agno/agno/libs/agno/agno/storage/sqlite.py:193: SADeprecationWarning: The Column.copy() method is deprecated and will be removed in a future release. (deprecated since: 1.4)
+    *[c.copy() for c in self.table.columns],
+tests/unit/vectordb/test_qdrantdb.py::test_create_collection
+  /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/unittest/mock.py:657: RuntimeWarning: coroutine 'PineconeDb.async_upsert.<locals>.process_batch' was never awaited
+    raise AttributeError(name)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.13-final-0 _______________
+Coverage JSON written to file coverage-agno.json
+=========================== short test summary info ============================
+FAILED libs/agno/tests/unit/tools/models/test_gemini.py::test_generate_image_success - AssertionError: assert 'Image generated successfully' == 'Image genera...-567812345678'
+  - Image generated successfully with ID: 12345678-1234-5678-1234-567812345678
+  + Image generated successfully
+FAILED libs/agno/tests/unit/tools/models/test_gemini.py::test_generate_video_success - AssertionError: assert 'Video generated successfully' == 'Video genera...-876543214321'
+  - Video generated successfully with ID: 87654321-4321-8765-4321-876543214321
+  + Video generated successfully
+====== 2 failed, 837 passed, 3 skipped, 54 warnings in 119.57s (0:01:59) =======
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:3296) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+http.https://github.com/.extraheader
+
+--- step: style-c

@@ -1,0 +1,37 @@
+--- step: build (3.11, ubuntu-latest) ---
+  /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/xdist/plugin.py:227: DeprecationWarning: The --rsyncdir command line argument and rsyncdirs config variable are deprecated.
+  The rsync feature will be removed in pytest-xdist 4.0.
+    config.issue_config_time_warning(warning, 2)
+tests/unit/customizations/logs/test_startlivetail.py::LiveTailKeyBindingsTest::test_backspace_key_binding
+  /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/inspect.py:2734: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+... (5 lines omitted)
+    lines = [l.encode('ascii') for l in signature.split('\n') if l]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+tests/functional/botocore/test_endpoints.py::test_endpoint_matches_service[access-analyzer]
+  /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/json/decoder.py:353: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    obj, end = self.scan_once(s, idx)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------- coverage: platform linux, python 3.11.15-final-0 ----------
+Coverage XML written to file coverage.xml
+=========================== short test summary info ============================
+FAILED functional/test_telemetry.py::TestCLISessionDatabaseConnection::test_timeout_does_not_raise_exception - TypeError: 'NoneType' object is not subscriptable
+====== 1 failed, 74692 passed, 6 skipped, 8 warnings in 806.56s (0:13:26) ======
+Traceback (most recent call last):
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-tests", line 129, in <module>
+CDing to /home/runner/work/aws-cli/aws-cli/tests
+Running pytest --cov=awscli --cov=botocore --cov=s3transfer --cov-config=/home/runner/work/aws-cli/aws-cli/.coveragerc --cov-report xml --numprocesses=auto --dist=loadfile --maxprocesses=4 unit/ functional/...
+    run(cmd, allow_repo_root_on_path=raw_args.allow_repo_root_on_path)
+  File "/home/runner/work/aws-cli/aws-cli/scripts/ci/run-tests", line 31, in run
+    return check_call(command, shell=True, env=env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/subprocess.py", line 413, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command 'pytest --cov=awscli --cov=botocore --cov=s3transfer --cov-config=/home/runner/work/aws-cli/aws-cli/.coveragerc --cov-report xml --numprocesses=auto --dist=loadfile --maxprocesses=4 unit/ functional/' returned non-zero exit status 1.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: 

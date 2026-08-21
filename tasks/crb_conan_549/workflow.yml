@@ -1,0 +1,100 @@
+name: Main Workflow
+
+on: push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -------------------------
+  # 1. Ensure latest release tag merged
+  # -------------------------
+  ensure_latest_tag_merged:
+    runs-on: ubuntu-latest
+    name: Ensure latest release is merged in develop2 branch
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - shell: bash
+      run: |
+        set -euo pipefail
+        git fetch --tags --prune
+
+        latest_tag=$(git tag -l --sort=-v:refname | head -n1 || true)
+
+        if [ -z "$latest_tag" ]; then
+          echo "No tags found, skipping tag merge check."
+          exit 0
+        fi
+
+        if git rev-parse --verify origin/develop2 >/dev/null 2>&1; then
+          echo "Checking that branch 'develop2' contains the latest release tag: $latest_tag"
+          git merge-base --is-ancestor "$latest_tag" origin/develop2
+        else
+          echo "Branch origin/develop2 not found. Skipping check in fork."
+          exit 0
+        fi
+
+  # -------------------------
+  # 2. Determine Python versions (Linux only)
+  # -------------------------
+  set_python_versions:
+    runs-on: ubuntu-latest
+    outputs:
+      python_versions_linux: ${{ steps.set_versions.outputs.python_versions_linux }}
+    steps:
+    - name: Determine Python versions
+      id: set_versions
+      run: |
+        # For your fork / validation, you can just use 3.10.
+        # If you really want branch-specific logic, you can re-add it later.
+        echo 'python_versions_linux=["3.10"]' >> $GITHUB_OUTPUT
+
+  # -------------------------
+  # 3. Linux Tests
+  # -------------------------
+  linux_tests:
+    needs: [ensure_latest_tag_merged, set_python_versions]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ${{ fromJson(needs.set_python_versions.outputs.python_versions_linux) }}
+        test-type: [unittests, integration, functional]
+        include:
+        - test-type: unittests
+          test-name: Unit
+        - test-type: integration
+          test-name: Integration
+        - test-type: functional
+          test-name: Functional
+    name: Linux ${{ matrix.test-name }} (${{ matrix.python-version }})
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r conans/requirements.txt
+        pip install -r conans/requirements_dev.txt
+        pip install -r conans/requirements_server.txt
+        pip install meson
+
+    - name: Run tests
+      uses: ./.github/actions/test-coverage
+      with:
+        python-version: ${{ matrix.python-version }}
+        test-type: ${{ matrix.test-type }}
+        tests: test/${{ matrix.test-type }}

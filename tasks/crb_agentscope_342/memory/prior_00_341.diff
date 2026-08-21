@@ -1,0 +1,410 @@
+diff --git a/tests/mcp_sse_client_test.py b/tests/mcp_sse_client_test.py
+index 13219cd323..ff590d2763 100644
+--- a/tests/mcp_sse_client_test.py
++++ b/tests/mcp_sse_client_test.py
+@@ -5,7 +5,7 @@
+ from unittest.async_case import IsolatedAsyncioTestCase
+ 
+ import mcp.types
+-from mcp.server import FastMCP
++from mcp.server import MCPServer
+ 
+ from agentscope.mcp import HttpStatelessClient, HttpStatefulClient
+ from agentscope.message import TextBlock, ToolUseBlock
+@@ -25,10 +25,10 @@ async def tool_1(arg1: str, arg2: list[int]) -> str:
+ 
+ 
+ def setup_server() -> None:
+-    """Set up the streamable HTTP MCP server."""
+-    sse_server = FastMCP("SSE", port=8003)
++    """Set up the SSE MCP server."""
++    sse_server = MCPServer(name="SSE")
+     sse_server.tool(description="A test tool function.")(tool_1)
+-    sse_server.run(transport="sse")
++    sse_server.run(transport="sse", port=8003)
+ 
+ 
+ class SseMCPClientTest(IsolatedAsyncioTestCase):
+diff --git a/tests/mcp_streamable_http_client_test.py b/tests/mcp_streamable_http_client_test.py
+index a88c5d4366..95970d13f3 100644
+--- a/tests/mcp_streamable_http_client_test.py
++++ b/tests/mcp_streamable_http_client_test.py
+@@ -5,7 +5,7 @@
+ from unittest.async_case import IsolatedAsyncioTestCase
+ 
+ import mcp.types
+-from mcp.server import FastMCP
++from mcp.server import MCPServer
+ 
+ from agentscope.mcp import HttpStatelessClient, HttpStatefulClient
+ from agentscope.message import TextBlock
+@@ -26,9 +26,9 @@ async def tool_1(arg1: str, arg2: list[int]) -> str:
+ 
+ def setup_server() -> None:
+     """Set up the streamable HTTP MCP server."""
+-    sse_server = FastMCP("StreamableHTTP", port=8002)
++    sse_server = MCPServer(name="StreamableHTTP")
+     sse_server.tool(description="A test tool function.")(tool_1)
+-    sse_server.run(transport="streamable-http")
++    sse_server.run(transport="streamable-http", port=8002)
+ 
+ 
+ class StreamableHttpMCPClientTest(IsolatedAsyncioTestCase):
+diff --git a/src/agentscope/_utils/_common.py b/src/agentscope/_utils/_common.py
+index 8c648bb321..564f56159d 100644
+--- a/src/agentscope/_utils/_common.py
++++ b/src/agentscope/_utils/_common.py
+@@ -172,11 +172,11 @@ def _extract_json_schema_from_mcp_tool(tool: Tool) -> dict[str, Any]:
+             "description": tool.description,
+             "parameters": {
+                 "type": "object",
+-                "properties": tool.inputSchema.get(
++                "properties": tool.input_schema.get(
+                     "properties",
+                     {},
+                 ),
+-                "required": tool.inputSchema.get(
++                "required": tool.input_schema.get(
+                     "required",
+                     [],
+                 ),
+diff --git a/src/agentscope/mcp/_http_stateful_client.py b/src/agentscope/mcp/_http_stateful_client.py
+index 4d1c1cbe74..faa1c5ba9a 100644
+--- a/src/agentscope/mcp/_http_stateful_client.py
++++ b/src/agentscope/mcp/_http_stateful_client.py
+@@ -2,6 +2,8 @@
+ """The MCP stateful HTTP client module in AgentScope."""
+ from typing import Any, Literal
+ 
++import httpx2
++from mcp.shared._httpx_utils import create_mcp_http_client
+ from mcp.client.sse import sse_client
+ try:
+     from mcp.client.streamable_http import streamablehttp_client
+@@ -72,10 +74,10 @@ def __init__(
+         if self.transport == "streamable_http":
+             self.client = streamablehttp_client(
+                 url=url,
+-                headers=headers,
+-                timeout=timeout,
+-                sse_read_timeout=sse_read_timeout,
+-                **client_kwargs,
++                http_client=create_mcp_http_client(
++                    headers=headers,
++                    timeout=httpx2.Timeout(timeout, read=sse_read_timeout),
++                ),
+             )
+         else:
+             self.client = sse_client(
+diff --git a/src/agentscope/mcp/_http_stateless_client.py b/src/agentscope/mcp/_http_stateless_client.py
+index 7d1c4be281..0345c40dac 100644
+--- a/src/agentscope/mcp/_http_stateless_client.py
++++ b/src/agentscope/mcp/_http_stateless_client.py
+@@ -3,13 +3,12 @@
+ from contextlib import _AsyncGeneratorContextManager
+ from typing import Any, Callable, Awaitable, Literal, List
+ 
++import httpx2
+ import mcp.types
+ from mcp import ClientSession
+ from mcp.client.sse import sse_client
+-try:
+-    from mcp.client.streamable_http import streamablehttp_client
+-except ImportError:  # pragma: no cover
+-    from mcp.client.streamable_http import streamable_http_client as streamablehttp_client
++from mcp.shared._httpx_utils import create_mcp_http_client
++from mcp.client.streamable_http import streamable_http_client as streamablehttp_client
+ 
+ from . import MCPToolFunction
+ from ._client_base import MCPClientBase
+@@ -85,7 +84,17 @@ def get_client(self) -> _AsyncGeneratorContextManager[Any]:
+             return sse_client(**self.client_config)
+ 
+         if self.transport == "streamable_http":
+-            return streamablehttp_client(**self.client_config)
++            http_client = create_mcp_http_client(
++                headers=self.client_config.get("headers", {}),
++                timeout=httpx2.Timeout(
++                    self.client_config.get("timeout", 30),
++                    read=self.client_config.get("sse_read_timeout", 300),
++                ),
++            )
++            return streamablehttp_client(
++                url=self.client_config["url"],
++                http_client=http_client,
++            )
+ 
+         raise ValueError(
+             f"Unsupported transport type: {self.transport}. "
+diff --git a/tests/evaluation_test.py b/tests/evaluation_test.py
+index 29529def97..037da35bf6 100644
+--- a/tests/evaluation_test.py
++++ b/tests/evaluation_test.py
+@@ -4,8 +4,15 @@
+ import sys
+ import shutil
+ from typing import Generator, Callable, Any, cast
++from unittest import skipIf
+ from unittest.async_case import IsolatedAsyncioTestCase
+-import ray
++
++try:
++    import ray
++    RAY_AVAILABLE = True
++except ImportError:
++    ray = None  # type: ignore[assignment]
++    RAY_AVAILABLE = False
+ 
+ from agentscope.agent import AgentBase
+ from agentscope.message import Msg
+@@ -173,6 +180,7 @@ async def dummy_solution_generation(
+     )
+ 
+ 
++@skipIf(not RAY_AVAILABLE, "Skipping Ray tests because ray is not installed.")
+ class EvaluatorTest(IsolatedAsyncioTestCase):
+     """Test for evaluators in AS"""
+ 
+diff --git a/tests/formatter_ollama_test.py b/tests/formatter_ollama_test.py
+index 8d4fc40e5c..3a977ba8a1 100644
+--- a/tests/formatter_ollama_test.py
++++ b/tests/formatter_ollama_test.py
+@@ -4,6 +4,12 @@
+ import unittest
+ from unittest.async_case import IsolatedAsyncioTestCase
+ 
++try:
++    import ollama  # noqa: F401
++    OLLAMA_AVAILABLE = True
++except ImportError:
++    OLLAMA_AVAILABLE = False
++
+ from agentscope.formatter import OllamaChatFormatter, OllamaMultiAgentFormatter
+ from agentscope.message import (
+     Msg,
+@@ -15,6 +21,10 @@
+ )
+ 
+ 
++@unittest.skipUnless(
++    OLLAMA_AVAILABLE,
++    "Skipping Ollama formatter tests because ollama is not installed.",
++)
+ class TestOllamaFormatter(IsolatedAsyncioTestCase):
+     """Unittest for the Ollama formatter."""
+ 
+diff --git a/tests/model_gemini_test.py b/tests/model_gemini_test.py
+index bb561e1370..0099c68cc7 100644
+--- a/tests/model_gemini_test.py
++++ b/tests/model_gemini_test.py
+@@ -1,10 +1,14 @@
+ # -*- coding: utf-8 -*-
+ """Unit tests for Google Gemini API model class."""
++import importlib.util
+ from typing import AsyncGenerator
++from unittest import skipUnless
+ from unittest.async_case import IsolatedAsyncioTestCase
+ from unittest.mock import Mock, patch, AsyncMock
+ from pydantic import BaseModel
+ 
++GEMINI_AVAILABLE = importlib.util.find_spec("google.genai") is not None
++
+ from agentscope.model import GeminiChatModel, ChatResponse
+ from agentscope.message import TextBlock, ToolUseBlock, ThinkingBlock
+ 
+@@ -65,6 +69,10 @@ class SampleModel(BaseModel):
+     age: int
+ 
+ 
++@skipUnless(
++    GEMINI_AVAILABLE,
++    "Skipping Gemini model tests because google-genai is not installed.",
++)
+ class TestGeminiChatModel(IsolatedAsyncioTestCase):
+     """Test cases for GeminiChatModel."""
+ 
+diff --git a/tests/model_ollama_test.py b/tests/model_ollama_test.py
+index eefe1afe22..7362d2b2d9 100644
+--- a/tests/model_ollama_test.py
++++ b/tests/model_ollama_test.py
+@@ -1,10 +1,17 @@
+ # -*- coding: utf-8 -*-
+ """Unit tests for Ollama API model class."""
+ from typing import AsyncGenerator, Any
++from unittest import skipUnless
+ from unittest.async_case import IsolatedAsyncioTestCase
+ from unittest.mock import patch, AsyncMock
+ from pydantic import BaseModel
+ 
++try:
++    import ollama  # noqa: F401
++    OLLAMA_AVAILABLE = True
++except ImportError:
++    OLLAMA_AVAILABLE = False
++
+ from agentscope.model import OllamaChatModel, ChatResponse
+ from agentscope.message import TextBlock, ToolUseBlock, ThinkingBlock
+ 
+@@ -74,6 +81,10 @@ class SampleModel(BaseModel):
+     age: int
+ 
+ 
++@skipUnless(
++    OLLAMA_AVAILABLE,
++    "Skipping Ollama model tests because ollama is not installed.",
++)
+ class TestOllamaChatModel(IsolatedAsyncioTestCase):
+     """Test cases for OllamaChatModel."""
+ 
+diff --git a/tests/rag_knowledge_test.py b/tests/rag_knowledge_test.py
+index a1f3e8ee0b..d6c9cf882e 100644
+--- a/tests/rag_knowledge_test.py
++++ b/tests/rag_knowledge_test.py
+@@ -1,8 +1,12 @@
+ # -*- coding: utf-8 -*-
+ """Test the RAG knowledge implementations."""
++import importlib.util
+ from typing import Any
++from unittest import skipUnless
+ from unittest.async_case import IsolatedAsyncioTestCase
+ 
++QDRANT_AVAILABLE = importlib.util.find_spec("qdrant_client") is not None
++
+ from agentscope.embedding import (
+     EmbeddingModelBase,
+     EmbeddingResponse,
+@@ -48,6 +52,10 @@ async def __call__(
+         )
+ 
+ 
++@skipUnless(
++    QDRANT_AVAILABLE,
++    "Skipping RAG knowledge tests because qdrant-client is not installed.",
++)
+ class RAGKnowledgeTest(IsolatedAsyncioTestCase):
+     """Test cases for RAG knowledge implementations."""
+ 
+diff --git a/tests/rag_reader_test.py b/tests/rag_reader_test.py
+index 80f1a215db..9e14fec929 100644
+--- a/tests/rag_reader_test.py
++++ b/tests/rag_reader_test.py
+@@ -1,11 +1,20 @@
+ # -*- coding: utf-8 -*-
+ """Test the RAG reader implementations."""
++import importlib.util
+ import os
++from unittest import skipUnless
+ from unittest.async_case import IsolatedAsyncioTestCase
+ 
++NLTK_AVAILABLE = importlib.util.find_spec("nltk") is not None
++PYPDF_AVAILABLE = importlib.util.find_spec("pypdf") is not None
++
+ from agentscope.rag import TextReader, PDFReader
+ 
+ 
++@skipUnless(
++    NLTK_AVAILABLE,
++    "Skipping RAG reader tests because nltk is not installed.",
++)
+ class RAGReaderText(IsolatedAsyncioTestCase):
+     """Test cases for RAG reader implementations."""
+ 
+diff --git a/tests/rag_store_test.py b/tests/rag_store_test.py
+index d41816db7d..fe64226dee 100644
+--- a/tests/rag_store_test.py
++++ b/tests/rag_store_test.py
+@@ -27,6 +27,14 @@ async def asyncSetUp(self) -> None:
+ 
+     async def test_qdrant_store(self) -> None:
+         """Test the QdrantStore implementation."""
++        try:
++            import qdrant_client  # noqa: F401
++        except ImportError:
++            self.skipTest(
++                "Skipping QdrantStore test because qdrant-client is not installed. "
++                "Install it with `pip install qdrant-client` to enable this test."
++            )
++
+         store = QdrantStore(
+             location=":memory:",
+             collection_name="test",
+@@ -79,6 +87,15 @@ async def test_qdrant_store(self) -> None:
+ 
+     async def test_milvus_lite_store(self) -> None:
+         """Test the MilvusLiteStore implementation."""
++        try:
++            import pymilvus  # noqa: F401
++            import milvus_lite  # noqa: F401
++        except ImportError as e:
++            self.skipTest(
++                "Skipping MilvusLiteStore test because pymilvus[milvus_lite] is not installed. "
++                "Install it with `pip install pymilvus[milvus_lite]` to enable this test."
++            )
++
+         store = MilvusLiteStore(
+             uri="./milvus_demo.db",
+             collection_name="test_milvus",
+diff --git a/tests/token_openai_test.py b/tests/token_openai_test.py
+index 004c2a311b..e76fed12b3 100644
+--- a/tests/token_openai_test.py
++++ b/tests/token_openai_test.py
+@@ -2,12 +2,20 @@
+ # pylint: disable=line-too-long
+ # flake8: noqa: E501
+ """The unittests for OpenAI token counter."""
++import importlib.util
+ import os
++from unittest import skipUnless
+ from unittest.async_case import IsolatedAsyncioTestCase
+ 
++PIL_AVAILABLE = importlib.util.find_spec("PIL") is not None
++
+ from agentscope.token import OpenAITokenCounter
+ 
+ 
++@skipUnless(
++    PIL_AVAILABLE,
++    "Skipping OpenAI token counter tests because Pillow is not installed.",
++)
+ class OpenAITokenCounterTest(IsolatedAsyncioTestCase):
+     """The unittests for the OpenAI token counter."""
+ 
+diff --git a/tests/tool_openai_test.py b/tests/tool_openai_test.py
+index 4a4240db51..d71d74dbfd 100644
+--- a/tests/tool_openai_test.py
++++ b/tests/tool_openai_test.py
+@@ -1,10 +1,24 @@
+ # -*- coding: utf-8 -*-
+ """Unit tests for OpenAI tools"""
+ 
++import importlib.util
+ import base64
++import sys
++import types
+ from io import BytesIO
++from unittest import skipUnless
+ from unittest.mock import Mock, patch, mock_open, MagicMock
+ 
++PIL_AVAILABLE = importlib.util.find_spec("PIL") is not None
++
++
++def _make_fake_pil_modules() -> dict[str, types.ModuleType]:
++    pil = types.ModuleType("PIL")
++    pil_image = types.ModuleType("PIL.Image")
++    pil.Image = pil_image
++    pil_image.open = Mock()
++    return {"PIL": pil, "PIL.Image": pil_image}
++
+ from agentscope.message import ImageBlock, TextBlock, AudioBlock
+ from agentscope.tool import ToolResponse
+ from agentscope.tool import (
+@@ -136,6 +150,10 @@ def test_text_to_image_exception(self) -> None:
+         ]
+ 
+ 
++@skipUnless(
++    PIL_AVAILABLE,
++    "Skipping OpenAI edit image tests because Pillow is not installed.",
++)
+ class TestOpenAIEditImage:
+     """Test cases for openai_edit_image function"""

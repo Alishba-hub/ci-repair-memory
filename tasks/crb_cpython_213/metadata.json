@@ -1,0 +1,60 @@
+{
+  "task_id": "crb_cpython_213",
+  "name": "CI failure in cpython (Runtime Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "213",
+  "repo_name": "cpython",
+  "repo_owner": "python",
+  "sha_fail": "7ab76a8fcbc8388a54cc0ca3caaaac5a56bbe680",
+  "sha_success": "86ab7f152a55a0d333654d0b321e582973cfa91a",
+  "commit_date": "2025-10-25T23:57:30Z",
+  "error_type": [
+    "Runtime Error"
+  ],
+  "workflow_path": ".github/workflows/jit.yml",
+  "target_files": [
+    "Lib/test/test_capi/test_opt.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "215",
+      "commit_date": "2025-10-20T16:16:25Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "mypy.yml",
+      "changed_files": [
+        "Tools/cases_generator/tracer_generator.py"
+      ],
+      "log_file": "memory/prior_00_215.log",
+      "diff_file": "memory/prior_00_215.diff"
+    },
+    {
+      "instance_id": "214",
+      "commit_date": "2025-10-18T22:17:27Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "mypy.yml",
+      "changed_files": [
+        "Tools/cases_generator/tier2_generator.py",
+        "Tools/cases_generator/tracer_generator.py"
+      ],
+      "log_file": "memory/prior_01_214.log",
+      "diff_file": "memory/prior_01_214.diff"
+    },
+    {
+      "instance_id": "320",
+      "commit_date": "2025-09-26T18:12:43Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "Lib/pathlib/types.py"
+      ],
+      "log_file": "memory/prior_02_320.log",
+      "diff_file": "memory/prior_02_320.diff"
+    }
+  ]
+}

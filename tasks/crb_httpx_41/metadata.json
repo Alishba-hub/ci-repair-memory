@@ -1,0 +1,60 @@
+{
+  "task_id": "crb_httpx_41",
+  "name": "CI failure in httpx (Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "41",
+  "repo_name": "httpx",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "7f351340260c165e18ccd7c83dc783bb371b3797",
+  "sha_success": "289840b750204453ee6afe4596d7016eb4e3d756",
+  "commit_date": "2024-01-16T05:40:47Z",
+  "error_type": [
+    "Test Failure"
+  ],
+  "workflow_path": ".github/workflows/test-suite.yml",
+  "target_files": [
+    "tests/test_config.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "39",
+      "commit_date": "2024-01-12T12:14:15Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "test-suite.yml",
+      "changed_files": [
+        "httpx/_config.py",
+        "httpx/_transports/default.py"
+      ],
+      "log_file": "memory/prior_00_39.log",
+      "diff_file": "memory/prior_00_39.diff"
+    },
+    {
+      "instance_id": "40",
+      "commit_date": "2023-12-28T12:53:22Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-suite.yml",
+      "changed_files": [
+        "httpx/_client.py"
+      ],
+      "log_file": "memory/prior_01_40.log",
+      "diff_file": "memory/prior_01_40.diff"
+    },
+    {
+      "instance_id": "42",
+      "commit_date": "2023-12-25T13:27:42Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "test-suite.yml",
+      "changed_files": [
+        "httpx/__init__.py"
+      ],
+      "log_file": "memory/prior_02_42.log",
+      "diff_file": "memory/prior_02_42.diff"
+    }
+  ]
+}

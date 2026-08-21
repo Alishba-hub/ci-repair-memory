@@ -1,0 +1,19 @@
+--- step: Linux Integration (3.10) ---
+FAILED test/integration/command/list/list_test.py::test_list_query_options - assert 'myoption: 1' in "Connecting to remote 'default' with user 'admin'\ndefault\n  pkg\n    pkg/1.0\n      revisions\n        edcc95e937185eaeb06174ec18145070 (2026-08-12 21:25:44 UTC)\n          packages\n"
+ +  where "Connecting to remote 'default' with user 'admin'\ndefault\n  pkg\n    pkg/1.0\n      revisions\n        edcc95e937185eaeb06174ec18145070 (2026-08-12 21:25:44 UTC)\n          packages\n" = <conan.test.utils.tools.TestClient object at 0x7f04fca9ba00>.out
+FAILED test/integration/command/list/list_test.py::TestListBinaryFilter::test_list_filter[True] - AssertionError: assert 3 == 1
+ +  where 3 = len({'2a67a51fbf36a4ee345b2125dd2642be60ffd3ec': {'info': {}}, '2d46abc802bbffdf2af11591e3e452bc6149ea2b': {'info': {}}, 'd2e97769569ac0a583d72c10a37d5ca26de7c9fa': {'info': {}}})
+FAILED test/integration/package_id/package_id_test.py::test_value_parse - assert 'arch: kk=kk' in "Connecting to remote 'default' with user 'admin'\nFound 1 pkg/version recipes matching * in default\ndefault\n  test\...26-08-12 21:26:31 UTC)\n          packages\n            2556c0ebb361b4a04410b2ddbad691242ce20c6d\n              info\n"
+ +  where "Connecting to remote 'default' with user 'admin'\nFound 1 pkg/version recipes matching * in default\ndefault\n  test\...26-08-12 21:26:31 UTC)\n          packages\n            2556c0ebb361b4a04410b2ddbad691242ce20c6d\n              info\n" = <conan.test.utils.tools.TestClient object at 0x7fb8b0976860>.out
+FAILED test/integration/remote/rest_api_test.py::RestApiTest::test_search - KeyError: 'content'
+FAILED test/integration/remote/test_conaninfo_parsing.py::test_conaninfo_special_chars - assert 'Ã±Ã±Â¨Â¨&æ¯: ][{}"æ¯æ¯æ¯' in "Connecting to remote 'default' with user 'admin'\ndefault\n  weird_info\n    weird_info/1.0\n      revisions\n       ...26-08-12 21:26:51 UTC)\n          packages\n            1518ae242259d7df1e8aa158fa392432b0b67292\n              info\n"
+ +  where "Connecting to remote 'default' with user 'admin'\ndefault\n  weird_info\n    weird_info/1.0\n      revisions\n       ...26-08-12 21:26:51 UTC)\n          packages\n            1518ae242259d7df1e8aa158fa392432b0b67292\n              info\n" = <conan.test.utils.tools.TestClient object at 0x7f04fd99d090>.out
+= 28 failed, 2797 passed, 65 skipped, 1 xpassed, 621 warnings in 129.50s (0:02:09) =
+##[error]Process completed with exit code 1.
+##[end-action id=__self.__run;outcome=failure;conclusion=failure;duration_ms=131692]
+##[start-action display=Rename coverage file;id=__self.__run_2]
+##[end-action id=__self.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Upload coverage artifact;id=__self.__actions_upload-artifact]
+##[end-action id=__self.__actions_upload-artifact;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

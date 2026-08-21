@@ -1,0 +1,75 @@
+{
+  "task_id": "crb_conan_549",
+  "name": "CI failure in conan (Test Failure, Runtime Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "549",
+  "repo_name": "conan",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "eb4acbc53a79e2747c5c1e33875be3e8d1acf943",
+  "sha_success": "743630bf5347e23fb41c3c782be19d5c8ed9b2c0",
+  "commit_date": "2025-06-01T18:24:57Z",
+  "error_type": [
+    "Test Failure",
+    "Runtime Error"
+  ],
+  "workflow_path": ".github/workflows/main.yml",
+  "target_files": [
+    "test/functional/toolchains/meson/_base.py",
+    "conans/server/rest/controller/v2/search.py",
+    "test/conftest.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "542",
+      "commit_date": "2025-05-28T17:57:23Z",
+      "error_type": [
+        "Syntax Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/integration/remote/test_local_recipes_index.py"
+      ],
+      "log_file": "memory/prior_00_542.log",
+      "diff_file": "memory/prior_00_542.diff"
+    },
+    {
+      "instance_id": "546",
+      "commit_date": "2025-05-22T08:21:25Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/meson/test_meson.py",
+        "test/functional/toolchains/meson/test_pkg_config_reuse.py",
+        "test/functional/toolchains/meson/test_preprocessor_definitions.py",
+        "test/functional/toolchains/meson/test_test.py"
+      ],
+      "log_file": "memory/prior_01_546.log",
+      "diff_file": "memory/prior_01_546.diff"
+    },
+    {
+      "instance_id": "530",
+      "commit_date": "2025-05-20T07:56:22Z",
+      "error_type": [
+        "Environment Error",
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "conan/tools/scm/git.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/tools/scm/test_git.py"
+      ],
+      "log_file": "memory/prior_02_530.log",
+      "diff_file": "memory/prior_02_530.diff"
+    }
+  ]
+}

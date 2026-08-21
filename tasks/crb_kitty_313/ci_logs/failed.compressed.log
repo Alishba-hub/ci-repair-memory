@@ -1,0 +1,27 @@
+--- step: Scan dependencies for vulnerabilities ---
+branch 'master' set up to track 'origin/master'.
+46dd483962ec773a5053b631d52a2f2d84efcb4e
+http.https://github.com/.extraheader
+python3 .github/workflows/ci.py check-dependencies
+shell: /usr/bin/bash -e {0}
+env:
+  CI: true
+  ASAN_OPTIONS: detect_leaks=0
+  LC_ALL: en_US.UTF-8
+  LANG: en_US.UTF-8
+  KITTY_BUNDLE: 1
+[0000]  WARN no explicit name and version provided for directory source, deriving artifact ID from the given path (which is not ideal) from=syft
+[0044] ERROR discovered vulnerabilities at or above the severity threshold
+NAME                      INSTALLED             FIXED IN                       TYPE              VULNERABILITY   SEVERITY  EPSS          RISK
+github.com/docker/docker  v28.5.2+incompatible  29.3.1                         go-module         CVE-2026-34040  High      10.1% (95th)  8.3
+Python                    3.14.7                3.15.0                         apple-app-bundle  CVE-2026-15308  High      0.6% (47th)   0.5
+python                    3.14.7                3.15.0                         binary            CVE-2026-15308  High      0.6% (47th)   0.5
+stdlib                    go1.26.3              1.25.11, *1.26.4               go-module         CVE-2026-27145  High      0.6% (45th)   0.4
+stdlib                    go1.26.3              1.25.12, *1.26.5, 1.27.0-rc.2  go-module         CVE-2026-42505  Medium    0.4% (31st)   0.2
+stdlib                    go1.26.3              1.25.11, *1.26.4               go-module         CVE-2026-42507  Medium    0.4% (29th)   0.2
+stdlib                    go1.26.3              1.25.12, *1.26.5, 1.27.0-rc.2  go-module         CVE-2026-39822  High      0.2% (14th)   0.2
+Python                    3.14.7                3.15.0a6                       apple-app-bundle  CVE-2025-15367  Medium    0.3% (23rd)   0.2
+python                    3.14.7                3.15.0a6                       binary            CVE-2025-15367  Medium    0.3% (23rd)   0.2
+##[error]Process completed with exit code 2.
+Post job cleanup.
+Post job cleanup.

@@ -1,0 +1,256 @@
+diff --git a/tests/gui/notebook/test_notebook_simple_gui.py b/tests/gui/notebook/test_notebook_simple_gui.py
+index a3e7a3f531..4015a88e59 100644
+--- a/tests/gui/notebook/test_notebook_simple_gui.py
++++ b/tests/gui/notebook/test_notebook_simple_gui.py
+@@ -18,6 +18,8 @@
+ import pytest
+ from testbook import testbook
+ 
++from taipy.gui import Gui
++
+ 
+ def wait_for_content(url, expected_text, timeout=10):
+     start = time.time()
+diff --git a/Pipfile b/Pipfile
+index a4857d5584..7a595cc658 100644
+--- a/Pipfile
++++ b/Pipfile
+@@ -20,7 +20,7 @@ markdown = "==3.6"
+ marshmallow = "==3.20.1"
+ networkx = "==2.6"
+ openpyxl = "==3.1.2"
+-pandas = "==1.3.5"
++pandas = "==2.2.3"
+ pyarrow = "==16.0.0"
+ pymongo = {extras = ["srv"], version = "==4.6.3"}
+ python-dotenv = "==1.0.0"
+@@ -36,6 +36,7 @@ boto3 = "==1.29.1"
+ watchdog = "==4.0.0"
+ charset-normalizer = "==3.3.2"
+ numpy = "<2.0.0"
++setuptools = "<81"
+ 
+ [dev-packages]
+ fastparquet = "*"
+diff --git a/pytest.ini b/pytest.ini
+index 537743ad13..9130e0b949 100644
+--- a/pytest.ini
++++ b/pytest.ini
+@@ -9,6 +9,7 @@ filterwarnings =
+     ignore::FutureWarning:pyarrow
+ markers =
+     teste2e:End-to-end tests
++    extension:Extension tests
+     orchestrator_dispatcher:Orchestrator dispatcher tests
+     standalone:Tests starting a standalone dispatcher thread
+     skip_if_not_server:Skip test if not running in specific server mode
+diff --git a/taipy.sqlite3.db b/taipy.sqlite3.db
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/taipy/core/taipy.py b/taipy/core/taipy.py
+index 3812899c83..e987a9dd61 100644
+--- a/taipy/core/taipy.py
++++ b/taipy/core/taipy.py
+@@ -1016,6 +1016,8 @@ def update_parent_dict(parents_set, parent_dict):
+     current_parent_dict: Dict[str, Set] = {}
+     for parent in entity.parent_ids:
+         parent_entity = get(parent)
++        if parent_entity is None:
++            continue
+         if parent_entity._MANAGER_NAME in current_parent_dict.keys():
+             current_parent_dict[parent_entity._MANAGER_NAME].add(parent_entity)
+         else:
+diff --git a/tests/gui/e2e/test_metric_indicator.py b/tests/gui/e2e/test_metric_indicator.py
+index 9c7a1bce2b..3f8aafedf1 100644
+--- a/tests/gui/e2e/test_metric_indicator.py
++++ b/tests/gui/e2e/test_metric_indicator.py
+@@ -20,6 +20,7 @@
+ 
+ 
+ @pytest.mark.extension
++@pytest.mark.teste2e
+ def test_has_default_value(page: Page, gui: Gui, helpers):
+     page_md = """
+ <|100|metric|>
+@@ -35,6 +36,7 @@ def test_has_default_value(page: Page, gui: Gui, helpers):
+ 
+ 
+ @pytest.mark.extension
++@pytest.mark.teste2e
+ def test_show_increase_delta_value(page: Page, gui: Gui, helpers):
+     page_md = """
+ <|100|metric|delta=20|type=linear|>
+@@ -50,6 +52,7 @@ def test_show_increase_delta_value(page: Page, gui: Gui, helpers):
+ 
+ 
+ @pytest.mark.extension
++@pytest.mark.teste2e
+ def test_show_decrease_delta_value(page: Page, gui: Gui, helpers):
+     page_md = """
+ <|100|metric|delta=-20|type=linear|>
+diff --git a/tests/gui/gui_specific/test_run_thread.py b/tests/gui/gui_specific/test_run_thread.py
+index 81039e183b..85c17bb032 100644
+--- a/tests/gui/gui_specific/test_run_thread.py
++++ b/tests/gui/gui_specific/test_run_thread.py
+@@ -13,10 +13,13 @@
+ import time
+ from urllib.request import urlopen
+ 
++import pytest
++
+ from taipy.gui import Gui
+ 
+ 
+ # this hangs in github
++@pytest.mark.standalone
+ def test_run_thread(gui: Gui, helpers):
+     gui._set_frame(inspect.currentframe())
+     gui.add_page("page1", "# first page")
+diff --git a/taipy/core/_orchestrator/_dispatcher/_development_job_dispatcher.py b/taipy/core/_orchestrator/_dispatcher/_development_job_dispatcher.py
+index 5528c27347..daab7d45eb 100644
+--- a/taipy/core/_orchestrator/_dispatcher/_development_job_dispatcher.py
++++ b/taipy/core/_orchestrator/_dispatcher/_development_job_dispatcher.py
+@@ -44,5 +44,5 @@ def _dispatch(self, job: Job):
+         Arguments:
+             job (Job^): The job to submit on an executor with an available worker.
+         """
+-        rs = _TaskFunctionWrapper(job.id, job.task).execute()
++        rs = _TaskFunctionWrapper(job.id, job._task).execute()
+         self._update_job_status(job, rs)
+diff --git a/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py b/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
+index f2c0b1629b..5632a74630 100644
+--- a/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
++++ b/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
+@@ -98,7 +98,7 @@ def _execute_job(self, job: Job):
+         job_manager = _JobManagerFactory._build_manager()
+         if not job_manager._repository._exists(job.id):
+             job_manager._repository._save(job)
+-        if job.force or self._needs_to_run(job.task):
++        if job.force or self._needs_to_run(job._task):
+             if job.force:
+                 self._logger.info(f"job {job.id} is forced to be executed.")
+             job.running()
+@@ -172,7 +172,7 @@ def _update_job_status(job: Job, exceptions):
+                 _TaipyLogger._get_logger().error(st)
+             _JobManagerFactory._build_manager()._update(job)
+         else:
+-            for output in job.task.output.values():
++            for output in job._task.output.values():
+                 output.track_edit(job_id=job.id)
+                 output.unlock_edit()
+             job.completed()
+diff --git a/taipy/core/_orchestrator/_dispatcher/_standalone_job_dispatcher.py b/taipy/core/_orchestrator/_dispatcher/_standalone_job_dispatcher.py
+index 84935ac1e0..087ebbf52a 100644
+--- a/taipy/core/_orchestrator/_dispatcher/_standalone_job_dispatcher.py
++++ b/taipy/core/_orchestrator/_dispatcher/_standalone_job_dispatcher.py
+@@ -60,7 +60,7 @@ def _dispatch(self, job: Job):
+             self._logger.debug(f"Setting nb_available_workers to {self._nb_available_workers} in the dispatch method.")
+         config_as_string = _TomlSerializer()._serialize(Config._applied_config)  # type: ignore[attr-defined]
+ 
+-        future = self._executor.submit(_TaskFunctionWrapper(job.id, job.task), config_as_string=config_as_string)
++        future = self._executor.submit(_TaskFunctionWrapper(job.id, job._task), config_as_string=config_as_string)
+         future.add_done_callback(partial(self._update_job_status_from_future, job))
+ 
+     def _update_job_status_from_future(self, job: Job, ft):
+diff --git a/tests/core/notification/test_events_published.py b/tests/core/notification/test_events_published.py
+index 9970f2e7e9..046a17f504 100644
+--- a/tests/core/notification/test_events_published.py
++++ b/tests/core/notification/test_events_published.py
+@@ -9,7 +9,9 @@
+ # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ # specific language governing permissions and limitations under the License.
+ 
++from datetime import datetime
+ from queue import SimpleQueue
++from time import sleep
+ from typing import Any, Dict, List
+ 
+ import pytest
+@@ -48,6 +50,10 @@ def capture_event(self, event):
+             else:
+                 self.attr_value_collected[event.attribute_name] = [event.attribute_value]
+ 
++    def extend(self, snapshot: "Snapshot"):
++        for event in snapshot.collected_events:
++            self.capture_event(event)
++
+ 
+ class RecordingConsumer(_CoreEventConsumerBase):
+     """
+@@ -86,6 +92,17 @@ def identity(x):
+     return x
+ 
+ 
++def _capture_after_count(consumer: RecordingConsumer, expected_count: int, timeout: int = 10) -> Snapshot:
++    snapshot = Snapshot()
++    start = datetime.now()
++    while (datetime.now() - start).seconds < timeout and len(snapshot.collected_events) < expected_count:
++        snapshot.extend(consumer.capture())
++        if len(snapshot.collected_events) < expected_count:
++            sleep(0.1)
++    snapshot.extend(consumer.capture())
++    return snapshot
++
++
+ def test_events_published_for_scenario_creation():
+     input_config = Config.configure_data_node("the_input")
+     output_config = Config.configure_data_node("the_output")
+@@ -187,7 +204,7 @@ def test_events_published_for_scenario_submission(standalone):
+         scenario.submit(wait=True)
+     else:
+         scenario.submit()
+-    snapshot = all_evts.capture()
++    snapshot = _capture_after_count(all_evts, 18)
+     assert len(snapshot.collected_events) == 18
+     assert snapshot.entity_type_collected.get(EventEntityType.CYCLE, 0) == 0
+     assert snapshot.entity_type_collected.get(EventEntityType.DATA_NODE, 0) == 8
+diff --git a/taipy/core/job/_job_converter.py b/taipy/core/job/_job_converter.py
+index 6fe3d1518f..ef62940517 100644
+--- a/taipy/core/job/_job_converter.py
++++ b/taipy/core/job/_job_converter.py
+@@ -18,7 +18,7 @@
+ from ..job._job_model import _JobModel
+ from ..job.job import Job
+ from ..task._task_manager_factory import _TaskManagerFactory
+-from ..task.task import Task
++from ..task.task import Task, TaskId
+ 
+ 
+ def _missing_task_function():
+@@ -50,7 +50,7 @@ def _model_to_entity(cls, model: _JobModel) -> Job:
+             task = task_repository._load(model.task_id)
+         except ModelNotFound:
+             task_config_id = model.task_id.removeprefix("TASK_").rsplit("_", 1)[0]
+-            task = Task(task_config_id, {}, _missing_task_function, id=model.task_id, version=model.version)
++            task = Task(task_config_id, {}, _missing_task_function, id=TaskId(model.task_id), version=model.version)
+ 
+         job = Job(
+             id=model.id,
+diff --git a/taipy/core/_orchestrator/_orchestrator.py b/taipy/core/_orchestrator/_orchestrator.py
+index 1399f08597..93b161f3b9 100644
+--- a/taipy/core/_orchestrator/_orchestrator.py
++++ b/taipy/core/_orchestrator/_orchestrator.py
+@@ -240,6 +240,8 @@ def _is_blocked(cls, obj: Union[Task, Job]) -> bool:
+         Returns:
+              True if one of its input data nodes is blocked.
+         """
++        if isinstance(obj, Job) and obj.is_finished():
++            return False
+         input_data_nodes = obj._task.input.values() if isinstance(obj, Job) else obj.input.values()
+         data_manager = _DataManagerFactory._build_manager()
+         return any(not data_manager._get(dn.id).is_ready_for_reading for dn in input_data_nodes)
+diff --git a/tests/core/conftest.py b/tests/core/conftest.py
+index de44d79adc..0aeb6d09f8 100644
+--- a/tests/core/conftest.py
++++ b/tests/core/conftest.py
+@@ -384,9 +384,10 @@ def _init_orchestrator():
+ 
+         if _OrchestratorFactory._orchestrator is None:
+             _OrchestratorFactory._build_orchestrator()
+-        _OrchestratorFactory._build_dispatcher(force_restart=True)
++        # Reset pending orchestrator state before (re)starting the dispatcher thread.
+         _OrchestratorFactory._orchestrator.jobs_to_run = Queue()
+         _OrchestratorFactory._orchestrator.blocked_jobs = []
++        _OrchestratorFactory._build_dispatcher(force_restart=True)
+ 
+     return _init_orchestrator

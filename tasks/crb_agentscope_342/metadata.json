@@ -1,0 +1,84 @@
+{
+  "task_id": "crb_agentscope_342",
+  "name": "CI failure in agentscope (Dependency Issues, Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "342",
+  "repo_name": "agentscope",
+  "repo_owner": "agentscope-ai",
+  "sha_fail": "a5c10b0775fa7cf2c1e669ed67df7379a5484b50",
+  "sha_success": "680ee61e51d2545925e0b8a22ca8e9e65e1406ff",
+  "commit_date": "2025-10-21T04:17:00Z",
+  "error_type": [
+    "Dependency Issues",
+    "Test Failure"
+  ],
+  "workflow_path": ".github/workflows/unittest.yml",
+  "target_files": [
+    "src/agentscope/rag/_store/_milvuslite_store.py",
+    "tests/rag_store_test.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "341",
+      "commit_date": "2025-10-21T04:10:15Z",
+      "error_type": [
+        "Assertion Error"
+      ],
+      "workflow_filename": "unittest.yml",
+      "changed_files": [
+        "tests/mcp_sse_client_test.py",
+        "tests/mcp_streamable_http_client_test.py",
+        "src/agentscope/_utils/_common.py",
+        "src/agentscope/mcp/_http_stateful_client.py",
+        "src/agentscope/mcp/_http_stateless_client.py",
+        "tests/evaluation_test.py",
+        "tests/formatter_ollama_test.py",
+        "tests/model_gemini_test.py",
+        "tests/model_ollama_test.py",
+        "tests/rag_knowledge_test.py",
+        "tests/rag_reader_test.py",
+        "tests/rag_store_test.py",
+        "tests/token_openai_test.py",
+        "tests/tool_openai_test.py"
+      ],
+      "log_file": "memory/prior_00_341.log",
+      "diff_file": "memory/prior_00_341.diff"
+    },
+    {
+      "instance_id": "346",
+      "commit_date": "2025-10-03T05:48:14Z",
+      "error_type": [
+        "Code Formatting",
+        "Code Linting"
+      ],
+      "workflow_filename": "pre-commit.yml",
+      "changed_files": [
+        "examples/functionality/rag/milvuslite_store.py",
+        "src/agentscope/rag/__init__.py",
+        "src/agentscope/rag/_store/__init__.py",
+        "src/agentscope/rag/_store/_milvuslite_store.py"
+      ],
+      "log_file": "memory/prior_01_346.log",
+      "diff_file": "memory/prior_01_346.diff"
+    },
+    {
+      "instance_id": "344",
+      "commit_date": "2025-09-03T15:53:31Z",
+      "error_type": [
+        "Dependency Issues"
+      ],
+      "workflow_filename": "unittest.yml",
+      "changed_files": [
+        "setup.py",
+        "src/agentscope/formatter/_zhipu_formatter.py",
+        "src/agentscope/model/_zhipu_model.py",
+        "src/agentscope/token/_zhipu_token_counter.py",
+        "tests/formatter_zhipu_test.py",
+        "tests/model_zhipu_test.py",
+        "tests/token_zhipu_test.py"
+      ],
+      "log_file": "memory/prior_02_344.log",
+      "diff_file": "memory/prior_02_344.diff"
+    }
+  ]
+}

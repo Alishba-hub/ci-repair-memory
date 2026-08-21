@@ -1,0 +1,32 @@
+diff --git a/src/openai/lib/streaming/responses/_responses.py b/src/openai/lib/streaming/responses/_responses.py
+index d45664de45..9d0271f454 100644
+--- a/src/openai/lib/streaming/responses/_responses.py
++++ b/src/openai/lib/streaming/responses/_responses.py
+@@ -318,7 +318,7 @@ def handle_event(self, event: RawResponseStreamEvent) -> List[ResponseStreamEven
+                 )
+             )
+         else:
+-            events.append(event)
++            events.append(cast(ResponseStreamEvent[TextFormatT], event))
+ 
+         return events
+ 
+diff --git a/src/openai/resources/responses/responses.py b/src/openai/resources/responses/responses.py
+index 5ba22418ed..f3b48c50a5 100644
+--- a/src/openai/resources/responses/responses.py
++++ b/src/openai/resources/responses/responses.py
+@@ -2919,12 +2919,12 @@ def _make_tools(tools: Iterable[ParseableToolParam] | NotGiven) -> List[ToolPara
+     converted_tools: List[ToolParam] = []
+     for tool in tools:
+         if tool["type"] != "function":
+-            converted_tools.append(tool)
++            converted_tools.append(cast(ToolParam, tool))
+             continue
+ 
+         if "function" not in tool:
+             # standard Responses API case
+-            converted_tools.append(tool)
++            converted_tools.append(cast(ToolParam, tool))
+             continue
+ 
+         function = cast(Any, tool)["function"]  # pyright: ignore[reportUnnecessaryCast]

@@ -1,0 +1,11 @@
+============================= test session starts =============================
+collected 3 items
+
+tests/test_settings.py .F.
+
+=================================== FAILURES ===================================
+_________________________ test_setting_none_default ____________________________
+E       AttributeError: 'NoneType' object has no attribute 'lower'
+
+=========================== short test summary info ===========================
+FAILED tests/test_settings.py::test_setting_none_default - AttributeError

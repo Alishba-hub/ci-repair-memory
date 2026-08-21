@@ -1,0 +1,66 @@
+{
+  "task_id": "crb_openai-python_230",
+  "name": "CI failure in openai-python (Assertion Error, Environment Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "230",
+  "repo_name": "openai-python",
+  "repo_owner": "openai",
+  "sha_fail": "03f8b88a0d428b74a7822e678a60d0ef106ea961",
+  "sha_success": "cff135cb7059ef1bf8f9b101a83529fc0cee37c4",
+  "commit_date": "2025-09-02T16:46:20Z",
+  "error_type": [
+    "Assertion Error",
+    "Environment Error"
+  ],
+  "workflow_path": ".github/workflows/ci.yml",
+  "target_files": [
+    "src/openai/resources/chat/completions/completions.py"
+  ],
+  "memory": [
+    {
+      "instance_id": "229",
+      "commit_date": "2025-09-02T13:46:20Z",
+      "error_type": [
+        "Code Formatting",
+        "Environment Error"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "tests/utils.py"
+      ],
+      "log_file": "memory/prior_00_229.log",
+      "diff_file": "memory/prior_00_229.diff"
+    },
+    {
+      "instance_id": "240",
+      "commit_date": "2025-08-07T17:02:31Z",
+      "error_type": [
+        "Code Linting",
+        "Runtime Error"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "src/openai/lib/streaming/responses/_responses.py",
+        "src/openai/resources/responses/responses.py"
+      ],
+      "log_file": "memory/prior_01_240.log",
+      "diff_file": "memory/prior_01_240.diff"
+    },
+    {
+      "instance_id": "228",
+      "commit_date": "2025-08-05T16:51:15Z",
+      "error_type": [
+        "Code Linting",
+        "Environment Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "ci.yml",
+      "changed_files": [
+        "examples/image_stream.py",
+        "src/openai/lib/streaming/responses/_events.py"
+      ],
+      "log_file": "memory/prior_02_228.log",
+      "diff_file": "memory/prior_02_228.diff"
+    }
+  ]
+}

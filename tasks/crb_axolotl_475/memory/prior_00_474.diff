@@ -1,0 +1,24 @@
+diff --git a/src/axolotl/core/builders/causal.py b/src/axolotl/core/builders/causal.py
+index b16807144b..6ed298d9f8 100644
+--- a/src/axolotl/core/builders/causal.py
++++ b/src/axolotl/core/builders/causal.py
+@@ -437,6 +437,7 @@ def build_collator(
+         ]
+         collator_args = [self.tokenizer]
+ 
++        collator_cls_and_kwargs = None
+         if self.cfg.plugins:
+             plugin_manager = PluginManager.get_instance()
+             collator_cls_and_kwargs = plugin_manager.get_collator_cls_and_kwargs(
+diff --git a/src/axolotl/core/builders/rl.py b/src/axolotl/core/builders/rl.py
+index ca555ad826..c5f01dd418 100644
+--- a/src/axolotl/core/builders/rl.py
++++ b/src/axolotl/core/builders/rl.py
+@@ -151,7 +151,6 @@ def _build_training_arguments(self, total_num_steps):
+             if blocklist_key in training_args_kwargs:
+                 del training_args_kwargs[blocklist_key]
+ 
+-
+         if self.cfg.plugins:
+             plugin_manager = PluginManager.get_instance()
+             plugin_training_args = plugin_manager.get_training_args(self.cfg)

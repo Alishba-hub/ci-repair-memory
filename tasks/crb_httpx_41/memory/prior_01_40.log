@@ -1,0 +1,29 @@
+--- step: Python 3.12 ---
++ ./scripts/sync-version
+grep: warning: ? at start of expression
+grep: warning: ? at start of expression
+grep: warning: ? at start of expression
+grep: warning: ? at start of expression
+grep: warning: ? at start of expression
+grep: warning: ? at start of expression
+CHANGELOG_VERSION: 0.26.0
+VERSION: 0.26.0
++ ruff format httpx tests --diff
+60 files left unchanged
++ mypy httpx tests
+httpx/_client.py:1456: error: Unexpected keyword argument "verify" for "AsyncHTTPTransport"  [call-arg]
+httpx/_client.py:1458: error: Name "verify" is not defined  [name-defined]
+httpx/_client.py:1459: error: Name "cert" is not defined  [name-defined]
+httpx/_transports/default.py:260: note: "AsyncHTTPTransport" defined here
+httpx/_client.py:1456: error: Unexpected keyword argument "cert" for "AsyncHTTPTransport"  [call-arg]
+httpx/_transports/default.py:260: note: "AsyncHTTPTransport" defined here
+Found 4 errors in 1 file (checked 60 source files)
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+ [2026-08-12 20:29:30 +0000] [8] [INFO] Starting gunicorn 23.0.0
+ [2026-08-12 20:29:30 +0000] [8] [INFO] Listening at: http://0.0.0.0:8080 (8)
+ [2026-08-12 20:29:30 +0000] [8] [INFO] Using worker: sync
+ [2026-08-12 20:29:30 +0000] [11] [INFO] Booting worker with pid: 11
+5b5a0fd4473d9b21f9e2942c00fd2ee9cff436a2ff9ba4528378aa3bce61f213
+github_network_6a81b6fdea104db6a3c2e69e8f8585ec
