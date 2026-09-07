@@ -2,8 +2,13 @@ const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
 
-const EXTENSION_VERSION = "0.2.0";
-const CONDITIONS = ["no_memory", "with_memory"];
+const EXTENSION_VERSION = "0.3.5";
+
+// The two-arm comparison. Kept only as the ordering key for interleave(): which arms
+// actually exist is read from disk by conditionsOn(), because run_experiment.py can lay
+// out arms this list does not know about, and a hardcoded list once silently skipped
+// one -- the cells were created, the extension never ran them, and nothing said so.
+const KNOWN_CONDITIONS = ["no_memory", "with_memory"];
 const FILE_HEADER = /^===\s*(.+?)\s*===$/;
 
 function config() {
@@ -14,6 +19,7 @@ function config() {
     modelFamily: settings.get("modelFamily"),
     delaySeconds: settings.get("delaySeconds"),
     maxRuns: settings.get("maxRuns"),
+    allowRouterModel: settings.get("allowRouterModel"),
   };
 }
 
@@ -49,6 +55,25 @@ function isEdited(workspace, repoBefore) {
  * agent_meta.json: that is a run someone did by hand, and overwriting it would
  * destroy real data.
  */
+/**
+ * Which experimental arms this task actually has on disk.
+ *
+ * Read rather than assumed. A hardcoded list once meant cells were laid out and then
+ * quietly never run, which is the worst kind of missing data because nothing reports it.
+ * Anything that is a directory and holds run folders is an arm.
+ */
+function conditionsOn(taskDir) {
+  if (!fs.existsSync(taskDir)) return [];
+  const found = fs
+    .readdirSync(taskDir)
+    .filter((name) => fs.statSync(path.join(taskDir, name)).isDirectory());
+  // Known arms first, in experiment order, then anything else so a future arm still runs.
+  return [
+    ...KNOWN_CONDITIONS.filter((c) => found.includes(c)),
+    ...found.filter((c) => !KNOWN_CONDITIONS.includes(c)),
+  ];
+}
+
 function pendingRuns(repoRoot, agent, taskFilter) {
   const agentRoot = path.join(repoRoot, "runs", agent);
   if (!fs.existsSync(agentRoot)) {
@@ -59,7 +84,7 @@ function pendingRuns(repoRoot, agent, taskFilter) {
   for (const taskId of fs.readdirSync(agentRoot).sort()) {
     if (taskFilter && taskId !== taskFilter) continue;
     const repoBefore = path.join(repoRoot, "tasks", taskId, "repo_before");
-    for (const condition of CONDITIONS) {
+    for (const condition of conditionsOn(path.join(agentRoot, taskId))) {
       const conditionDir = path.join(agentRoot, taskId, condition);
       if (!fs.existsSync(conditionDir)) continue;
       for (const run of fs.readdirSync(conditionDir).sort()) {
@@ -84,8 +109,8 @@ function pendingRuns(repoRoot, agent, taskFilter) {
  *
  * Folder order would spend a small maxRuns budget entirely on one task in one
  * condition, which cannot answer the research question. Sorting by run index, then
- * task, then condition puts each task's two conditions next to each other, so even
- * maxRuns=2 yields one complete matched pair.
+ * task, then condition puts each task's arms next to each other, so even a small
+ * maxRuns yields complete matched sets rather than one arm of many tasks.
  */
 function interleave(pending) {
   return [...pending].sort((a, b) => {
@@ -95,15 +120,47 @@ function interleave(pending) {
   });
 }
 
-async function pickModel(family) {
-  const selector = family ? { vendor: "copilot", family } : { vendor: "copilot" };
-  const models = await vscode.lm.selectChatModels(selector);
-  if (!models.length) {
+async function pickModel(family, allowRouter) {
+  // Ask for everything first, so a wrong `modelFamily` can be told apart from not being
+  // signed in. Selecting straight on the family returns an empty list either way, and
+  // "sign in to Copilot" is the wrong thing to tell someone who is signed in and simply
+  // typed a family string that does not exist.
+  const all = await vscode.lm.selectChatModels({ vendor: "copilot" });
+  if (!all.length) {
     throw new Error(
-      "No Copilot model available. Sign in to GitHub Copilot in VS Code and try again."
+      "No Copilot model available at all. Sign in to GitHub Copilot in VS Code, then retry."
     );
   }
-  return models[0];
+  if (!family) {
+    throw new Error(
+      "ciMemory.modelFamily is not set. Pin one model before collecting results: " +
+        "comparing conditions across different models would confound the experiment. " +
+        "Available: " +
+        [...new Set(all.map((m) => m.family))].join(", ")
+    );
+  }
+  const matched = all.filter((m) => m.family === family);
+  if (!matched.length) {
+    throw new Error(
+      `No Copilot model with family "${family}". You are signed in and ${all.length} ` +
+        `model(s) are available, so this is a settings typo rather than an auth problem. ` +
+        `Set ciMemory.modelFamily to exactly one of: ` +
+        [...new Set(all.map((m) => m.family))].join(", ")
+    );
+  }
+  const chosen = matched[0];
+  if (chosen.id === "auto" && !allowRouter) {
+    throw new Error(
+      `Model family "${family}" resolves to id "auto", Copilot's router: it may pick a ` +
+        `different underlying model per request, which makes the model an uncontrolled ` +
+        `variable *inside* a condition. If that is the only capable model available, set ` +
+        `ciMemory.allowRouterModel to true to proceed. Every run then records the model ` +
+        `it actually got, and score_runs.py reports whether it varied -- a router that ` +
+        `stayed on one model throughout is harmless, and one that did not is at least ` +
+        `visible instead of silent.`
+    );
+  }
+  return chosen;
 }
 
 async function askModel(model, prompt, token) {
@@ -122,7 +179,17 @@ async function askModel(model, prompt, token) {
  * The prompt asks for each changed file to be preceded by `=== path ===`.
  * Models often wrap the body in a markdown fence anyway, so fences are stripped.
  */
-function parseFiles(reply) {
+/**
+ * Split a model reply into { path: contents }.
+ *
+ * The prompt asks for `=== path ===` before each file, and when a model obeys, that is
+ * unambiguous and nothing else is consulted. Some models answer with prose and a fenced
+ * block instead, naming the file in a sentence -- a perfectly reasonable reply that the
+ * header-only parser scored as "NO FILES PARSED", discarding complete submissions over
+ * formatting. `known` and `sizes` enable the fallback; without them behaviour is
+ * unchanged. Mirrors parse_files() in src/ci_memory_agents/response_parser.py.
+ */
+function parseFiles(reply, known, sizes) {
   const files = {};
   const lines = reply.split(/\r?\n/);
   let current = null;
@@ -143,7 +210,82 @@ function parseFiles(reply) {
     if (current) buffer.push(line);
   }
   flush();
+
+  if (Object.keys(files).length || !known || !known.length) return files;
+  return parseFenced(lines, known, sizes || {});
+}
+
+// How much of the original a fenced block must cover before it counts as the whole file.
+// Models routinely quote a short excerpt of the change as well as the finished file, and
+// writing a 116-character excerpt over a 5,000-character test reads as a deliberate
+// deletion rather than a parse failure -- a failure the harness would have invented.
+const MIN_WHOLE_FILE_RATIO = 0.5;
+
+function parseFenced(lines, known, sizes) {
+  const paths = [...known].sort((a, b) => b.length - a.length);
+  const files = {};
+  let seen = null;
+
+  for (let i = 0; i < lines.length; i += 1) {
+    if (!/^```[A-Za-z0-9_+-]*\s*$/.test(lines[i].trim())) {
+      for (const path of paths) {
+        const base = path.split("/").pop();
+        if (lines[i].includes(path) || lines[i].includes(base)) {
+          seen = path;
+          break;
+        }
+      }
+      continue;
+    }
+
+    const body = [];
+    i += 1;
+    while (i < lines.length && !/^```/.test(lines[i].trim())) {
+      body.push(lines[i]);
+      i += 1;
+    }
+
+    const target = seen || (known.length === 1 ? known[0] : null);
+    if (!target || !body.length) continue;
+    // A model opening with ```python sometimes repeats the language as the first body
+    // line. It is never valid source and would break the file it lands in.
+    if (["python", "py", "yaml", "yml", "json", "toml", "text"].includes(body[0].trim())) {
+      body.shift();
+    }
+    // Keep the largest block for a path: an excerpt often precedes the complete file.
+    const candidate = body.join("\n");
+    if (candidate.length > (files[target] || "").length) files[target] = candidate;
+  }
+
+  for (const path of Object.keys(files)) {
+    if (sizes[path] && files[path].length < sizes[path] * MIN_WHOLE_FILE_RATIO) {
+      delete files[path];
+    }
+  }
   return files;
+}
+
+/** The paths a task offers and their original sizes, for the fallback above. */
+function repoFiles(repoRoot, taskId) {
+  const before = path.join(repoRoot, "tasks", taskId, "repo_before");
+  const known = [];
+  const sizes = {};
+  if (!fs.existsSync(before)) return { known, sizes };
+  const walk = (dir, prefix) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === ".git") continue;
+      const full = path.join(dir, entry.name);
+      const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) walk(full, rel);
+      else {
+        known.push(rel);
+        sizes[rel] = fs.readFileSync(full, "utf8").length;
+      }
+    }
+  };
+  walk(before, "");
+  known.sort();
+  return { known, sizes };
 }
 
 function stripFences(lines) {
@@ -176,7 +318,7 @@ async function runBatch(taskFilter) {
   const settings = config();
   let model;
   try {
-    model = await pickModel(settings.modelFamily);
+    model = await pickModel(settings.modelFamily, settings.allowRouterModel);
   } catch (error) {
     vscode.window.showErrorMessage(error.message);
     return;
@@ -231,7 +373,8 @@ async function runBatch(taskFilter) {
         const started = Date.now();
         try {
           const reply = await askModel(model, prompt, token);
-          const files = parseFiles(reply);
+          const { known, sizes } = repoFiles(settings.repoRoot, item.taskId);
+          const files = parseFiles(reply, known, sizes);
           const written = writeFiles(path.join(item.runDir, "workspace"), files);
 
           fs.writeFileSync(path.join(item.runDir, "agent_response.md"), reply, "utf8");
@@ -239,6 +382,7 @@ async function runBatch(taskFilter) {
             path.join(item.runDir, "agent_meta.json"),
             JSON.stringify(
               {
+                model_id: model.id,
                 model_id: model.id,
                 model_family: model.family,
                 model_vendor: model.vendor,

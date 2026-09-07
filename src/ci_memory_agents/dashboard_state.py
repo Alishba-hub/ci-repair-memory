@@ -7,9 +7,17 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .evaluator import evaluate_submission, pass_at_k
+from .agreement import by_condition, judge_vs_execution
+from .ci_outcome import outcome_path, read_outcome
 from .judge import read_verdict
 from .loader import list_tasks
-from .prompt_builder import CONDITIONS, build_prompt
+from .prompt_builder import ALL_CONDITIONS, CONDITIONS, build_prompt
+
+# The two arms the hypothesis compares. `ALL_CONDITIONS` is whatever the harness can
+# produce; they are the same today. Kept distinct because the pairing requirement and
+# the enumeration of arms are different questions, and conflating them is what once let
+# an arm's completed runs vanish from the scorer.
+PAIR = CONDITIONS
 from .stats import minimum_discordant_for_significance, paired_analysis, wilson_interval
 
 # Per-run measures averaged per condition. Keeping one list means the summary, the
@@ -69,7 +77,7 @@ def collect(tasks_root: Path, runs_root: Path, agent: str) -> list[dict]:
             "memory_count": len(task.memory),
             "conditions": {},
         }
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             condition_dir = agent_root / task.task_id / condition
             runs = []
             if condition_dir.exists():
@@ -87,7 +95,7 @@ def collect(tasks_root: Path, runs_root: Path, agent: str) -> list[dict]:
                 "done": sum(1 for r in runs if r["done"]),
                 "total": len(runs),
             }
-        if any(entry["conditions"][c]["total"] for c in CONDITIONS):
+        if any(entry["conditions"][c]["total"] for c in ALL_CONDITIONS):
             payload.append(entry)
     return payload
 
@@ -143,12 +151,31 @@ def _verdict_fields(run_dir: Path) -> dict:
     how far the judging got. `judged` carries that distinction so the summary can say
     how much of the experiment has actually been graded.
     """
+    # The executed outcome, when there is one. It is carried alongside the judge's
+    # verdict rather than replacing it, because the interesting quantity is the pair:
+    # a judge that says "fixed" where CI says red is the finding, and collapsing the
+    # two into one column would hide exactly that.
+    outcome = read_outcome(outcome_path(run_dir))
+    ci = None
+    if outcome is not None:
+        ci = {
+            "conclusion": outcome.conclusion,
+            "passed": outcome.passed,
+            "decided": outcome.decided,
+            "url": outcome.run_url,
+            "detail": outcome.detail,
+        }
+
     verdict = read_verdict(run_dir)
     if verdict is None:
-        return {"solved": False, "judged": False, "judge": None}
+        return {"solved": False, "judged": False, "judge": None, "ci": ci, "disagrees": False}
+    judged_solved = bool(verdict.get("solved"))
     return {
-        "solved": bool(verdict.get("solved")),
+        # Execution decides when it ran. That is the benchmark's own oracle and the
+        # judge is a stand-in for it, so where both exist the stand-in does not win.
+        "solved": ci["passed"] if (ci and ci["decided"]) else judged_solved,
         "judged": True,
+        "judge_solved": judged_solved,
         "judge": {
             "fixes_failure": verdict.get("fixes_failure"),
             "cheats": verdict.get("cheats"),
@@ -156,6 +183,8 @@ def _verdict_fields(run_dir: Path) -> dict:
             "confidence": verdict.get("confidence"),
             "reason": verdict.get("reason", ""),
         },
+        "ci": ci,
+        "disagrees": bool(ci and ci["decided"] and ci["passed"] != judged_solved),
     }
 
 
@@ -184,14 +213,24 @@ def _score_fingerprint(agent_root: Path, task_id: str | None) -> tuple:
     for task_dir in sorted(agent_root.iterdir()):
         if task_id and task_dir.name != task_id:
             continue
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             condition_dir = task_dir / condition
             if not condition_dir.exists():
                 continue
             for run_dir in sorted(condition_dir.iterdir()):
                 if not run_dir.is_dir():
                     continue
-                for name in ("agent_meta.json", "judgement.json", "workspace", "agent_timeout.txt"):
+                # `ci_outcome.json` belongs here for the same reason the other two do:
+                # executing the workflow changes what `solved` means for that run, and a
+                # signature that misses it serves a cached page saying "not run" over
+                # results that exist on disk.
+                for name in (
+                    "agent_meta.json",
+                    "judgement.json",
+                    "ci_outcome.json",
+                    "workspace",
+                    "agent_timeout.txt",
+                ):
                     path = run_dir / name
                     try:
                         parts.append((str(path), path.stat().st_mtime_ns))
@@ -232,7 +271,7 @@ def _score_task_uncached(tasks_root: Path, runs_root: Path, agent: str, task_id:
         task = tasks.get(task_dir.name)
         if task is None:
             continue
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             condition_dir = task_dir / condition
             if not condition_dir.exists():
                 continue
@@ -285,14 +324,66 @@ def _score_task_uncached(tasks_root: Path, runs_root: Path, agent: str, task_id:
         # worse than it is. Surfacing the count keeps that visible rather than implicit.
         "judged": sum(1 for r in results if r.get("judged")),
         "unjudged": sum(1 for r in results if not r.get("judged")),
+        # How many verdicts were observed rather than inferred. Kept beside the judged
+        # count because they answer different questions: "how much has been graded" and
+        # "how much of that grading can be trusted".
+        "executed": sum(1 for r in results if (r.get("ci") or {}).get("decided")),
+        "disagreements": sum(1 for r in results if r.get("disagrees")),
     }
+    summary["agreement"] = _agreement_panel(results)
     return {"results": results, "summary": summary}
+
+
+def _agreement_panel(results: list[dict]) -> dict:
+    """Cohen's kappa between the judge and real CI, for the dashboard header.
+
+    This is the number that decides how much any other number on the page is worth. It
+    belongs in the summary rather than a sub-page: a repair rate produced entirely by a
+    model, next to a kappa saying that model tracks reality no better than a coin, is
+    one claim; the same rate with kappa 0.8 is a different claim, and a reader should
+    not have to go looking to tell which one they are reading.
+    """
+    rows = [
+        {
+            "condition": r["condition"],
+            "judge_solved": r.get("judge_solved", r["solved"]),
+            "ci_conclusion": (r.get("ci") or {}).get("conclusion", ""),
+        }
+        for r in results
+        if r.get("judged") and (r.get("ci") or {}).get("decided")
+    ]
+    if not rows:
+        return {"n": 0, "ready": False}
+
+    overall = judge_vs_execution(rows)
+    return {
+        "n": overall.n,
+        "ready": overall.n >= 50,
+        "kappa": round(overall.kappa, 3),
+        "raw_agreement": round(overall.raw_agreement, 3),
+        "judge_rate": round(overall.judge_rate, 3),
+        "execution_rate": round(overall.execution_rate, 3),
+        "rate_bias": round(overall.rate_bias, 3),
+        "false_positives": overall.judge_only,
+        "false_negatives": overall.execution_only,
+        "interpretation": overall.interpretation,
+        "by_condition": {
+            name: {
+                "n": a.n,
+                "kappa": round(a.kappa, 3),
+                "judge_rate": round(a.judge_rate, 3),
+                "execution_rate": round(a.execution_rate, 3),
+                "rate_bias": round(a.rate_bias, 3),
+            }
+            for name, a in by_condition(rows).items()
+        },
+    }
 
 
 def summarize(results: list[dict], k: int = 1) -> dict:
     """Per-condition means plus Pass@K, computed only over runs that were attempted."""
     summary: dict = {"conditions": {}, "attempted": len(results)}
-    for condition in CONDITIONS:
+    for condition in ALL_CONDITIONS:
         rows = [r for r in results if r["condition"] == condition]
         if not rows:
             summary["conditions"][condition] = None
@@ -336,8 +427,11 @@ def summarize(results: list[dict], k: int = 1) -> dict:
 
     scores: dict[str, list[float]] = {}
     for task in paired:
-        for condition in CONDITIONS:
-            rows = by_task[(task, condition)]
+        for condition in ALL_CONDITIONS:
+            # A task is "paired" on the two comparison arms; the control need not exist.
+            # Indexing it unconditionally assumed every arm was present for every task,
+            # which was true only while there were exactly two.
+            rows = by_task.get((task, condition), [])
             correct = sum(1 for r in rows if r["solved"])
             if len(rows) >= k:
                 scores.setdefault(condition, []).append(pass_at_k(len(rows), correct, k))
@@ -414,7 +508,7 @@ def _by_task_table(results: list[dict], paired: list[str]) -> list[dict]:
             "paired": task_id in paired,
             "gold_files": rows_all[0]["gold_files"],
         }
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             rows = grouped[task_id].get(condition, [])
             entry[condition] = {
                 "runs": len(rows),
@@ -433,6 +527,13 @@ def _by_task_table(results: list[dict], paired: list[str]) -> list[dict]:
                         {
                             "run": r["run"],
                             "solved": r["solved"],
+                            # The executed outcome and whether it contradicts the judge.
+                            # Both travel with the row: a page that shows a rate without
+                            # showing which oracle produced it, and where the two
+                            # disagree, is asking the reader to take the model's word.
+                            "ci": r.get("ci"),
+                            "judge_solved": r.get("judge_solved", r["solved"]),
+                            "disagrees": bool(r.get("disagrees")),
                             "exact": r["exact_match"],
                             "files_matched": r["files_matched"],
                             "files_expected": r["files_expected"],
@@ -452,8 +553,8 @@ def _by_task_table(results: list[dict], paired: list[str]) -> list[dict]:
                     key=lambda r: r["run"],
                 ),
             }
-        entry["total_runs"] = sum(entry[c]["runs"] for c in CONDITIONS)
-        entry["total_solved"] = sum(entry[c]["solved"] for c in CONDITIONS)
+        entry["total_runs"] = sum(entry[c]["runs"] for c in ALL_CONDITIONS)
+        entry["total_solved"] = sum(entry[c]["solved"] for c in ALL_CONDITIONS)
         table.append(entry)
     return table
 
@@ -477,9 +578,9 @@ def _pass_at_k_curve(by_task: dict[tuple[str, str], list[dict]], paired: list[st
     if not paired:
         return {"k": [], "series": {}, "tasks_at_k": []}
     depth = max(
-        len(by_task[(task, condition)])
+        len(by_task.get((task, condition), []))
         for task in paired
-        for condition in CONDITIONS
+        for condition in ALL_CONDITIONS
         if (task, condition) in by_task
     )
 
@@ -491,21 +592,23 @@ def _pass_at_k_curve(by_task: dict[tuple[str, str], list[dict]], paired: list[st
     ks: list[int] = []
     tasks_at_k: list[int] = []
     withheld: list[int] = []
-    series: dict[str, list[float]] = {c: [] for c in CONDITIONS}
+    series: dict[str, list[float]] = {c: [] for c in ALL_CONDITIONS}
     for k in range(1, depth + 1):
         # A task enters at this K only if both conditions have K runs. Averaging over
         # a different task set per condition would compare two different benchmarks.
         eligible = [
             task
             for task in paired
-            if all(len(by_task.get((task, c), [])) >= k for c in CONDITIONS)
+            if all(len(by_task.get((task, c), [])) >= k for c in PAIR)
         ]
         if len(eligible) < floor:
             withheld.append(k)
             continue
         ks.append(k)
         tasks_at_k.append(len(eligible))
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
+            # Only tasks that actually have k runs in this arm. Pass@k over an arm a
+            # task never had is not zero, it is undefined, and asking for it raises.
             values = [
                 pass_at_k(
                     len(by_task[(task, condition)]),
@@ -513,7 +616,10 @@ def _pass_at_k_curve(by_task: dict[tuple[str, str], list[dict]], paired: list[st
                     k,
                 )
                 for task in eligible
+                if len(by_task.get((task, condition), [])) >= k
             ]
+            if not values:
+                continue
             series[condition].append(round(sum(values) / len(values), 4))
     return {
         "k": ks,
@@ -548,7 +654,7 @@ def _funnel(results: list[dict]) -> list[dict]:
     table = []
     for name, test in stages:
         entry = {"stage": name}
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             rows = [r for r in results if r["condition"] == condition]
             entry[condition] = sum(1 for r in rows if test(r))
             entry[f"{condition}_total"] = len(rows)
@@ -561,7 +667,7 @@ def _histogram(results: list[dict], metric: str, bins: int = 5) -> dict:
     edges = [i / bins for i in range(bins + 1)]
     labels = [f"{int(edges[i] * 100)}-{int(edges[i + 1] * 100)}%" for i in range(bins)]
     series: dict[str, list[int]] = {}
-    for condition in CONDITIONS:
+    for condition in ALL_CONDITIONS:
         counts = [0] * bins
         for row in results:
             if row["condition"] != condition:
@@ -586,7 +692,7 @@ def _by_error_type(results: list[dict]) -> list[dict]:
     table = []
     for error, conditions in sorted(buckets.items()):
         entry = {"error_type": error}
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             rows = conditions.get(condition, [])
             solved = sum(1 for r in rows if r["solved"])
             entry[condition] = {
@@ -599,7 +705,7 @@ def _by_error_type(results: list[dict]) -> list[dict]:
                 ),
                 "mean_duration_s": _mean_duration(rows),
             }
-        entry["total_runs"] = sum(entry[c]["runs"] for c in CONDITIONS)
+        entry["total_runs"] = sum(entry[c]["runs"] for c in ALL_CONDITIONS)
         table.append(entry)
     return sorted(table, key=lambda e: -e["total_runs"])
 
@@ -768,7 +874,7 @@ def export_latex(tasks_root: Path, runs_root: Path, agent: str) -> str:
     for task in sorted(per_task):
         conditions = per_task[task]
         cells, rates = [], {}
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             rows = conditions.get(condition, [])
             if rows:
                 solved = sum(1 for r in rows if r["solved"])
@@ -828,11 +934,18 @@ def reset_run(workspace: Path, repo_before: Path) -> str:
 
 
 def list_agents(runs_root: Path) -> list[str]:
-    """Agent folders under runs/, so the UI can switch between them."""
+    """Agent folders under runs/, so the UI can switch between them.
+
+    An agent folder holds task folders holding condition folders; the execution oracle's
+    clone cache (`_repos`) sits in the same directory and is not one. Matched on shape
+    rather than by name, so any future sibling is excluded for the same reason.
+    """
     if not runs_root.exists():
         return []
-    return sorted(
-        path.name
-        for path in runs_root.iterdir()
-        if path.is_dir() and any(path.iterdir())
-    )
+    agents = []
+    for path in sorted(runs_root.iterdir()):
+        if not path.is_dir() or path.name.startswith("_"):
+            continue
+        if any(task.is_dir() and any(c.is_dir() for c in task.iterdir()) for task in path.iterdir()):
+            agents.append(path.name)
+    return agents

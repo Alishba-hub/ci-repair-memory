@@ -1,0 +1,8 @@
+# Only two third-party packages are needed. Everything else is the standard library,
+# which is deliberate: this harness has to run unattended on a cluster where installing
+# things is a negotiation.
+pyarrow>=14.0        # reads the CI-Repair-Bench parquet in scripts/import_ci_repair_bench.py
+PyYAML>=6.0          # parses workflow.yml in workflow_std.py and oracle_local.py
+
+# Python 3.10 or newer. The code uses `X | None` annotations throughout; it has been
+# exercised on 3.14 and nothing older than 3.10 will import.

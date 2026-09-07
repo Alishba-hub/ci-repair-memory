@@ -1,356 +1,166 @@
 # CI Memory Agents
 
-This project tests a simple but important research question:
+Does giving an AI coding agent earlier failures and fixes from the same project improve
+its ability to repair a failing CI build?
 
-Does giving an AI coding agent access to earlier failures and fixes from the same project improve its ability to repair a failing CI build?
+This is an experiment harness built around real CI failures from **CI-Repair-Bench**. It
+materialises task data, constructs prompts under each condition, runs an agent against
+fresh copies of the broken repository, and decides success through a precedence of
+oracles.
 
-The repository is an experiment harness built around real GitHub issue/CI failures from CI-Repair-Bench. It materialises task data, constructs prompts under two conditions, runs an agent against fresh copies of the buggy repository, and scores the result against a reference fix.
+> **Status: no effect has been detected, and the current rates are provisional.**
+> Across the 135 runs decided so far the agent repairs roughly 57–62% of these builds
+> either way. The per-task interval contains zero, what movement there is comes from
+> tasks run once or twice, and the verdict set currently mixes two judge versions.
+> **Read the correction notices at the top of [EXPERIMENT_REPORT.md](EXPERIMENT_REPORT.md)
+> before quoting any number from this repository.**
 
-## Core concept
+---
 
-Each task is a real failed CI workflow. The model is given:
+## Start here
 
-- the repository snapshot at the failing commit (`repo_before`)
-- the failing log / workflow information
-- optionally, a memory block containing earlier failures and their fixes from the same project
+```powershell
+cd D:\research\ci-memory-agents
+pip install -r requirements.txt
+python run.py
+```
 
-The experiment compares two conditions:
+`run.py` asks which agent, which projects or how many tasks, and how many runs per
+condition; shows what will happen; then does it. It finds the
+agent binary itself and prints the equivalent flags so the next run needs no questions.
 
-- `no_memory`: the model sees the failing repo and log, but not earlier project history
-- `with_memory`: the model sees the same failing repo and log plus prior issue-fix examples from the same project
+| Command | |
+|---|---|
+| `python run.py` | Ask what to run, then run it |
+| `python run.py doctor` | Check this machine can run it |
+| `python run.py tasks` | List the projects and pick what to run |
+| `python run.py status` | Progress, and whether the result is defensible yet |
+| `python run.py results` | The results table |
+| `python run.py tokens` | What it has cost, and what the full study would cost |
 
-The target failing log is included in both conditions, because it is the problem statement. The only difference is whether the prompt includes historical memory. The project also includes leakage checks to ensure the memory block does not contain the answer directly.
+Full operational detail, including the two steps that turn inferred results into measured
+ones, is in **[HOW_TO_RUN.md](HOW_TO_RUN.md)**.
 
-## Why this project exists
+## The four documents
 
-Most benchmark tasks ask a model to fix a single issue. This project studies whether project-specific incident history helps on the next similar failure. In other words, the question is not just "can the model patch the code?" but "can it use accumulated prior repair experience from the same codebase?"
+Each has one job. If they ever disagree, the one nearest the code wins.
 
-## Repository structure
+| | |
+|---|---|
+| **README.md** | This file. What the project is and where things live |
+| **[HOW_TO_RUN.md](HOW_TO_RUN.md)** | How to run it |
+| **[EXPERIMENT_REPORT.md](EXPERIMENT_REPORT.md)** | The design, the findings, what they cannot claim, and what is missing |
+| **[EVALUATION.md](EVALUATION.md)** | How correctness is decided and why — written to be lifted into a paper's evaluation section |
+
+---
+
+## The idea
+
+Each task is one real failed CI workflow. The agent gets the repository at the failing
+commit, the failing log, and the workflow definition, and must edit the files so the build
+would pass.
+
+| Condition | Repo at the break | Failing log | Memory block |
+|---|---|---|---|
+| `no_memory` | yes | yes | none |
+| `with_memory` | yes | yes | 3 earlier failures from **this** project |
+
+The failing log is in both conditions because it is the problem statement, not memory.
+The only thing that varies is the memory block.
+
+The project explicitly audits whether the memory block contains the answer, and audits
+localisation leakage — a prior fix touching the same file as the target's — separately,
+because content overlap will never see it. Chronological ordering alone turned out not to
+be sufficient, which is one of the pilot's real findings; see EXPERIMENT_REPORT §5.2.
+
+## How success is decided
+
+In precedence order (`src/ci_memory_agents/oracle.py`), with the deciding oracle recorded
+on every verdict:
+
+1. **static** — deterministic checks. Conclusive only *against* a patch: an empty patch,
+   a file that no longer parses, a deleted test, a workflow edited to ignore itself.
+2. **execution** — re-run the workflow, pass iff every check passes. This is
+   CI-Repair-Bench's own oracle and what a headline number should mean.
+   **It has not been run yet** — `ci_conclusion` is empty on every verdict on disk.
+3. **judge** — a blind model verdict on whether the patch removes the same root cause as
+   the reference fix. Every number in this repository currently comes from here, with no
+   measured agreement against execution, which makes it an inference rather than a
+   measurement.
+
+`run.py results` prints which oracle decided what, so this is visible rather than assumed.
+
+Textual measures — `exact_match`, `normalized_match`, file IoU/precision/recall,
+`line_deviation_ratio` — are reported as diagnostics, never as the criterion. Across all
+runs, 46 of 79 successful repairs took a route the maintainer did not take; text matching
+called all 46 failures. That argument is EXPERIMENT_REPORT §6.
+
+---
+
+## Repository layout
 
 ```text
 ci-memory-agents/
-├── README.md
-├── HOW_TO_RUN.md
-├── experiment_plan.md
-├── EXPERIMENT_REPORT.md
-├── START_HERE.bat
-├── .gitignore
-├── report_claude-code.html
-├── research_meeting_reuse_notes.md
-├── results_archive/
-│   └── results_v1_no_test_edits.jsonl
-├── runs/
-│   ├── copilot/
-│   └── claude-code/
-│       └── <task_id>/
-│           ├── no_memory/
-│           │   └── run_01/
-│           │       ├── prompt.md
-│           │       ├── workspace/
-│           │       ├── agent_response.md
-│           │       └── agent_meta.json
-│           └── with_memory/
-├── scripts/
-│   ├── import_ci_repair_bench.py
-│   ├── audit_leakage.py
-│   ├── validate_pipeline.py
-│   ├── run_experiment.py
-│   ├── auto_run.py
-│   ├── dashboard.py
-│   ├── judge_runs.py
-│   └── make_report.py
-├── src/
-│   └── ci_memory_agents/
-│       ├── __init__.py
-│       ├── dashboard_state.py
-│       ├── evaluator.py
-│       ├── importer.py
-│       ├── judge.py
-│       ├── loader.py
-│       ├── log_compressor.py
-│       ├── memory.py
-│       ├── prompt_builder.py
-│       ├── report.py
-│       ├── response_parser.py
-│       ├── stats.py
-│       └── ui.html
+├── run.py                     the single entry point
+├── requirements.txt
+├── README.md · HOW_TO_RUN.md · EXPERIMENT_REPORT.md · EVALUATION.md
+├── data/ci-repair-bench.parquet    raw dataset, 240 MB, gitignored
 ├── tasks/
-│   ├── demo_issue_001/
-│   ├── demo_issue_002/
-│   ├── demo_issue_003/
-│   └── crb_<project>_<instance>/
-│       ├── repo_before/
-│       ├── repo_after/
-│       ├── gold_patch.diff
-│       ├── ci_logs/
-│       ├── memory/
-│       ├── workflow.yml
-│       └── metadata.json
-└── vscode-extension/
-    ├── extension.js
-    ├── package.json
-    └── README.md
+│   ├── crb_<project>_<instance>/
+│   │   ├── repo_before/            files at the failing commit
+│   │   ├── repo_after/             reference post-fix snapshot
+│   │   ├── gold_patch.diff         the maintainers' fix
+│   │   ├── ci_logs/failed.compressed.log
+│   │   ├── memory/                 3 earlier failures: prior_NN_*.log and .diff
+│   │   ├── workflow.yml
+│   │   └── metadata.json
+│   └── demo_issue_00{1,2,3}/       tiny fixtures for smoke-testing the harness
+├── runs/<agent>/<task>/<condition>/run_NN/     gitignored
+│   ├── prompt.md · workspace/ · agent_response.md
+│   ├── agent_meta.json             exit code, timings, sizes
+│   ├── judgement.json              the verdict, with the judging prompt's hash
+│   └── token_usage.json            what this run cost
+├── src/ci_memory_agents/
+│   ├── importer.py loader.py memory.py log_compressor.py prompt_builder.py
+│   ├── oracle.py oracle_github.py oracle_local.py ci_outcome.py static_checks.py
+│   ├── judge.py agreement.py evaluator.py stats.py tokens.py patchio.py
+│   ├── workflow_std.py dashboard_state.py report.py ui.html
+├── scripts/                   the individual steps run.py calls
+├── results_archive/           frozen results from an earlier protocol; not current
+└── vscode-extension/          drives GitHub Copilot, which has no CLI
 ```
 
-## Task format
-
-Each task lives under `tasks/` and follows this structure:
-
-```text
-tasks/crb_<project>_<instance>/
-├── repo_before/         files at the failing commit
-├── repo_after/          gold post-fix repository snapshot
-├── gold_patch.diff      reference fix
-├── ci_logs/
-│   └── failed.compressed.log
-├── memory/              earlier failures from same project and their patches
-│   ├── prior_00_*.log
-│   ├── prior_00_*.diff
-│   └── ...
-├── workflow.yml
-├── metadata.json
-└── ...
-```
-
-`repo_before` is the buggy state; `repo_after` is the reference state. A run is considered successful when the agent fix repairs the same root cause, not just when the text matches the patch verbatim.
-
-## Experimental setup
-
-### Data source
-
-The project uses CI-Repair-Bench, which contains real CI failure tasks from open-source projects. The repo materialises these tasks and stores them locally in `tasks/`.
-
-### Conditions
-
-For each task, the harness creates fresh run folders under `runs/<agent>/<task_id>/` for each condition:
-
-- `no_memory`
-- `with_memory`
-
-A task may be repeated multiple times (`run_01`, `run_02`, ...) to estimate robustness and pass@k performance.
-
-### Prompt construction
-
-The prompt builder assembles a task description for the agent. It may include:
-
-- project context
-- failing CI log
-- root cause description
-- repository files
-- historical memory items
-
-This is controlled in `src/ci_memory_agents/prompt_builder.py` and `src/ci_memory_agents/memory.py`.
-
-### Leakage control
-
-The project explicitly audits whether the memory block contains the gold fix or too much of the answer. The script `scripts/audit_leakage.py` checks overlap between the target fix and earlier memory items and flags contamination.
-
-### Validation
-
-Before trusted measurements, the project validates the pipeline:
-
-```powershell
-python scripts\validate_pipeline.py
-```
-
-This checks that the scoring logic distinguishes:
-
-- a correct fix
-- a no-op
-- a partial fix
-
-## Running the experiment
-
-The project supports a browser dashboard and direct CLI automation.
-
-### Option 1: dashboard (recommended for manual or mixed runs)
-
-```powershell
-cd D:\research\ci-memory-agents
-python scripts\dashboard.py --port 8004 --agent copilot
-```
-
-Then open the local browser page. The dashboard:
-
-- shows task status
-- lists pending runs
-- lets you open the prompt and workspace
-- lets you score a task
-- watches whether a run has already been completed
-
-This is the easiest way to run a task manually while keeping the experimental state organised.
-
-### Option 2: automatic CLI runner for Claude Code
-
-Claude Code is run through the CLI with `scripts/auto_run.py`.
-
-```powershell
-cd D:\research\ci-memory-agents
-python scripts\auto_run.py --preset claude --agent claude-code --limit 4
-```
-
-Useful flags:
-
-```powershell
-python scripts\auto_run.py --preset claude --agent claude-code --dry-run
-python scripts\auto_run.py --preset claude --agent claude-code --limit 40 --parallel 6 --timeout 900
-```
-
-- `--dry-run`: preview what would run without launching the agent
-- `--limit`: cap the number of runs
-- `--parallel`: run multiple tasks concurrently
-- `--timeout`: max time per run
-
-The runner writes:
-
-- `prompt.md`
-- `workspace/`
-- `agent_response.md`
-- `agent_meta.json`
-
-A run with `agent_meta.json` is treated as complete and skipped on later runs.
-
-## Copilot workflow
-
-Copilot is not run through a CLI here. The project uses the VS Code extension in `vscode-extension/` and the Language Model API.
-
-### Install and use the extension
-
-1. Open the repo in VS Code.
-2. Load the extension from `vscode-extension/`.
-3. Restart VS Code.
-4. Open the command palette with `Ctrl+Shift+P`.
-5. Run:
-
-- `CI Memory: List Available Copilot Models`
-- `CI Memory: Run A Single Task`
-- `CI Memory: Run All Experiments`
-
-The extension writes run output into `runs/copilot/...` and skips any run already completed.
-
-### Important note
-
-The design intentionally uses a single-shot model call rather than a full multi-step agent loop. This keeps both conditions comparable. The experiment asks whether historical CI memory helps the model, not whether a separate tool-use agent is better than another one.
-
-## Claude workflow
-
-The Claude workflow is intended for CLI use, and the script is set up for repeated runs and prompt generation.
-
-Example:
-
-```powershell
-python scripts\auto_run.py --preset claude --agent claude-code --exe "C:\path\to\claude.exe" --limit 10
-```
-
-This sends the generated prompt to Claude, lets it edit the run workspace in place, and stores the raw response and metadata.
-
-## Prompt generation and scoring pipeline
-
-### 1. Materialise the benchmark tasks
-
-```powershell
-python scripts\import_ci_repair_bench.py --limit 24 --max-per-project 2
-```
-
-This downloads the dataset and creates task folders under `tasks/`.
-
-### 2. Generate experiment prompts
-
-```powershell
-python scripts\run_experiment.py --mode prompts --agent copilot --runs 10
-python scripts\run_experiment.py --mode prompts --agent claude-code --runs 10
-```
-
-This writes prompt files and a fresh workspace copy per run.
-
-### 3. Run the model on each workspace
-
-For Copilot, use the VS Code extension.
-
-For Claude, use:
-
-```powershell
-python scripts\auto_run.py --preset claude --agent claude-code --limit 10
-```
-
-### 4. Score the completed workspaces
-
-```powershell
-python scripts\run_experiment.py --mode score --agent copilot --k 3
-python scripts\run_experiment.py --mode score --agent claude-code --k 3
-```
-
-This reads each run workspace, compares it against the repaired repository and the gold patch, and writes a JSONL summary to `runs/results_<agent>.jsonl`.
-
-### 5. Judge runs
-
-The judge provides a root-cause assessment rather than a pure text match:
-
-```powershell
-python scripts\judge_runs.py --agent claude-code --mode report
-```
-
-This summarizes the verdicts and can be used to calibrate decisions.
+`repo_before` is the broken state, `repo_after` the reference. A run succeeds when the
+agent's fix removes the same root cause — not when the text matches.
 
 ## Main scripts
 
-- `scripts/import_ci_repair_bench.py` — creates local task data from the benchmark
-- `scripts/audit_leakage.py` — checks memory leakage and contamination
-- `scripts/validate_pipeline.py` — sanity-checks the evaluation pipeline
-- `scripts/run_experiment.py` — generates prompts and scores outputs
-- `scripts/auto_run.py` — launches automated CLI agents like Claude Code
-- `scripts/dashboard.py` — browser UI for interactive experiment management
-- `scripts/judge_runs.py` — assesses whether a patch fixes the root cause
-- `scripts/make_report.py` — builds aggregate result reports
+| | |
+|---|---|
+| `import_ci_repair_bench.py` | Builds task folders from the dataset |
+| `materialize_repos.py` | Replaces gold-file trees with real checkouts, so localisation is part of the task |
+| `audit_leakage.py` | **Proves the experiment is fair** — how much of each answer is visible in each condition |
+| `validate_pipeline.py` | Calibrates the textual diagnostics and Pass@K. **Not** the judge |
+| `validate_instances.py` | Proves each instance is red unpatched and green with the gold patch |
+| `run_experiment.py` | Lays out prompts and workspaces; also the textual diagnostics |
+| `auto_run.py` | Runs the agent over pending cells, in parallel, resumable |
+| `judge_runs.py` | The model judge |
+| `score_runs.py` | **The scorer.** Oracle precedence, coverage, rates, power, token accounting |
+| `dashboard.py` | Browser view |
 
-## Metrics
-
-The project records multiple metrics, including:
-
-- `exact_match`
-- `normalized_match`
-- `file_iou`
-- `file_precision`
-- `file_recall`
-- `line_deviation_ratio`
-- `Pass@K`
-
-The key evaluation is not just raw textual similarity. Because benchmark patches often include unrelated refactors and release-note changes, the project uses a judge-based assessment and additional diagnostics to separate a real fix from a lucky or deceptive textual match.
-
-## Demo tasks
-
-The repo also contains a few tiny demo tasks:
-
-- `demo_issue_001`
-- `demo_issue_002`
-- `demo_issue_003`
-
-These are useful for smoke testing the harness without depending on the full benchmark dataset.
-
-## Quick start
-
-```powershell
-cd D:\research\ci-memory-agents
-
-# health checks
-python scripts\audit_leakage.py
-python scripts\validate_pipeline.py
-
-# generate prompts
-python scripts\run_experiment.py --mode prompts --agent copilot --runs 5
-
-# run Copilot in VS Code via extension
-# then score
-python scripts\run_experiment.py --mode score --agent copilot --k 3
-
-# or run Claude Code automatically
-python scripts\auto_run.py --preset claude --agent claude-code --limit 5
-```
+If you call these directly rather than through `run.py`, one rule matters: use
+`score_runs.py --mode report`, **not** `judge_runs.py --mode report`. Only the first knows
+the difference between a run that happened and a cell that was never run.
 
 ## Notes
 
-- Runs are resumable: completed work is skipped automatically.
-- Manual edits to a workspace are protected to avoid overwriting real work.
-- The dashboard and run folders keep the experiment reproducible and auditable.
-
-This project is designed to study AI repair under historical memory, not just raw bug-fix ability. Its core value is that it makes the comparison explicit, repeatable, and inspectable.
+- **Everything resumes.** Both runners skip any cell with an `agent_meta.json` and never
+  overwrite a workspace someone edited by hand. Re-issue the same command to continue.
+- **`runs/` is gitignored.** Results live on the machine that produced them. Copy the
+  folder to share them.
+- **Only two dependencies**, `pyarrow` and `PyYAML`. Everything else is the standard
+  library, deliberately — this has to run unattended where installing things is a
+  negotiation. Python 3.10+.
+- **Known gaps** — no licence, no citation file, no recorded model id per run, and six
+  measurements that do not exist yet — are listed explicitly in EXPERIMENT_REPORT §10b
+  rather than left to be discovered.

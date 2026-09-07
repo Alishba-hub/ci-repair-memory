@@ -2,29 +2,35 @@
   "name": "ci-memory-agents-runner",
   "displayName": "CI Memory Agents Runner",
   "description": "Runs the CI memory experiment automatically through GitHub Copilot",
-  "version": "0.2.0",
+  "version": "0.3.5",
   "publisher": "ci-memory-agents",
   "engines": {
     "vscode": "^1.90.0"
   },
-  "categories": ["Other"],
-  "activationEvents": [],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:ciMemory.runAll",
+    "onCommand:ciMemory.runOne",
+    "onCommand:ciMemory.listModels"
+  ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
         "command": "ciMemory.runAll",
-        "title": "CI Memory: Run All Experiments",
+        "title": "Run All Experiments",
         "category": "CI Memory"
       },
       {
         "command": "ciMemory.runOne",
-        "title": "CI Memory: Run A Single Task",
+        "title": "Run A Single Task",
         "category": "CI Memory"
       },
       {
         "command": "ciMemory.listModels",
-        "title": "CI Memory: List Available Copilot Models",
+        "title": "List Available Copilot Models",
         "category": "CI Memory"
       }
     ],
@@ -44,7 +50,7 @@
         "ciMemory.modelFamily": {
           "type": "string",
           "default": "",
-          "description": "Copilot model family, for example gpt-4o or claude-3.5-sonnet. Empty picks the first available."
+          "description": "Copilot model family. Run 'CI Memory: List Available Copilot Models' and copy a `family:` value verbatim -- not the `id:`, which is a different field. Empty picks the first available, which must not be left empty when collecting real results: comparing conditions across different models would confound the experiment."
         },
         "ciMemory.delaySeconds": {
           "type": "number",
@@ -55,6 +61,11 @@
           "type": "number",
           "default": 0,
           "description": "Stop after this many runs. 0 means no limit."
+        },
+        "ciMemory.allowRouterModel": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow a model family whose id is 'auto' (Copilot's router). Off by default because the router may pick a different model per request, which confounds the comparison. Turn it on only when no pinned model is capable enough; every run records the model it actually received, and score_runs.py --mode report says whether it varied."
         }
       }
     }

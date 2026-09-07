@@ -14,6 +14,9 @@ from ci_memory_agents.dashboard_state import is_edited
 from ci_memory_agents.prompt_builder import CONDITIONS
 from ci_memory_agents.response_parser import parse_files, write_files
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from run_experiment import project_of
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 PRESETS = {
@@ -59,7 +62,11 @@ def _kill_tree(process: subprocess.Popen) -> None:
 
 
 def pending_runs(
-    runs_root: Path, tasks_root: Path, agent: str, task_filter: str | None
+    runs_root: Path,
+    tasks_root: Path,
+    agent: str,
+    task_filter: str | None,
+    project_filter: list[str] | None = None,
 ) -> tuple[list[Path], int]:
     """Runs with no agent response yet.
 
@@ -72,8 +79,14 @@ def pending_runs(
         raise SystemExit(f"No runs folder at {agent_root}. Generate prompts first.")
     pending: list[Path] = []
     protected = 0
+    wanted_tasks = (
+        {t.strip() for t in task_filter.split(",") if t.strip()} if task_filter else None
+    )
+    wanted_projects = {p.strip().lower() for p in (project_filter or []) if p.strip()} or None
     for task_dir in sorted(agent_root.iterdir()):
-        if task_filter and task_dir.name != task_filter:
+        if wanted_tasks and task_dir.name not in wanted_tasks:
+            continue
+        if wanted_projects and project_of(task_dir.name).lower() not in wanted_projects:
             continue
         repo_before = tasks_root / task_dir.name / "repo_before"
         for condition in CONDITIONS:
@@ -146,12 +159,29 @@ def run_one(
 
     written: list[str] = []
     if mode == "text":
-        written = write_files(workspace, parse_files(reply))
+        # The paths the task offers, and their original sizes, so the parser can fall
+        # back to fenced blocks when a model ignores the `=== path ===` format -- and can
+        # still tell a whole file from a quoted excerpt.
+        baseline = run_dir.parents[2].name
+        repo_before = REPO_ROOT / "tasks" / run_dir.parts[-4] / "repo_before"
+        known, sizes = [], {}
+        if repo_before.is_dir():
+            for path in repo_before.rglob("*"):
+                if path.is_file() and ".git" not in path.parts:
+                    rel = path.relative_to(repo_before).as_posix()
+                    known.append(rel)
+                    sizes[rel] = len(path.read_text(encoding="utf-8", errors="replace"))
+        written = write_files(workspace, parse_files(reply, known=sorted(known), sizes=sizes))
 
     prompt_file.unlink(missing_ok=True)
     return {
         "command": resolved[0],
         "mode": mode,
+        # Which binary produced this run. Recorded because the folder name is a label,
+        # not evidence: a runner invoked with the wrong agent writes perfectly ordinary
+        # results into a folder named for a different one, and nothing downstream can
+        # tell unless the run says what made it. That happened once already.
+        "model_id": Path(str(command[0])).stem if command else "unknown",
         "exit_code": result.returncode,
         "prompt_chars": len(prompt),
         "reply_chars": len(reply),
@@ -180,7 +210,13 @@ def main() -> int:
     parser.add_argument("--agent", default="copilot", help="runs/<agent> folder to fill")
     parser.add_argument("--runs-root", default=str(REPO_ROOT / "runs"))
     parser.add_argument("--tasks-root", default=str(REPO_ROOT / "tasks"))
-    parser.add_argument("--task-id", default=None)
+    parser.add_argument("--task-id", default=None, help="One task id, or a comma-separated list")
+    parser.add_argument(
+        "--project",
+        action="append",
+        default=None,
+        help="Only tasks from this project, e.g. --project agno. Repeatable.",
+    )
     parser.add_argument("--limit", type=int, default=0, help="Stop after N runs, 0 = all")
     parser.add_argument("--timeout", type=int, default=600, help="Seconds per run")
     parser.add_argument("--delay", type=float, default=2.0, help="Pause between runs")
@@ -213,7 +249,7 @@ def main() -> int:
         command[0] = args.exe
 
     pending, protected = pending_runs(
-        Path(args.runs_root), Path(args.tasks_root), args.agent, args.task_id
+        Path(args.runs_root), Path(args.tasks_root), args.agent, args.task_id, args.project
     )
     if args.limit:
         pending = pending[: args.limit]

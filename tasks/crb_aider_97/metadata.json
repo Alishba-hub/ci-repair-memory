@@ -82,5 +82,14 @@
       "log_file": "memory/prior_02_99.log",
       "diff_file": "memory/prior_02_99.diff"
     }
-  ]
+  ],
+  "deselect_tests": [
+    "tests/basic/test_commands.py::TestCommands::test_cmd_read_only_with_image_file",
+    "tests/basic/test_commands.py::TestCommands::test_cmd_tokens_output",
+    "tests/basic/test_models.py::TestModels::test_max_context_tokens",
+    "tests/basic/test_repomap.py::TestRepoMapAllLanguages::test_language_csharp"
+  ],
+  "deselect_reason": "These four fail under the gold patch as well, so they are independent of the repair: model metadata, a tree-sitter grammar version and litellm's model table moved after the May 2025 commit. Excluded from every arm alike, per the paper's Section 3.3 maintenance procedure. Baseline must still go red after exclusion.",
+  "collapse_matrices": true,
+  "collapse_reason": "The workflow runs the suite on Python 3.10, 3.11 and 3.12. All three exercise the same repair, so two of them are 3x the wall clock for no additional signal. Collapsed to the version the failing log names. Set on the instance so the baseline, the gold patch and every candidate are graded by the same workflow."
 }

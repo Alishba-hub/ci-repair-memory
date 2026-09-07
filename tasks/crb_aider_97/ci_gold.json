@@ -1,0 +1,16 @@
+{
+  "conclusion": "success",
+  "raw_conclusions": [
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/aider/actions/runs/34040775490",
+  "commit": "96094b1436faed57aa6850781490cdf00577b917",
+  "branch": "cirepair/crb_aider_97/gold",
+  "failed_jobs": [],
+  "detail": "",
+  "polled_seconds": 234,
+  "source": "github",
+  "steps": [],
+  "passed": true,
+  "recorded_at": "2026-09-06T15:01:19.606989+00:00"
+}

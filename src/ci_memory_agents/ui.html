@@ -131,6 +131,19 @@
   pre.diff .r { color: #ff9d95; }
   pre.diff .h { color: var(--dim); }
   pre.tall { max-height: 55vh; }
+
+    .banner { padding: 12px 16px; border-radius: 8px; margin: 0 0 16px;
+              border-left: 4px solid; line-height: 1.5; }
+    .banner.bad  { background: #2b1416; border-color: #e0555f; color: #f2c9cc; }
+    .banner.warn { background: #2a2312; border-color: #d9a441; color: #f0dfb8; }
+    .banner.good { background: #12251c; border-color: #4bb98a; color: #cfeadd; }
+    .banner-detail { margin-top: 6px; font-size: 12px; opacity: .85; }
+    .banner code { background: rgba(255,255,255,.1); padding: 1px 5px; border-radius: 3px; }
+    .dim { opacity: .7; }
+    .ci-pass { color: #4bb98a; font-weight: 600; }
+    .ci-fail { color: #e0555f; font-weight: 600; }
+    .ci-none { opacity: .45; }
+    .disagree { background: rgba(224,85,95,.12); }
 </style>
 </head>
 <body>
@@ -435,10 +448,31 @@ async function scoreThis() {
 }
 
 /* ======================= chart primitives ======================= */
-const COND = [
+// Every arm the harness can produce, with the label and colour it gets when present.
+// `COND` is then narrowed per agent to the arms that actually have runs, so a control
+// arm that was never run does not occupy a column of dashes.
+const ALL_COND = [
   ["no_memory", "Without memory", "var(--series-1)"],
   ["with_memory", "With memory", "var(--series-2)"],
+  ["foreign_memory", "Foreign memory", "var(--series-3, #b07fd4)"],
 ];
+let COND = ALL_COND.slice(0, 2);
+
+function tuneConditions(data) {
+  // An arm counts as present if any task has laid out a cell for it. Keyed off the
+  // task list rather than the summary, so the column appears as soon as the cells
+  // exist and does not wait for the first result.
+  const seen = new Set();
+  for (const t of data.tasks || []) {
+    for (const key of Object.keys(t.conditions || {})) {
+      if ((t.conditions[key] || {}).total) seen.add(key);
+    }
+  }
+  const present = ALL_COND.filter(([k]) => seen.has(k));
+  // Never fall below the comparison pair: an agent with no runs at all should still
+  // show the two columns it is going to fill.
+  COND = present.length >= 2 ? present : ALL_COND.slice(0, 2);
+}
 const esc = s => String(s ?? "").replace(/[&<>"]/g,
   c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const pc1 = v => v == null ? "—" : (v * 100).toFixed(1) + "%";
@@ -635,6 +669,7 @@ async function showResults(fromHistory) {
 }
 
 function renderResults(data) {
+  tuneConditions(data);
   const s = data.summary, a = s.analysis, cov = s.coverage || {};
   if (!s.attempted) {
     $("resultsbody").innerHTML =
@@ -652,6 +687,7 @@ function renderResults(data) {
     `${sub ? `<div class="sub2">${sub}</div>` : ""}</div>`;
 
   $("resultsbody").innerHTML = `
+    ${agreementBanner(s.agreement)}
     ${headlineBlock(s, a, effect, headline)}
 
     <div class="sect">1 · How much has actually run</div>
@@ -739,6 +775,41 @@ function renderResults(data) {
     </p>`;
 }
 
+function agreementBanner(a) {
+  // Above the rates, not below them, and deliberately loud when it is bad. Every rate
+  // on this page is a model's judgement unless CI has run; a reader shown "60% repaired"
+  // without knowing whether that model tracks reality is being shown a number that has
+  // not earned its decimal point.
+  if (!a || !a.n) {
+    return `<div class="banner bad">
+      <b>No run has been checked by executing its workflow.</b>
+      Every rate below is inferred by a model, not observed. Measure the gap with
+      <code>python run.py verify</code>.
+    </div>`;
+  }
+  const bad = a.kappa < 0.4;
+  const thin = a.n < 50;
+  const perArm = Object.keys(a.by_condition || {}).length > 1
+    ? `<br>Per arm: ` + Object.entries(a.by_condition)
+        .map(([c, v]) => `${c} &kappa;=${v.kappa.toFixed(2)} (bias ${v.rate_bias >= 0 ? "+" : ""}${pc0(v.rate_bias)})`)
+        .join(" &nbsp;&middot;&nbsp; ")
+      + `<br><span class="dim">A judge wrong by the same amount in both arms leaves their
+         difference intact. One wrong only under with_memory manufactures the effect.</span>`
+    : "";
+  return `<div class="banner ${bad ? "bad" : thin ? "warn" : "good"}">
+    <b>Judge vs real CI over ${a.n} run${a.n === 1 ? "" : "s"}: Cohen's &kappa; = ${a.kappa.toFixed(3)}</b>
+    ${bad ? " &mdash; the judge does not track execution. Treat every rate below as unverified."
+          : thin ? " &mdash; indicative only; 50+ runs makes &kappa; stable enough to quote."
+                 : " &mdash; the judge tracks execution well enough to quote."}
+    <div class="banner-detail">
+      judge says repaired ${pc0(a.judge_rate)} of the time, CI agrees ${pc0(a.execution_rate)}
+      &nbsp;&middot;&nbsp; ${a.false_positives} false positive${a.false_positives === 1 ? "" : "s"}
+      &nbsp;&middot;&nbsp; ${a.false_negatives} false negative${a.false_negatives === 1 ? "" : "s"}
+      ${perArm}
+    </div>
+  </div>`;
+}
+
 function headlineBlock(s, a, effect, headline) {
   if (!a.n_tasks) return `<div class="banner info">No task has finished in both conditions yet.</div>`;
   const sign = effect > 0 ? "+" : "";
@@ -806,7 +877,7 @@ function accuracyRows(s) {
     row("Edited every file the fix touched", (x) => ({
       v: x.mean_localized, text: pc0(x.mean_localized), title: "File recall of 100%",
     })),
-    row("Gold files matched (partial credit)", (x) => ({
+    row("Gold files whose text matched (diagnostic, not the criterion)", (x) => ({
       v: x.mean_partial_credit, text: pc0(x.mean_partial_credit),
       title: "Mean share of the fix's files whose contents matched",
     })),
@@ -913,16 +984,23 @@ function taskCards(byTask) {
         <table class="runtable">
           <thead><tr>
             <th>Run</th><th>Condition</th><th>Result</th>
-            <th class="num">Files matched</th><th class="num">Files found</th>
+            <th title="What re-running the workflow actually said. Blank means it was never executed, and the Result column beside it is then a model's guess.">Real CI</th>
+            <th class="num" title="Files whose *contents* match the maintainer's text. Near zero by design: section 6 of the report shows most correct repairs take a different route, which is why this is a diagnostic and not the criterion.">Text match</th><th class="num">Files found</th>
             <th class="num">Precision</th><th class="num">IoU</th>
             <th class="num">Size vs real fix</th><th class="num">Time</th><th></th>
           </tr></thead>
           <tbody>${rows.map(({ key, name, r }) => `
-            <tr>
+            <tr class="${r.disagrees ? "disagree" : ""}" title="${r.disagrees ? "The judge and real CI disagree about this run." : ""}">
               <td class="mono">${esc(r.run)}</td>
               <td><span class="pill ${key === "with_memory" ? "mem" : ""}">${name.replace(" memory", "")}</span></td>
               <td class="${r.solved ? "f" : ""}">${r.solved ? (r.exact ? "fixed (exact)" : "fixed") : "not fixed"}</td>
-              <td class="num">${r.files_matched}/${r.files_expected}</td>
+              <td class="${r.ci && r.ci.decided ? (r.ci.passed ? "ci-pass" : "ci-fail") : "ci-none"}"
+                  title="${esc((r.ci && r.ci.detail) || "workflow never re-executed for this run")}">${
+                r.ci && r.ci.decided
+                  ? (r.ci.url ? `<a href="${esc(r.ci.url)}" target="_blank" rel="noopener">${r.ci.passed ? "passed" : "failed"}</a>`
+                              : (r.ci.passed ? "passed" : "failed"))
+                  : "not run"}</td>
+              <td class="num" title="Contents identical to the maintainer's file, ignoring comments and whitespace. A repair that works by another route scores 0 here and is still a repair.">${r.files_matched}/${r.files_expected}</td>
               <td class="num" title="${esc(r.untouched_gold_files.join(", ") || "all gold files edited")}">${pc0(r.file_recall)}</td>
               <td class="num" title="${esc(r.collateral_files.join(", ") || "no unrelated files touched")}">${pc0(r.file_precision)}</td>
               <td class="num">${r.file_iou.toFixed(2)}</td>

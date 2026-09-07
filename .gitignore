@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 data/*.parquet
 runs/
+tasks/*/repo_before/.git/
+tasks/usable_instances.json
+runs/_repos/
+
+# GitHub credentials for the execution oracle. Never commit.
+.secrets.json

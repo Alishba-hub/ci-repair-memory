@@ -56,5 +56,9 @@
       "log_file": "memory/prior_02_42.log",
       "diff_file": "memory/prior_02_42.diff"
     }
-  ]
+  ],
+  "repo_scope": "full",
+  "repo_checkout_owner": "RabeyaMuna",
+  "repo_files": 122,
+  "repo_checkout_mb": 5.0
 }

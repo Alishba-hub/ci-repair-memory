@@ -11,16 +11,39 @@ Copilot from code: the [Language Model API](https://code.visualstudio.com/api/ex
 
 ## Install
 
-Already installed to `%USERPROFILE%\.vscode\extensions\`. Restart VS Code to load it.
+Copy this folder into `%USERPROFILE%\.vscode\extensions\` under a directory named
+`<publisher>.<name>-<version>`, then **Developer: Reload Window**.
 
-To reinstall after editing:
+The version is read from `package.json` rather than hardcoded. Hardcoding it is how you
+end up with two installs of different vintages side by side and no way to tell which one
+VS Code loaded:
 
 ```powershell
-$t = "$env:USERPROFILE\.vscode\extensions\ci-memory-agents.ci-memory-agents-runner-0.1.0"
-Remove-Item $t -Recurse -Force
-New-Item -ItemType Directory -Force $t
-Copy-Item "D:\research\ci-memory-agents\vscode-extension\*" $t -Recurse -Force
+cd D:\research\ci-memory-agents\vscode-extension
+$v = (Get-Content package.json | ConvertFrom-Json).version
+$dest = "$env:USERPROFILE\.vscode\extensions\ci-memory-agents.ci-memory-agents-runner-$v"
+
+# Remove every earlier install first. Two folders whose package.json claim the same
+# version is a conflict VS Code resolves silently, and not always in your favour.
+Get-ChildItem "$env:USERPROFILE\.vscode\extensions" -Filter "ci-memory-agents.*" |
+    Remove-Item -Recurse -Force
+
+New-Item -ItemType Directory -Force $dest | Out-Null
+Copy-Item * $dest -Recurse -Force
 ```
+
+Then reload VS Code. To confirm which build is live, run **CI Memory: List Available
+Copilot Models** — it logs `EXTENSION_VERSION` to the *CI Memory Agents* output channel.
+`EXTENSION_VERSION` in `extension.js` and `version` in `package.json` are kept equal on
+purpose; if they ever differ, the install is stale.
+
+## Which conditions it runs
+
+Whatever exists on disk. `run_experiment.py --control-arm` lays out a third arm,
+`foreign_memory`, alongside `no_memory` and `with_memory`. Earlier versions of this
+extension hardcoded the pair and silently skipped those cells — the worst kind of missing
+data, because nothing reports it. Arms are now read from the task folder, so a future
+fourth arm runs without an extension change.
 
 ## Use
 

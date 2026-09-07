@@ -15,10 +15,24 @@ from ci_memory_agents.loader import list_tasks
 from ci_memory_agents.prompt_builder import CONDITIONS, build_prompt
 
 
+def _is_stale(workspace: Path, repo_before: Path) -> bool:
+    """Does this untouched workspace still match the task's current `repo_before`?"""
+    def tree(root: Path) -> dict[str, bytes]:
+        return {
+            str(path.relative_to(root)).replace("\\", "/"): path.read_bytes()
+            for path in root.rglob("*")
+            if path.is_file() and ".git" not in path.parts
+        }
+
+    return tree(workspace) != tree(repo_before)
+
+
 def command_prompts(args, tasks_root: Path, runs_root: Path) -> int:
     tasks = _select(tasks_root, args)
+    refreshed: list[Path] = []
+    conditions = CONDITIONS
     for task in tasks:
-        for condition in CONDITIONS:
+        for condition in conditions:
             for run in range(1, args.runs + 1):
                 run_dir = runs_root / args.agent / task.task_id / condition / f"run_{run:02d}"
                 run_dir.mkdir(parents=True, exist_ok=True)
@@ -27,10 +41,37 @@ def command_prompts(args, tasks_root: Path, runs_root: Path) -> int:
                     encoding="utf-8",
                 )
                 workspace = run_dir / "workspace"
+                # A workspace is rebuilt only when it is missing, or when it is stale and
+                # nothing has been run against it. `agent_meta.json` is the line: a cell
+                # an agent has touched is somebody's result and is never overwritten,
+                # which is the same protection auto_run relies on. An untouched but stale
+                # workspace is the dangerous case -- `materialize_repos.py` can replace a
+                # task's `repo_before` with a full checkout long after the cells were
+                # laid out, and an agent handed the old gold-files-only copy would be run
+                # under a different scope from its siblings without anything saying so.
+                if workspace.exists() and args.refresh_workspaces:
+                    if not (run_dir / "agent_meta.json").exists() and _is_stale(
+                        workspace, task.repo_before
+                    ):
+                        shutil.rmtree(workspace)
+                        refreshed.append(run_dir)
                 if not workspace.exists():
-                    shutil.copytree(task.repo_before, workspace)
-    total = len(tasks) * len(CONDITIONS) * args.runs
-    print(f"Wrote {total} prompts for {len(tasks)} tasks x {len(CONDITIONS)} conditions x {args.runs} runs")
+                    # `.git` is excluded deliberately. It is copied once per run, so for
+                    # a real checkout it is most of the bytes. It also removes any way
+                    # for history to become an input: the depth-1 checkout carries only
+                    # the failing commit today, but a future deeper one would carry the
+                    # commit that fixed the build, which is the answer.
+                    # CI-Repair-Bench bans .git access for the same reason.
+                    shutil.copytree(
+                        task.repo_before, workspace, ignore=shutil.ignore_patterns(".git")
+                    )
+    total = len(tasks) * len(conditions) * args.runs
+    print(f"Wrote {total} prompts for {len(tasks)} tasks x {len(conditions)} conditions x {args.runs} runs")
+    print(f"Conditions: {', '.join(conditions)}")
+    if refreshed:
+        print(f"Rebuilt {len(refreshed)} stale workspaces that no agent had run against.")
+    elif args.refresh_workspaces:
+        print("No stale workspaces; every untouched copy already matches its repo_before.")
     print(f"Root: {runs_root / args.agent}")
     print("\nFor each run: open the workspace in your agent, paste prompt.md, let it edit the")
     print("workspace in place, then score with --mode score.")
@@ -116,13 +157,65 @@ def _rate(payloads: list[dict], key: str) -> float:
     return sum(1 for p in payloads if p[key]) / len(payloads)
 
 
-def _select(tasks_root: Path, args):
-    tasks = list_tasks(tasks_root, source=args.source)
-    if args.task_id:
-        tasks = [task for task in tasks if task.task_id == args.task_id]
+def project_of(task_id: str) -> str:
+    """`crb_<project>_<instance>` -> `<project>`.
+
+    Split from the right, because project names contain underscores and hyphens
+    (`django-import-export`, `openai-python`) while the instance is always digits.
+    """
+    stem = task_id[4:] if task_id.startswith("crb_") else task_id
+    head, _, tail = stem.rpartition("_")
+    return head if tail.isdigit() and head else stem
+
+
+def select_tasks(tasks_root: Path, source=None, task_id=None, projects=None, limit=0):
+    """The tasks to act on, narrowed by whatever the caller asked for.
+
+    Every entry point narrows the same way, so `--project agno --tasks 4` means the
+    same thing when laying out cells, running the agent and scoring. A filter that
+    matched different sets in different steps would quietly compare one population
+    against another.
+    """
+    tasks = list_tasks(tasks_root, source=source)
+    if task_id:
+        wanted = {t.strip() for t in task_id.split(",") if t.strip()}
+        tasks = [task for task in tasks if task.task_id in wanted]
+        missing = wanted - {task.task_id for task in tasks}
+        if missing:
+            raise SystemExit(f"no task named {', '.join(sorted(missing))}")
+    if projects:
+        wanted = {p.strip().lower() for p in projects if p.strip()}
+        tasks = [task for task in tasks if project_of(task.task_id).lower() in wanted]
         if not tasks:
-            raise SystemExit(f"no task named {args.task_id}")
+            known = sorted({project_of(t.task_id) for t in list_tasks(tasks_root, source=source)})
+            raise SystemExit(
+                f"no tasks for project {', '.join(sorted(wanted))}.\n"
+                f"Available: {', '.join(known)}"
+            )
+    if limit:
+        # One task per project first, then a second from each, and so on. Taking the
+        # first N in order would spend a small --tasks entirely on whichever project
+        # happens to sort first, and a study of one project is not the study.
+        by_project: dict[str, list] = {}
+        for task in tasks:
+            by_project.setdefault(project_of(task.task_id), []).append(task)
+        interleaved = []
+        for depth in range(max((len(v) for v in by_project.values()), default=0)):
+            for project in sorted(by_project):
+                if depth < len(by_project[project]):
+                    interleaved.append(by_project[project][depth])
+        tasks = interleaved[:limit]
     return tasks
+
+
+def _select(tasks_root: Path, args):
+    return select_tasks(
+        tasks_root,
+        source=args.source,
+        task_id=args.task_id,
+        projects=getattr(args, "project", None),
+        limit=getattr(args, "tasks", 0),
+    )
 
 
 def main() -> int:
@@ -132,10 +225,32 @@ def main() -> int:
     parser.add_argument("--tasks-root", default=str(repo_root / "tasks"))
     parser.add_argument("--runs-root", default=str(repo_root / "runs"))
     parser.add_argument("--agent", default="copilot", help="Agent under evaluation")
-    parser.add_argument("--task-id", default=None)
+    parser.add_argument("--task-id", default=None, help="One task id, or a comma-separated list")
+    parser.add_argument(
+        "--project",
+        action="append",
+        default=None,
+        help="Only tasks from this project, e.g. --project agno. Repeatable.",
+    )
+    parser.add_argument(
+        "--tasks",
+        type=int,
+        default=0,
+        help="Use at most this many tasks, spread across projects rather than taken in order",
+    )
     parser.add_argument("--source", default=None, help="Filter tasks by source, e.g. ci-repair-bench")
     parser.add_argument("--runs", type=int, default=10, help="Repeated runs per condition")
     parser.add_argument("--k", type=int, default=1, help="k for Pass@K")
+    parser.add_argument(
+        "--refresh-workspaces",
+        action="store_true",
+        help=(
+            "Rebuild workspaces that no longer match the task's repo_before, but only in "
+            "cells where no agent has run. Use after materialize_repos.py, which can "
+            "change a task's scope after its cells were laid out. Cells with an "
+            "agent_meta.json are never touched."
+        ),
+    )
     parser.add_argument(
         "--output-mode",
         choices=("text", "inplace"),

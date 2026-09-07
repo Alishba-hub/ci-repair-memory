@@ -47,11 +47,19 @@ def _safe(text: str) -> str:
 
 
 def _judgeable(run_dir: Path, repo_before: Path) -> bool:
-    """Runs the judge can say something meaningful about.
+    """Runs that need a model call to decide.
 
     A run killed by the timeout was interrupted mid-edit, so its files are a partial
-    answer; judging it would score "ran out of time" as "got it wrong". A run that
-    changed nothing is a real failure mode but needs no model call to classify.
+    answer; judging it would score "ran out of time" as "got it wrong".
+
+    A run that changed nothing is excluded here too, but for the opposite reason: it is
+    already decided. `static_checks` calls it a failure exactly, and `oracle.resolve`
+    keeps it in the denominator. That distinction is not cosmetic -- it is 70% of the
+    runs in the pilot. The earlier version of this function excluded them from judging
+    AND from every rate computed downstream, so the reported pass ratio was measured
+    over the minority of runs where the agent produced a patch at all. An agent that
+    emits nothing has failed to repair the build; it has not opted out of the
+    experiment.
     """
     workspace = run_dir / "workspace"
     if not workspace.exists() or (run_dir / "agent_timeout.txt").exists():
@@ -124,7 +132,11 @@ def command_judge(args, runs_root: Path, tasks_root: Path) -> int:
         index, (run_dir, task) = item
         label = "/".join(run_dir.parts[-3:])
         try:
-            verdict = judge_run(run_dir, task, command, timeout=args.timeout, force=args.force)
+            verdict = judge_run(
+                run_dir, task, command, timeout=args.timeout,
+                force=args.force, samples=args.samples,
+                reuse=not args.no_reuse, model=args.model or "",
+            )
         except Exception as error:  # a judge failure must not abandon the batch
             return False, f"[{index}/{len(pending)}] FAILED {label}: {type(error).__name__}: {error}"
         mark = "fix " if verdict["solved"] else ("cheat" if verdict.get("cheats") else "no  ")
@@ -181,14 +193,21 @@ def command_report(args, runs_root: Path, tasks_root: Path) -> int:
     for row in rows:
         by_condition[row["condition"]].append(row)
 
-    print(f"{'condition':<14}{'judged':>8}{'fixed':>8}{'rate':>8}{'cheats':>8}{'low conf':>10}")
+    print(f"{'condition':<14}{'judged':>8}{'fixed':>8}{'rate':>8}{'cheats':>8}{'low conf':>10}{'unstable':>10}")
     for condition, group in sorted(by_condition.items()):
         solved = sum(1 for r in group if r["solved"])
         print(
             f"{condition:<14}{len(group):>8}{solved:>8}{solved / len(group):>8.2f}"
             f"{sum(1 for r in group if r.get('cheats')):>8}"
             f"{sum(1 for r in group if r.get('confidence') == 'low'):>10}"
+            f"{sum(1 for r in group if r.get('unstable')):>10}"
         )
+
+    print()
+    print("This table covers only runs that produced a patch, and only the judge's view")
+    print("of them. For the rate over every run, and for whichever oracle actually")
+    print("decided each one, use:")
+    print(f"  python scripts/score_runs.py --agent {args.agent} --mode report")
 
     by_task: dict[tuple[str, str], list[dict]] = defaultdict(list)
     for row in rows:
@@ -302,6 +321,16 @@ def main() -> int:
     parser.add_argument("--condition", choices=CONDITIONS, default=None)
     parser.add_argument("--exe", default=None, help="Full path to the judging CLI binary")
     parser.add_argument("--model", default=None, help="Model for the judge, e.g. sonnet")
+    parser.add_argument(
+        "--no-reuse",
+        action="store_true",
+        help=(
+            "Judge every run separately even when two produced a byte-identical patch. "
+            "Reuse is on by default: an identical judging prompt is literally the same "
+            "question, so re-asking it changes no verdict and only spends tokens. Turn "
+            "it off to measure the judge's own variance across repeats."
+        ),
+    )
     parser.add_argument("--limit", type=int, default=0, help="Judge at most N runs, 0 = all")
     parser.add_argument("--parallel", type=int, default=4)
     parser.add_argument("--timeout", type=int, default=300)
@@ -309,6 +338,14 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--k", type=int, default=1, help="k for Pass@K in --mode report")
     parser.add_argument("--sample", type=int, default=20, help="Runs to emit in --mode calibration")
+    parser.add_argument(
+        "--samples",
+        type=int,
+        default=3,
+        help="Independent judge samples per run; the majority wins and the "
+             "disagreement is recorded as `agreement`. 1 reproduces the old "
+             "single-shot behaviour and should not be used for reported numbers.",
+    )
     args = parser.parse_args()
 
     runs_root = Path(args.runs_root).resolve()
