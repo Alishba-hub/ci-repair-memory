@@ -97,12 +97,12 @@ def build_task(row: dict, memory_rows: list[dict], task_dir: Path, log_budget: i
         destination.write_text(text, encoding="utf-8", newline="")
 
     shutil.copytree(repo_before, repo_after)
-    error = _apply_diff(repo_after, row["diff"])
+    error, strategy = _apply_diff(repo_after, row["diff"])
     if error:
         shutil.rmtree(task_dir, ignore_errors=True)
         return error
 
-    _write_task_files(row, memory_rows, task_dir, log_budget)
+    _write_task_files(row, memory_rows, task_dir, log_budget, patch_strategy=strategy)
     return None
 
 
@@ -120,7 +120,7 @@ def _created_paths(diff: str) -> list[str]:
     return created
 
 
-def _apply_diff(repo_after: Path, diff: str) -> str | None:
+def _apply_diff(repo_after: Path, diff: str) -> tuple[str | None, str]:
     """Apply the maintainer's patch to the fetched tree, trying progressively looser rules.
 
     One `git apply` with fixed flags rejected roughly a quarter of otherwise eligible
@@ -159,7 +159,8 @@ def _apply_diff(repo_after: Path, diff: str) -> str | None:
         (["patch", "-p1", "-l", "-F", "3", "--no-backup-if-mismatch", "-i", patch_path],
          "patch -F3"),
     )
-    failures = []
+    failures: list[str] = []
+    applied = ""
     try:
         for command, label in attempts:
             try:
@@ -172,16 +173,17 @@ def _apply_diff(repo_after: Path, diff: str) -> str | None:
                 failures.append(f"{label}: not installed")
                 continue
             if result.returncode == 0:
+                applied = label
                 break
             detail = (result.stderr or result.stdout or "").strip().splitlines()
             failures.append(f"{label}: {detail[0] if detail else 'failed'}")
         else:
-            return "patch would not apply -- " + "; ".join(failures)
+            return "patch would not apply -- " + "; ".join(failures), ""
     finally:
         Path(patch_path).unlink(missing_ok=True)
 
     shutil.rmtree(repo_after / ".git", ignore_errors=True, onexc=_force_remove)
-    return None
+    return None, applied
 
 
 def _force_remove(func, path, _exc) -> None:
@@ -189,7 +191,13 @@ def _force_remove(func, path, _exc) -> None:
     func(path)
 
 
-def _write_task_files(row: dict, memory_rows: list[dict], task_dir: Path, log_budget: int) -> None:
+def _write_task_files(
+    row: dict,
+    memory_rows: list[dict],
+    task_dir: Path,
+    log_budget: int,
+    patch_strategy: str = "",
+) -> None:
     (task_dir / "ci_logs").mkdir(parents=True, exist_ok=True)
     (task_dir / "memory").mkdir(parents=True, exist_ok=True)
 
@@ -236,6 +244,10 @@ def _write_task_files(row: dict, memory_rows: list[dict], task_dir: Path, log_bu
         "target_files": diff_paths(row["diff"]),
         # The largest K this task can serve. The K arms take prefixes of `memory`, so
         # any arm above this number would be rendered short.
+        # How repo_after was produced. "git apply" is exact; anything else placed at
+        # least one hunk loosely, and the gold tree should be spot-checked before its
+        # results are quoted.
+        "patch_strategy": patch_strategy,
         "memory_size": len(memory_index),
         "memory": memory_index,
     }

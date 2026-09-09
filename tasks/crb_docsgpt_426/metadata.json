@@ -88,5 +88,6 @@
       "log_file": "memory/prior_04_425.log",
       "diff_file": "memory/prior_04_425.diff"
     }
-  ]
+  ],
+  "patch_strategy": "git apply"
 }

@@ -39,6 +39,10 @@ class Task:
     #: Which of the three problem groups this task was selected under, as recorded at
     #: import time. Empty for tasks imported before the groups existed.
     error_group: str = ""
+    #: How repo_after was produced by the importer: "git apply" is exact, anything else
+    #: placed at least one hunk loosely. Empty for tasks imported before this was
+    #: recorded, which is not the same as known-exact and is why it is not defaulted.
+    patch_strategy: str = ""
     memory: list[MemoryItem] = field(default_factory=list)
 
     @property
@@ -99,6 +103,7 @@ def load_task(task_dir: Path) -> Task:
         repo_name=metadata.get("repo_name", ""),
         sha_fail=metadata.get("sha_fail", ""),
         error_group=metadata.get("error_group") or "",
+        patch_strategy=metadata.get("patch_strategy", ""),
         memory=memory,
     )
 
@@ -127,9 +132,16 @@ def study_task_ids(tasks_root: Path) -> set[str] | None:
     and into the fairness audit, where they read as failures of the study rather than as
     folders nobody selected.
 
-    None rather than an empty set when the manifest is missing, so callers can tell "no
-    design declared, use everything" from "a design that selected nothing" -- silently
-    treating the first as the second would make an un-imported checkout look empty.
+    None means no manifest exists, and callers fall back to every folder on disk -- the
+    right behaviour for a checkout that predates the manifest. A manifest that exists
+    returns its set even when that set is empty, which is NOT the same thing: an import
+    that produced nothing must leave the harness with nothing to run, not silently hand
+    it every leftover from an earlier design. Collapsing the two was the first version
+    of this function and it inverted the guarantee the manifest is for.
+
+    A corrupt or unreadable manifest returns None rather than raising. It is a cache of
+    a deterministic selection, not a source of truth, and losing it should degrade to
+    the old behaviour rather than stop the harness.
     """
     manifest = tasks_root / MANIFEST_NAME
     if not manifest.exists():
@@ -138,7 +150,9 @@ def study_task_ids(tasks_root: Path) -> set[str] | None:
         declared = json.loads(manifest.read_text(encoding="utf-8"))["task_ids"]
     except (json.JSONDecodeError, OSError, KeyError, TypeError):
         return None
-    return set(declared) or None
+    if not isinstance(declared, list):
+        return None
+    return set(declared)
 
 
 def list_study_tasks(tasks_root: Path, source: str | None = None) -> list[Task]:

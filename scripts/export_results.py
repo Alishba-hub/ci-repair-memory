@@ -394,6 +394,7 @@ def population(tasks_root: Path) -> list[dict]:
             "commit_date": task.commit_date,
             "memory_available": task.memory_size,
             "supports_max_k": task.supports(max(design.K_VALUES)),
+            "patch_strategy": task.patch_strategy,
             "gold_files": task.target_files,
         }
         for task in list_tasks(tasks_root)
@@ -593,7 +594,8 @@ def main() -> int:
         write_csv(
             out_root / "population.csv",
             ["in_study", "task_id", "repo", "error_group", "error_type", "source",
-             "commit_date", "memory_available", "supports_max_k", "gold_files"],
+             "commit_date", "memory_available", "supports_max_k", "patch_strategy",
+             "gold_files"],
             population(tasks_root),
         ),
         write_csv(
