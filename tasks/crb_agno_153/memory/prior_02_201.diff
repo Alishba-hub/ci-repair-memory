@@ -1,0 +1,756 @@
+diff --git a/libs/agno/agno/utils/whatsapp.py b/libs/agno/agno/utils/whatsapp.py
+index 2657b24c02..9b9893ca51 100644
+--- a/libs/agno/agno/utils/whatsapp.py
++++ b/libs/agno/agno/utils/whatsapp.py
+@@ -1,5 +1,5 @@
+ import os
+-from typing import Optional
++from typing import Any, Dict, Optional, Union
+ 
+ import httpx
+ import requests
+@@ -21,86 +21,85 @@ def get_phone_number_id() -> str:
+     return phone_number_id
+ 
+ 
+-def get_media(media_id: str) -> dict:
++def get_media(media_id: str) -> Union[bytes, Dict[str, Any]]:
+     """
+-    Sends a GET request to the Facebook Graph API to retrieve media information.
++    Fetch media bytes from the Graph API.
+ 
+-    Args:
+-        media_id (str): The ID of the media to retrieve.
++    Returns:
++        bytes on success, or {"error": "..."} on failure.
+     """
+     url = f"https://graph.facebook.com/v22.0/{media_id}"
+-
+     access_token = get_access_token()
+-
+     headers = {"Authorization": f"Bearer {access_token}"}
++
+     try:
+         response = requests.get(url, headers=headers)
+-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
++        response.raise_for_status()
+         data = response.json()
+-
+         media_url = data.get("url")
++        if not media_url:
++            return {"error": "Media URL not found in response", "response": data}
+     except requests.exceptions.RequestException as e:
+         return {"error": str(e)}
++    except ValueError as e:
++        # JSON decode error
++        return {"error": str(e)}
+ 
+     try:
+         response = requests.get(media_url, headers=headers)
+-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+-        data = response.content
+-        return data
++        response.raise_for_status()
++        return response.content
+     except requests.exceptions.RequestException as e:
+         return {"error": str(e)}
+ 
+ 
+-async def get_media_async(media_id: str) -> dict:
++async def get_media_async(media_id: str) -> Union[bytes, Dict[str, Any]]:
+     """
+-    Sends a GET request to the Facebook Graph API to retrieve media information.
++    Fetch media bytes from the Graph API (async).
+ 
+-    Args:
+-        media_id (str): The ID of the media to retrieve.
++    Returns:
++        bytes on success, or {"error": "..."} on failure.
+     """
+     url = f"https://graph.facebook.com/v22.0/{media_id}"
+-
+     access_token = get_access_token()
+-
+     headers = {"Authorization": f"Bearer {access_token}"}
++
+     try:
+         async with httpx.AsyncClient() as client:
+             response = await client.get(url, headers=headers)
+-            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
++            response.raise_for_status()
+             data = response.json()
+ 
+         media_url = data.get("url")
++        if not media_url:
++            return {"error": "Media URL not found in response", "response": data}
+     except httpx.HTTPStatusError as e:
+         return {"error": str(e)}
++    except ValueError as e:
++        return {"error": str(e)}
+ 
+     try:
+         async with httpx.AsyncClient() as client:
+             response = await client.get(media_url, headers=headers)
+-            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+-            data = response.content
+-        return data
++            response.raise_for_status()
++            return response.content
+     except httpx.HTTPStatusError as e:
+         return {"error": str(e)}
+ 
+ 
+-def upload_media(media_data: bytes, mime_type: str, filename: str = "file"):
++def upload_media(media_data: bytes, mime_type: str, filename: str = "file") -> Union[str, Dict[str, Any]]:
+     """
+-    Sends a POST request to the Facebook Graph API to upload media for WhatsApp.
++    Upload media to the Graph API.
+ 
+-    Args:
+-        media_data: Bytes buffer containing the file data
+-        mime_type (str): The MIME type of the file
+-        filename (str): The name to use for the file in the upload. Defaults to "file"
++    Returns:
++        media_id (str) on success, or {"error": "..."} on failure.
+     """
+     phone_number_id = get_phone_number_id()
+-
+     url = f"https://graph.facebook.com/v22.0/{phone_number_id}/media"
+-
+     access_token = get_access_token()
+-
+     headers = {"Authorization": f"Bearer {access_token}"}
+-
+     data = {"messaging_product": "whatsapp", "type": mime_type}
++
+     try:
+         from io import BytesIO
+ 
+@@ -108,7 +107,7 @@ def upload_media(media_data: bytes, mime_type: str, filename: str = "file"):
+         files = {"file": (filename, file_data, mime_type)}
+ 
+         response = requests.post(url, headers=headers, data=data, files=files)
+-        response.raise_for_status()  # Raise an error for bad responses
++        response.raise_for_status()
+         json_resp = response.json()
+         media_id = json_resp.get("id")
+         if not media_id:
+@@ -120,24 +119,19 @@ def upload_media(media_data: bytes, mime_type: str, filename: str = "file"):
+         return {"error": str(e)}
+ 
+ 
+-async def upload_media_async(media_data: bytes, mime_type: str, filename: str = "file"):
++async def upload_media_async(media_data: bytes, mime_type: str, filename: str = "file") -> Union[str, Dict[str, Any]]:
+     """
+-    Sends a POST request to the Facebook Graph API to upload media for WhatsApp.
++    Upload media to the Graph API (async).
+ 
+-    Args:
+-        media_data: Bytes buffer containing the file data
+-        mime_type (str): The MIME type of the file
+-        filename (str): The name to use for the file in the upload. Defaults to "file"
++    Returns:
++        media_id (str) on success, or {"error": "..."} on failure.
+     """
+     phone_number_id = get_phone_number_id()
+-
+     url = f"https://graph.facebook.com/v22.0/{phone_number_id}/media"
+-
+     access_token = get_access_token()
+-
+     headers = {"Authorization": f"Bearer {access_token}"}
+-
+     data = {"messaging_product": "whatsapp", "type": mime_type}
++
+     try:
+         from io import BytesIO
+ 
+@@ -146,7 +140,7 @@ async def upload_media_async(media_data: bytes, mime_type: str, filename: str =
+ 
+         async with httpx.AsyncClient() as client:
+             response = await client.post(url, headers=headers, data=data, files=files)
+-            response.raise_for_status()  # Raise an error for bad responses
++            response.raise_for_status()
+             json_resp = response.json()
+             media_id = json_resp.get("id")
+             if not media_id:
+@@ -162,24 +156,12 @@ async def send_image_message_async(
+     media_id: str,
+     recipient: str,
+     text: Optional[str] = None,
+-):
+-    """Send an image message to a WhatsApp user (asynchronous version).
+-
+-    Args:
+-        media_id: The media id for the image to send
+-        recipient: Recipient's WhatsApp ID or phone number (e.g., "+1234567890").
+-        text: Caption for the image
+-
+-    Returns:
+-        Success message with message ID
+-    """
++) -> None:
++    """Send an image message to a WhatsApp user (async)."""
+     log_debug(f"Sending WhatsApp image to {recipient}: {text}")
+     phone_number_id = get_phone_number_id()
+-
+     url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+-
+     access_token = get_access_token()
+-
+     headers = {"Authorization": f"Bearer {access_token}"}
+ 
+     data = {
+@@ -198,7 +180,6 @@ async def send_image_message_async(
+             response = await client.post(url, headers=headers, json=data)
+             response.raise_for_status()
+             log_debug(f"Response: {response.text}")
+-
+     except httpx.HTTPStatusError as e:
+         log_error(f"Failed to send WhatsApp image message: {e}")
+         log_error(f"Error response: {e.response.text if hasattr(e, 'response') else 'No response text'}")
+@@ -212,24 +193,12 @@ def send_image_message(
+     media_id: str,
+     recipient: str,
+     text: Optional[str] = None,
+-):
+-    """Send an image message to a WhatsApp user (synchronous version).
+-
+-    Args:
+-        image: The media id for the image to send
+-        recipient: Recipient's WhatsApp ID or phone number (e.g., "+1234567890").
+-        text: Caption for the image
+-
+-    Returns:
+-        Success message with message ID
+-    """
++) -> None:
++    """Send an image message to a WhatsApp user (sync)."""
+     log_debug(f"Sending WhatsApp image to {recipient}: {text}")
+     phone_number_id = get_phone_number_id()
+-
+     url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+-
+     access_token = get_access_token()
+-
+     headers = {"Authorization": f"Bearer {access_token}"}
+ 
+     data = {
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b72123..c26483b04f 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -1,5 +1,7 @@
++from __future__ import annotations
++
+ from pathlib import Path
+-from typing import Optional
++from typing import Any, Mapping, Optional, cast
+ 
+ from agno.utils.log import logger
+ 
+@@ -10,8 +12,8 @@ def get_workspace_dir_from_env() -> Optional[Path]:
+     from agno.constants import WORKSPACE_DIR_ENV_VAR
+ 
+     logger.debug(f"Reading {WORKSPACE_DIR_ENV_VAR} from environment variables")
+-    workspace_dir = getenv(WORKSPACE_DIR_ENV_VAR, None)
+-    if workspace_dir is not None:
++    workspace_dir = getenv(WORKSPACE_DIR_ENV_VAR)
++    if workspace_dir:
+         return Path(workspace_dir)
+     return None
+ 
+@@ -19,9 +21,10 @@ def get_workspace_dir_from_env() -> Optional[Path]:
+ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+     """
+     Get the workspace directory path from the given workspace root path.
++
+     Agno workspace dir can be found at:
+-        1. subdirectory: workspace
+-        2. In a folder defined by the pyproject.toml file
++      1. subdirectory: workspace
++      2. In a folder defined by the pyproject.toml file
+     """
+     from agno.utils.pyproject import read_pyproject_agno
+ 
+@@ -38,11 +41,16 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+     if ws_pyproject_toml.exists() and ws_pyproject_toml.is_file():
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+-            agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
+-
+-    logger.error(f"Could not find a workspace at: {ws_root_path}")
+-    exit(0)
++            conf = cast(Mapping[str, Any], agno_conf)
++            workspace_value = conf.get("workspace")
++
++            # mypy-safe narrowing: joinpath requires str or PathLike[str]
++            if isinstance(workspace_value, str) and workspace_value:
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(workspace_value)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
++
++    msg = f"Could not find a workspace at: {ws_root_path}"
++    logger.error(msg)
++    raise FileNotFoundError(msg)
+diff --git a/libs/agno/agno/tools/firecrawl.py b/libs/agno/agno/tools/firecrawl.py
+index cdc7664891..fb81b11e99 100644
+--- a/libs/agno/agno/tools/firecrawl.py
++++ b/libs/agno/agno/tools/firecrawl.py
+@@ -3,27 +3,19 @@
+ from typing import Any, Dict, List, Optional
+ 
+ from agno.tools import Toolkit
+-from agno.utils.log import logger
++from agno.utils.log import log_error
+ 
+ try:
+-    from firecrawl import FirecrawlApp  # type: ignore[import-not-found]
+-except ImportError as e:
+-    raise ImportError("`firecrawl-py` not installed. Please install using `pip install firecrawl-py`") from e
+-
+-# Optional compatibility: firecrawl SDK renamed ScrapeOptions to V1ScrapeOptions in some versions.
+-try:
+-    from firecrawl import ScrapeOptions as _ScrapeOptions  # type: ignore[attr-defined,import-not-found]
+-except Exception:
+-    try:
+-        from firecrawl import V1ScrapeOptions as _ScrapeOptions  # type: ignore[attr-defined,import-not-found]
+-    except Exception:
+-        _ScrapeOptions = None  # type: ignore[assignment]
++    from firecrawl import FirecrawlApp  # type: ignore[attr-defined]
++    from firecrawl.types import ScrapeOptions
++except ImportError:
++    raise ImportError("`firecrawl-py` not installed. Please install using `pip install firecrawl-py`")
+ 
+ 
+ class CustomJSONEncoder(json.JSONEncoder):
+     """Custom JSON encoder that handles non-serializable types by converting them to strings."""
+ 
+-    def default(self, obj: Any) -> Any:
++    def default(self, obj):
+         try:
+             return super().default(obj)
+         except TypeError:
+@@ -33,109 +25,119 @@ def default(self, obj: Any) -> Any:
+ class FirecrawlTools(Toolkit):
+     """
+     Firecrawl is a tool for scraping and crawling websites.
++
+     Args:
+         api_key (Optional[str]): The API key to use for the Firecrawl app.
++        enable_scrape (bool): Enable website scraping functionality. Default is True.
++        enable_crawl (bool): Enable website crawling functionality. Default is False.
++        enable_mapping (bool): Enable website mapping functionality. Default is False.
++        enable_search (bool): Enable web search functionality. Default is False.
++        all (bool): Enable all tools. Overrides individual flags when True. Default is False.
+         formats (Optional[List[str]]): The formats to use for the Firecrawl app.
+         limit (int): The maximum number of pages to crawl.
+-        scrape (bool): Whether to scrape the website.
+-        crawl (bool): Whether to crawl the website.
+-        mapping (bool): Whether to map the website.
++        poll_interval (int): Polling interval for crawl operations.
++        search_params (Optional[Dict[str, Any]]): Parameters for search operations.
+         api_url (Optional[str]): The API URL to use for the Firecrawl app.
+     """
+ 
+     def __init__(
+         self,
+         api_key: Optional[str] = None,
++        enable_scrape: bool = True,
++        enable_crawl: bool = False,
++        enable_mapping: bool = False,
++        enable_search: bool = False,
++        all: bool = False,
+         formats: Optional[List[str]] = None,
+         limit: int = 10,
+         poll_interval: int = 30,
+-        scrape: bool = True,
+-        crawl: bool = False,
+-        mapping: bool = False,
+-        search: bool = False,
+         search_params: Optional[Dict[str, Any]] = None,
+         api_url: Optional[str] = "https://api.firecrawl.dev",
+-        **kwargs: Any,
++        **kwargs,
+     ):
+         self.api_key: Optional[str] = api_key or getenv("FIRECRAWL_API_KEY")
+         if not self.api_key:
+-            logger.error("FIRECRAWL_API_KEY not set. Please set the FIRECRAWL_API_KEY environment variable.")
++            log_error("FIRECRAWL_API_KEY not set. Please set the FIRECRAWL_API_KEY environment variable.")
+ 
+         self.formats: Optional[List[str]] = formats
+         self.limit: int = limit
+         self.poll_interval: int = poll_interval
+-
+-        # Tests patch FirecrawlApp and only assert app is not None
+         self.app: FirecrawlApp = FirecrawlApp(api_key=self.api_key, api_url=api_url)
+-
+-        # Tests may set this after init
+-        self.search_params: Optional[Dict[str, Any]] = search_params
+-
+-        # Start with scrape by default. But if crawl is set, then set scrape to False.
+-        if crawl:
+-            scrape = False
+-            mapping = False
+-        elif not scrape:
+-            crawl = True
++        self.search_params = search_params
+ 
+         tools: List[Any] = []
+-        if scrape:
++        if all or enable_scrape:
+             tools.append(self.scrape_website)
+-        if crawl:
++        if all or enable_crawl:
+             tools.append(self.crawl_website)
+-        if mapping:
++        if all or enable_mapping:
+             tools.append(self.map_website)
+-        if search:
+-            tools.append(self.search)
++        if all or enable_search:
++            tools.append(self.search_web)
+ 
+         super().__init__(name="firecrawl_tools", tools=tools, **kwargs)
+ 
+     def scrape_website(self, url: str) -> str:
+-        """Use this function to scrape a website using Firecrawl."""
+-        params: Dict[str, Any] = {}
++        """Use this function to scrape a website using Firecrawl.
++
++        Args:
++            url (str): The URL to scrape.
++        """
++        params = {}
+         if self.formats:
+             params["formats"] = self.formats
+ 
+-        scrape_result = self.app.scrape_url(url, **params)
++        scrape_result = self.app.scrape(url, **params)
+         return json.dumps(scrape_result.model_dump(), cls=CustomJSONEncoder)
+ 
+     def crawl_website(self, url: str, limit: Optional[int] = None) -> str:
+-        """Use this function to crawl a website using Firecrawl."""
+-        params: Dict[str, Any] = {}
++        """Use this function to Crawls a website using Firecrawl.
+ 
+-        # Respect explicit argument first, then fallback to self.limit
+-        params["limit"] = limit if limit is not None else self.limit
++        Args:
++            url (str): The URL to crawl.
++            limit (int): The maximum number of pages to crawl
+ 
+-        # Keep poll_interval behavior as tests expect
+-        params["poll_interval"] = self.poll_interval
++        Returns:
++            The results of the crawling.
++        """
++        params: Dict[str, Any] = {}
++        if self.limit or limit:
++            params["limit"] = self.limit or limit
++        if self.formats:
++            params["scrape_options"] = ScrapeOptions(formats=self.formats)  # type: ignore
+ 
+-        # Do not require ScrapeOptions for tests, but support it when present
+-        if self.formats and _ScrapeOptions is not None:
+-            params["scrape_options"] = _ScrapeOptions(formats=self.formats)  # type: ignore[misc]
++        params["poll_interval"] = self.poll_interval
+ 
+-        crawl_result = self.app.crawl_url(url, **params)
++        crawl_result = self.app.crawl(url, **params)
+         return json.dumps(crawl_result.model_dump(), cls=CustomJSONEncoder)
+ 
+     def map_website(self, url: str) -> str:
+-        """Use this function to map a website using Firecrawl."""
+-        map_result = self.app.map_url(url)
+-        return json.dumps(map_result.model_dump(), cls=CustomJSONEncoder)
++        """Use this function to Map a website using Firecrawl.
+ 
+-    def search(self, query: str, limit: Optional[int] = None) -> str:
+-        """Use this function to search for the web using Firecrawl."""
+-        params: Dict[str, Any] = {}
++        Args:
++            url (str): The URL to map.
+ 
+-        params["limit"] = limit if limit is not None else self.limit
++        """
++        map_result = self.app.map(url)
++        return json.dumps(map_result.model_dump(), cls=CustomJSONEncoder)
+ 
+-        if self.formats and _ScrapeOptions is not None:
+-            params["scrape_options"] = _ScrapeOptions(formats=self.formats)  # type: ignore[misc]
++    def search_web(self, query: str, limit: Optional[int] = None):
++        """Use this function to search for the web using Firecrawl.
+ 
++        Args:
++            query (str): The query to search for.
++            limit (int): The maximum number of results to return.
++        """
++        params: Dict[str, Any] = {}
++        if self.limit or limit:
++            params["limit"] = self.limit or limit
++        if self.formats:
++            params["scrape_options"] = ScrapeOptions(formats=self.formats)  # type: ignore
+         if self.search_params:
+             params.update(self.search_params)
+ 
+         search_result = self.app.search(query, **params)
+-        if getattr(search_result, "success", False):
++        if search_result.success:
+             return json.dumps(search_result.data, cls=CustomJSONEncoder)
+-
+-        err = getattr(search_result, "error", "Unknown error")
+-        return "Error searching with the Firecrawl tool: " + str(err)
++        else:
++            return "Error searching with the Firecrawl tool: " + search_result.error
+diff --git a/libs/agno/agno/vectordb/qdrant/qdrant.py b/libs/agno/agno/vectordb/qdrant/qdrant.py
+index 733c476131..b81ee6d628 100644
+--- a/libs/agno/agno/vectordb/qdrant/qdrant.py
++++ b/libs/agno/agno/vectordb/qdrant/qdrant.py
+@@ -13,7 +13,7 @@
+ 
+ if TYPE_CHECKING:
+     # fastembed often ships without type stubs in many environments
+-    from fastembed import SparseTextEmbedding  # type: ignore[import-not-found]
++    pass  # type: ignore[import-not-found]
+ 
+ from agno.document import Document
+ from agno.embedder import Embedder
+diff --git a/libs/agno/tests/unit/tools/test_firecrawl.py b/libs/agno/tests/unit/tools/test_firecrawl.py
+index d3f57970e2..630fbc6a34 100644
+--- a/libs/agno/tests/unit/tools/test_firecrawl.py
++++ b/libs/agno/tests/unit/tools/test_firecrawl.py
+@@ -5,13 +5,10 @@
+ from unittest.mock import Mock, patch
+ 
+ import pytest
+-from firecrawl import FirecrawlApp
++from firecrawl import FirecrawlApp  # noqa
+ 
+ from agno.tools.firecrawl import FirecrawlTools
+ 
+-# Ensure required dependencies are installed
+-# pip install zep-cloud firecrawl-py
+-
+ TEST_API_KEY = os.environ.get("FIRECRAWL_API_KEY", "test_api_key")
+ TEST_API_URL = "https://api.firecrawl.dev"
+ 
+@@ -20,7 +17,7 @@
+ def mock_firecrawl():
+     """Create a mock FirecrawlApp instance."""
+     with patch("agno.tools.firecrawl.FirecrawlApp") as mock_firecrawl_cls:
+-        mock_app = Mock(spec=FirecrawlApp)
++        mock_app = Mock()
+         mock_firecrawl_cls.return_value = mock_app
+         return mock_app
+ 
+@@ -45,8 +42,6 @@ def test_init_with_env_vars():
+             assert tools.limit == 10
+             assert tools.app is not None
+ 
+-    # Ensure FIRECRAWL_API_KEY is set correctly for the test
+-
+ 
+ def test_init_with_params():
+     """Test initialization with parameters."""
+@@ -57,8 +52,6 @@ def test_init_with_params():
+         assert tools.limit == 5
+         assert tools.app is not None
+ 
+-    # Ensure parameters are valid and dependencies are met
+-
+ 
+ def test_scrape_website(firecrawl_tools, mock_firecrawl):
+     """Test scrape_website method."""
+@@ -69,7 +62,7 @@ def test_scrape_website(firecrawl_tools, mock_firecrawl):
+         "content": "Test content",
+         "status": "success",
+     }
+-    mock_firecrawl.scrape_url.return_value = mock_response
++    mock_firecrawl.scrape.return_value = mock_response
+ 
+     # Call the method
+     result = firecrawl_tools.scrape_website("https://example.com")
+@@ -79,7 +72,7 @@ def test_scrape_website(firecrawl_tools, mock_firecrawl):
+     assert result_data["url"] == "https://example.com"
+     assert result_data["content"] == "Test content"
+     assert result_data["status"] == "success"
+-    mock_firecrawl.scrape_url.assert_called_once_with("https://example.com")
++    mock_firecrawl.scrape.assert_called_once_with("https://example.com")
+ 
+ 
+ def test_scrape_website_with_formats(firecrawl_tools, mock_firecrawl):
+@@ -91,7 +84,7 @@ def test_scrape_website_with_formats(firecrawl_tools, mock_firecrawl):
+         "content": "Test content",
+         "status": "success",
+     }
+-    mock_firecrawl.scrape_url.return_value = mock_response
++    mock_firecrawl.scrape.return_value = mock_response
+ 
+     # Set formats
+     firecrawl_tools.formats = ["html", "text"]
+@@ -104,7 +97,7 @@ def test_scrape_website_with_formats(firecrawl_tools, mock_firecrawl):
+     assert result_data["url"] == "https://example.com"
+     assert result_data["content"] == "Test content"
+     assert result_data["status"] == "success"
+-    mock_firecrawl.scrape_url.assert_called_once_with("https://example.com", formats=["html", "text"])
++    mock_firecrawl.scrape.assert_called_once_with("https://example.com", formats=["html", "text"])
+ 
+ 
+ def test_crawl_website(firecrawl_tools, mock_firecrawl):
+@@ -116,7 +109,7 @@ def test_crawl_website(firecrawl_tools, mock_firecrawl):
+         "pages": ["page1", "page2"],
+         "status": "success",
+     }
+-    mock_firecrawl.crawl_url.return_value = mock_response
++    mock_firecrawl.crawl.return_value = mock_response
+ 
+     # Call the method
+     result = firecrawl_tools.crawl_website("https://example.com")
+@@ -126,7 +119,7 @@ def test_crawl_website(firecrawl_tools, mock_firecrawl):
+     assert result_data["url"] == "https://example.com"
+     assert result_data["pages"] == ["page1", "page2"]
+     assert result_data["status"] == "success"
+-    mock_firecrawl.crawl_url.assert_called_once_with("https://example.com", limit=10, poll_interval=30)
++    mock_firecrawl.crawl.assert_called_once_with("https://example.com", limit=10, poll_interval=30)
+ 
+ 
+ def test_crawl_website_with_custom_limit(firecrawl_tools, mock_firecrawl):
+@@ -140,7 +133,7 @@ def test_crawl_website_with_custom_limit(firecrawl_tools, mock_firecrawl):
+         "pages": ["page1", "page2"],
+         "status": "success",
+     }
+-    mock_firecrawl.crawl_url.return_value = mock_response
++    mock_firecrawl.crawl.return_value = mock_response
+ 
+     # Call the method with custom limit
+     result = firecrawl_tools.crawl_website("https://example.com", limit=5)
+@@ -150,7 +143,7 @@ def test_crawl_website_with_custom_limit(firecrawl_tools, mock_firecrawl):
+     assert result_data["url"] == "https://example.com"
+     assert result_data["pages"] == ["page1", "page2"]
+     assert result_data["status"] == "success"
+-    mock_firecrawl.crawl_url.assert_called_once_with("https://example.com", limit=5, poll_interval=30)
++    mock_firecrawl.crawl.assert_called_once_with("https://example.com", limit=5, poll_interval=30)
+ 
+ 
+ def test_map_website(firecrawl_tools, mock_firecrawl):
+@@ -162,7 +155,7 @@ def test_map_website(firecrawl_tools, mock_firecrawl):
+         "sitemap": {"page1": ["link1", "link2"]},
+         "status": "success",
+     }
+-    mock_firecrawl.map_url.return_value = mock_response
++    mock_firecrawl.map.return_value = mock_response
+ 
+     # Call the method
+     result = firecrawl_tools.map_website("https://example.com")
+@@ -172,7 +165,7 @@ def test_map_website(firecrawl_tools, mock_firecrawl):
+     assert result_data["url"] == "https://example.com"
+     assert result_data["sitemap"] == {"page1": ["link1", "link2"]}
+     assert result_data["status"] == "success"
+-    mock_firecrawl.map_url.assert_called_once_with("https://example.com")
++    mock_firecrawl.map.assert_called_once_with("https://example.com")
+ 
+ 
+ def test_search(firecrawl_tools, mock_firecrawl):
+@@ -184,7 +177,7 @@ def test_search(firecrawl_tools, mock_firecrawl):
+     mock_firecrawl.search.return_value = mock_response
+ 
+     # Call the method
+-    result = firecrawl_tools.search("test query")
++    result = firecrawl_tools.search_web("test query")
+     result_data = json.loads(result)
+ 
+     # Verify results
+@@ -203,14 +196,12 @@ def test_search_with_error(firecrawl_tools, mock_firecrawl):
+     mock_firecrawl.search.return_value = mock_response
+ 
+     # Call the method
+-    result = firecrawl_tools.search("test query")
++    result = firecrawl_tools.search_web("test query")
+ 
+     # Verify results
+     assert result == "Error searching with the Firecrawl tool: Search failed"
+     mock_firecrawl.search.assert_called_once_with("test query", limit=10)
+ 
+-    # Ensure error handling is correctly implemented
+-
+ 
+ def test_search_with_custom_params(firecrawl_tools, mock_firecrawl):
+     """Test search method with custom search parameters."""
+@@ -224,7 +215,7 @@ def test_search_with_custom_params(firecrawl_tools, mock_firecrawl):
+     firecrawl_tools.search_params = {"language": "en", "region": "us"}
+ 
+     # Call the method
+-    result = firecrawl_tools.search("test query")
++    result = firecrawl_tools.search_web("test query")
+     result_data = json.loads(result)
+ 
+     # Verify results
+diff --git a/libs/agno/agno/app/whatsapp/async_router.py b/libs/agno/agno/app/whatsapp/async_router.py
+index 8c35fabc03..37362f0ef9 100644
+--- a/libs/agno/agno/app/whatsapp/async_router.py
++++ b/libs/agno/agno/app/whatsapp/async_router.py
+@@ -137,7 +137,7 @@ async def process_message(message: dict, agent: Optional[Agent], team: Optional[
+ 
+             if response.images:
+                 image_content = response.images[0].content
+-                image_bytes: bytes | None = None
++                image_bytes: Optional[bytes] = None
+ 
+                 if isinstance(image_content, bytes):
+                     try:
+@@ -157,7 +157,7 @@ async def process_message(message: dict, agent: Optional[Agent], team: Optional[
+                         filename="image.png",
+                     )
+ 
+-                    media_id: str | None = None
++                    media_id: Optional[str] = None
+                     if isinstance(media_id_or_obj, str):
+                         media_id = media_id_or_obj
+                     elif isinstance(media_id_or_obj, dict):
+diff --git a/libs/agno/agno/app/whatsapp/sync_router.py b/libs/agno/agno/app/whatsapp/sync_router.py
+index cb1d44641c..bca52fa78a 100644
+--- a/libs/agno/agno/app/whatsapp/sync_router.py
++++ b/libs/agno/agno/app/whatsapp/sync_router.py
+@@ -144,7 +144,7 @@ def process_message(message: dict, agent: Optional[Agent], team: Optional[Team])
+             # Send image response if present
+             if response.images:
+                 image_content = response.images[0].content
+-                image_bytes: bytes | None = None
++                image_bytes: Optional[bytes] = None
+ 
+                 if isinstance(image_content, bytes):
+                     try:
+@@ -164,7 +164,7 @@ def process_message(message: dict, agent: Optional[Agent], team: Optional[Team])
+                         filename="image.png",
+                     )
+ 
+-                    media_id: str | None = None
++                    media_id: Optional[str] = None
+                     if isinstance(media_id_or_obj, str):
+                         media_id = media_id_or_obj
+                     elif isinstance(media_id_or_obj, dict):
+@@ -188,7 +188,6 @@ def process_message(message: dict, agent: Optional[Agent], team: Optional[Team])
+ 
+         except Exception as e:
+             log_error(f"Error processing message: {str(e)}")
+-            # Optionally send an error message to the user
+             try:
+                 _send_whatsapp_message(
+                     phone_number,
+@@ -202,10 +201,8 @@ def _send_whatsapp_message(recipient: str, message: str, italics: bool = False):
+             WhatsAppTools().send_text_message_sync(recipient=recipient, text=f"_{message}_" if italics else message)
+             return
+ 
+-        # Split message into batches of 4000 characters (WhatsApp message limit is 4096)
+         message_batches = [message[i : i + 4000] for i in range(0, len(message), 4000)]
+ 
+-        # Add a prefix with the batch number
+         for i, batch in enumerate(message_batches, 1):
+             batch_message = f"[{i}/{len(message_batches)}] {batch}"
+             WhatsAppTools().send_text_message_sync(

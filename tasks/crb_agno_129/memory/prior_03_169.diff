@@ -1,0 +1,41 @@
+diff --git a/libs/agno/agno/eval/utils.py b/libs/agno/agno/eval/utils.py
+index 08f8b29a658..9f1c3e98cf8 100644
+--- a/libs/agno/agno/eval/utils.py
++++ b/libs/agno/agno/eval/utils.py
+@@ -2,10 +2,15 @@
+ 
+ from dataclasses import asdict
+ from pathlib import Path
+-from typing import Optional, Union
++from typing import TYPE_CHECKING, Optional, Union
+ 
+ from agno.utils.log import logger
+ 
++if TYPE_CHECKING:
++    from agno.eval.accuracy import AccuracyResult
++    from agno.eval.performance import PerformanceResult
++    from agno.eval.reliability import ReliabilityResult
++
+ 
+ def store_result_in_file(
+     file_path: str,
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b72123a..900fa57e004 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,10 +39,11 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            if isinstance(agno_conf_workspace_dir_str, str):
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)

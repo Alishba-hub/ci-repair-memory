@@ -7,8 +7,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from ci_memory_agents.loader import list_tasks
-from ci_memory_agents.prompt_builder import CONDITIONS, PAIR, build_prompt, condition_k
+from ci_memory_agents.loader import list_study_tasks
+from ci_memory_agents.prompt_builder import (
+    CONDITIONS,
+    PAIR,
+    InsufficientMemoryError,
+    build_prompt,
+    condition_k,
+)
 
 WHITESPACE = re.compile(r"\s+")
 
@@ -96,9 +102,20 @@ def audit_task(task) -> dict:
         "task_id": task.task_id,
         "gold_lines": len(candidates),
         "conditions": {},
+        # Arms this task cannot build, and why. Kept beside the ratios so an unaudited
+        # arm is visible as unaudited rather than as a passing zero.
+        "short": {},
     }
     for condition in CONDITIONS:
-        raw = build_prompt(task, condition)
+        try:
+            raw = build_prompt(task, condition)
+        except InsufficientMemoryError as error:
+            # A task imported before the K sweep carries three memory items and cannot
+            # fill the K=5 arm. That is a task to re-import, not a reason to abandon the
+            # audit: crashing here left the other 29 tasks unaudited and reported the
+            # whole study as leaking when nothing about leakage had been measured.
+            report["short"][condition] = str(error)
+            continue
         prompt = normalize(raw)
         leaked = [
             line for line in candidates
@@ -136,7 +153,9 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    tasks = list_tasks(Path(args.tasks_root), source=args.source)
+    # The declared study population, when the importer has written one. Auditing
+    # leftovers from an earlier design reported arms they were never meant to fill.
+    tasks = list_study_tasks(Path(args.tasks_root), source=args.source)
     ordering: list[str] = []
     reports = []
     for task in tasks:
@@ -147,6 +166,25 @@ def main() -> int:
 
     audited = sorted({c for r in reports for c in r["conditions"]}, key=CONDITIONS.index)
     print(f"Audited {len(tasks)} tasks x {len(audited)} conditions: {', '.join(audited)}\n")
+
+    # Arms that could not be built at all. Reported before the ratios, because a task
+    # missing from an arm's column is missing data and not a task that leaked nothing.
+    short = sorted(
+        (r["task_id"], condition, reason)
+        for r in reports
+        for condition, reason in r["short"].items()
+    )
+    if short:
+        by_condition: dict[str, list[str]] = {}
+        for task_id, condition, _ in short:
+            by_condition.setdefault(condition, []).append(task_id)
+        print(f"{len(short)} task-condition pairs COULD NOT BE BUILT and are unaudited:")
+        for condition, task_ids in sorted(by_condition.items()):
+            shown = ", ".join(task_ids[:4]) + (" ..." if len(task_ids) > 4 else "")
+            print(f"  {condition:<16}{len(task_ids)} tasks: {shown}")
+        print("  These carry fewer memory items than the arm needs. Re-import them:")
+        print("  python scripts/import_ci_repair_bench.py")
+        print()
 
     # One column per audited arm. The largest K is the arm most able to leak -- it
     # shows the most history -- so auditing only `with_memory` would have checked the

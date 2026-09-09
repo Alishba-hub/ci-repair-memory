@@ -1,0 +1,36 @@
+--- step: Linux Functional (3.10) ---
+    command.run(args)
+  File "/home/runner/work/conan/conan/conan/cli/cli.py", line 193, in run
+    command.run(self._conan_api, args[0][1:])
+  File "/home/runner/work/conan/conan/conan/cli/command.py", line 179, in run
+    info = self._method(conan_api, parser, *args)
+  File "/home/runner/work/conan/conan/conan/cli/commands/create.py", line 101, in create
+    conan_api.install.install_binaries(deps_graph=deps_graph, remotes=remotes)
+  File "/home/runner/work/conan/conan/conan/api/subapi/install.py", line 29, in install_binaries
+    installer.install(deps_graph, remotes, install_order=install_order)
+  File "/home/runner/work/conan/conan/conan/internal/graph/installer.py", line 256, in install
+    self._install_source(package.nodes[0], remotes)
+... (2 lines omitted)
+  File "/home/runner/work/conan/conan/conan/internal/source.py", line 75, in config_source
+    run_source_method(conanfile, hook_manager)
+  File "/home/runner/work/conan/conan/conan/internal/methods.py", line 20, in run_source_method
+    with conanfile_exception_formatter(conanfile, "source"):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/home/runner/work/conan/conan/conan/internal/errors.py", line 45, in conanfile_exception_formatter
+    raise ConanException(m)
+conan.errors.ConanException: pkg2/0.1: Error in source() method, line 28
+	git.checkout(commit=sources["commit"])
+	ConanException: Command 'git checkout 08b7306c841fef50731818b4a1cc22e8768100f8' failed with errorcode '128'
+b'fatal: unable to read tree (08b7306c841fef50731818b4a1cc22e8768100f8)\n'
+FAILED test/functional/tools/scm/test_git.py::TestGitShallowTagClone::test_detect_commit_not_in_remote - AssertionError: assert 'pkg/0.1: COMMIT IN REMOTE: False' in '\n======== Exporting recipe to the cache ========\npkg/0.1: Exporting package recipe: /tmp/tmp2mo28fkhconans/path wit.../.conan2/p/pkg12e815fef6a41/e\npkg/0.1: Exported: pkg/0.1#36df6e78e2adb89ccfe52e880ca6b8c7 (2026-08-12 21:10:07 UTC)\n'
+ +  where '\n======== Exporting recipe to the cache ========\npkg/0.1: Exporting package recipe: /tmp/tmp2mo28fkhconans/path wit.../.conan2/p/pkg12e815fef6a41/e\npkg/0.1: Exported: pkg/0.1#36df6e78e2adb89ccfe52e880ca6b8c7 (2026-08-12 21:10:07 UTC)\n' = <conan.test.utils.tools.TestClient object at 0x7eff583f1ba0>.out
+= 8 failed, 375 passed, 316 skipped, 1 xfailed, 99 warnings, 233 errors in 334.14s (0:05:34) =
+##[error]Process completed with exit code 1.
+##[end-action id=__self.__run;outcome=failure;conclusion=failure;duration_ms=335774]
+##[start-action display=Rename coverage file;id=__self.__run_2]
+##[end-action id=__self.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Upload coverage artifact;id=__self.__actions_upload-artifact]
+##[end-action id=__self.__actions_upload-artifact;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://git

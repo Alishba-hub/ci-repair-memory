@@ -1,0 +1,116 @@
+{
+  "task_id": "crb_litellm_384",
+  "name": "CI failure in litellm (Test Failure, Runtime Error, Configuration Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "384",
+  "repo_name": "litellm",
+  "repo_owner": "berriai",
+  "sha_fail": "bd65f8074258cddb4e29eb1cc1bce77d1a46883f",
+  "sha_success": "a4593bc215b1f0a49c72b5c5b624a227c6e75e53",
+  "commit_date": "2025-07-28T20:42:14Z",
+  "error_type": [
+    "Test Failure",
+    "Runtime Error",
+    "Configuration Error"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/test-litellm.yml",
+  "target_files": [
+    "litellm/litellm_core_utils/prompt_templates/image_handling.py",
+    "litellm/llms/gemini/chat/transformation.py",
+    "tests/test_litellm/test_main.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "391",
+      "commit_date": "2025-07-26T16:45:19Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/proxy/_experimental/mcp_server/server.py"
+      ],
+      "log_file": "memory/prior_00_391.log",
+      "diff_file": "memory/prior_00_391.diff"
+    },
+    {
+      "instance_id": "400",
+      "commit_date": "2025-07-22T09:33:55Z",
+      "error_type": [
+        "Assertion Error",
+        "Runtime Error",
+        "Configuration Error"
+      ],
+      "workflow_filename": "test-litellm.yml",
+      "changed_files": [
+        "litellm/__init__.py",
+        "litellm/types/utils.py",
+        "litellm/llms/vertex_ai/common_utils.py",
+        "tests/test_litellm/llms/vertex_ai/test_vertex_ai_common_utils.py",
+        "litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py",
+        "tests/test_litellm/litellm_core_utils/llm_cost_calc/test_tool_call_cost_tracking.py",
+        "litellm/utils.py",
+        "litellm/litellm_core_utils/get_llm_provider_logic.py",
+        "litellm/litellm_core_utils/prompt_templates/factory.py",
+        "litellm/llms/anthropic/chat/handler.py",
+        "litellm/llms/bedrock/chat/converse_handler.py",
+        "litellm/llms/custom_httpx/llm_http_handler.py",
+        "litellm/llms/openai/chat/o_series_transformation.py"
+      ],
+      "log_file": "memory/prior_01_400.log",
+      "diff_file": "memory/prior_01_400.diff"
+    },
+    {
+      "instance_id": "377",
+      "commit_date": "2025-07-19T14:38:22Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/llms/bedrock/image/amazon_nova_canvas_transformation.py"
+      ],
+      "log_file": "memory/prior_02_377.log",
+      "diff_file": "memory/prior_02_377.diff"
+    },
+    {
+      "instance_id": "387",
+      "commit_date": "2025-07-18T00:26:29Z",
+      "error_type": [
+        "Dependency Issues",
+        "Test Failure"
+      ],
+      "workflow_filename": "test-litellm.yml",
+      "changed_files": [
+        "litellm/proxy/proxy_cli.py",
+        "litellm/litellm_core_utils/prompt_templates/factory.py",
+        "litellm/litellm_core_utils/prompt_templates/image_handling.py",
+        "tests/test_litellm/test_main.py"
+      ],
+      "log_file": "memory/prior_03_387.log",
+      "diff_file": "memory/prior_03_387.diff"
+    },
+    {
+      "instance_id": "381",
+      "commit_date": "2025-07-11T17:38:54Z",
+      "error_type": [
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "test-litellm.yml",
+      "changed_files": [
+        "litellm/llms/github_copilot/chat/transformation.py",
+        "litellm/llms/bedrock/common_utils.py",
+        "litellm/router_strategy/base_routing_strategy.py",
+        "tests/test_litellm/test_main.py",
+        "tests/test_litellm/llms/github_copilot/test_github_copilot_transformation.py",
+        "litellm/utils.py",
+        "tests/test_litellm/test_utils.py"
+      ],
+      "log_file": "memory/prior_04_381.log",
+      "diff_file": "memory/prior_04_381.diff"
+    }
+  ]
+}

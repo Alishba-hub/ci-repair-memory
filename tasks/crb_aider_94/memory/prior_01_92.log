@@ -1,0 +1,55 @@
+--- step: build (3.12) ---
+>       self.assertEqual(model.info["max_input_tokens"], 32 * 1024)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'max_input_tokens'
+tests/basic/test_models.py:47: KeyError
+__________________ test_openrouter_get_model_info_from_cache ___________________
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe85bafd2e0>
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_openrouter_get_model_info0')
+    def test_openrouter_get_model_info_from_cache(monkeypatch, tmp_path):
+        """
+        OpenRouterModelManager should return correct metadata taken from the
+        downloaded (and locally cached) models JSON payload.
+        """
+        payload = {
+            "data": [
+                {
+... (3 lines omitted)
+                    "top_provider": {"context_length": 32768},
+                }
+            ]
+        }
+        # Fake out the network call and the HOME directory used for the cache file
+        monkeypatch.setattr("requests.get", lambda *a, **k: DummyResponse(payload))
+        monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
+        manager = OpenRouterModelManager()
+        info = manager.get_model_info("openrouter/mistralai/mistral-medium-3")
+        assert info["max_input_tokens"] == 32768
+>       assert info["input_cost_per_token"] == 0.0001
+E       assert 100.0 == 0.0001
+tests/basic/test_openrouter.py:42: AssertionError
+_________________ TestRepoMapAllLanguages.test_language_csharp _________________
+self = <tests.basic.test_repomap.TestRepoMapAllLanguages testMethod=test_language_csharp>
+    def test_language_csharp(self):
+>       self._test_language_repo_map("csharp", "cs", "IGreeter")
+tests/basic/test_repomap.py:338:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/basic/test_repomap.py:415: in _test_language_repo_map
+    self.assertGreater(len(result.strip().splitlines()), 1)
+E   AssertionError: 1 not greater than 1
+----------------------------- Captured stdout call -----------------------------
+Skipping file /tmp/tmpogi3y6h_/test.cs: Incompatible Language version 15. Must be between 13 and 14
+lang: csharp
+result:
+test.cs
+test.cs
+=========================== short test summary info ============================
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_read_only_with_image_file - AssertionError: 0 != 1
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_tokens_output - AssertionError: False is not true
+FAILED tests/basic/test_models.py::TestModels::test_max_context_tokens - KeyError: 'max_input_tokens'
+FAILED tests/basic/test_openrouter.py::test_openrouter_get_model_info_from_cache - assert 100.0 == 0.0001
+FAILED tests/basic/test_repomap.py::TestRepoMapAllLanguages::test_language_csharp - AssertionError: 1 not greater than 1
+============= 5 failed, 473 passed, 1 skipped in 277.69s (0:04:37) =============
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.co

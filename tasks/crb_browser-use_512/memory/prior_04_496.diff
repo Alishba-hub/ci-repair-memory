@@ -1,0 +1,248 @@
+diff --git a/browser_use/controller/registry/service.py b/browser_use/controller/registry/service.py
+index 5977d6b206..ba7f5b2110 100644
+--- a/browser_use/controller/registry/service.py
++++ b/browser_use/controller/registry/service.py
+@@ -5,7 +5,7 @@
+ import re
+ from collections.abc import Callable
+ from inspect import Parameter, iscoroutinefunction, signature
+-from typing import Any, Generic, Optional, TypeVar, Union, get_args, get_origin
++from typing import Any, Generic, Optional, TypeVar, Union, cast, get_args, get_origin
+ 
+ from pydantic import BaseModel, Field, RootModel, create_model
+ 
+@@ -39,7 +39,7 @@ def __init__(self, exclude_actions: list[str] | None = None):
+ 		self.telemetry = ProductTelemetry()
+ 		self.exclude_actions = exclude_actions if exclude_actions is not None else []
+ 
+-	def _get_special_param_types(self) -> dict[str, type | None]:
++	def _get_special_param_types(self) -> dict[str, Any]:
+ 		"""Get the expected types for special parameters from SpecialActionParameters"""
+ 		# Manually define the expected types to avoid issues with Optional handling.
+ 		# we should try to reduce this list to 0 if possible, give as few standardized objects to all the actions
+@@ -505,25 +505,29 @@ def create_action_model(self, include_actions: list[str] | None = None, page=Non
+ 				available_actions[name] = action
+ 
+ 		# Create individual action models for each action
+-		individual_action_models = []
++		individual_action_models: list[type[ActionModel]] = []
+ 
+ 		for name, action in available_actions.items():
+ 			# Create an individual model for each action that contains only one field
+-			individual_model = create_model(
+-				f'{name.title().replace("_", "")}ActionModel',
+-				__base__=ActionModel,
+-				**{
+-					name: (
+-						action.param_model,
+-						Field(description=action.description),
+-					)
+-				},
++			field_definitions: dict[str, Any] = {
++				name: (
++					action.param_model,
++					Field(description=action.description),
++				)
++			}
++			individual_model = cast(
++				type[ActionModel],
++				create_model(
++					f'{name.title().replace("_", "")}ActionModel',
++					__base__=ActionModel,
++					**field_definitions,
++				),
+ 			)
+ 			individual_action_models.append(individual_model)
+ 
+ 		# If no actions available, return empty ActionModel
+ 		if not individual_action_models:
+-			return create_model('EmptyActionModel', __base__=ActionModel)
++			return cast(type[ActionModel], create_model('EmptyActionModel', __base__=ActionModel))
+ 
+ 		# Create proper Union type that maintains ActionModel interface
+ 		if len(individual_action_models) == 1:
+@@ -531,26 +535,29 @@ def create_action_model(self, include_actions: list[str] | None = None, page=Non
+ 			result_model = individual_action_models[0]
+ 		else:
+ 			# Create a Union type using RootModel that properly delegates ActionModel methods
+-			union_type = Union[tuple(individual_action_models)]
++			union_type: Any = Union[tuple(individual_action_models)]
+ 
+ 			class ActionModelUnion(RootModel[union_type]):  # type: ignore
+ 				"""Union of all available action models that maintains ActionModel interface"""
+ 
+ 				def get_index(self) -> int | None:
+ 					"""Delegate get_index to the underlying action model"""
+-					if hasattr(self.root, 'get_index'):
+-						return self.root.get_index()
++					root = cast(ActionModel, self.root)
++					if hasattr(root, 'get_index'):
++						return root.get_index()
+ 					return None
+ 
+ 				def set_index(self, index: int):
+ 					"""Delegate set_index to the underlying action model"""
+-					if hasattr(self.root, 'set_index'):
+-						self.root.set_index(index)
++					root = cast(ActionModel, self.root)
++					if hasattr(root, 'set_index'):
++						root.set_index(index)
+ 
+ 				def model_dump(self, **kwargs):
+ 					"""Delegate model_dump to the underlying action model"""
+-					if hasattr(self.root, 'model_dump'):
+-						return self.root.model_dump(**kwargs)
++					root = cast(ActionModel, self.root)
++					if hasattr(root, 'model_dump'):
++						return root.model_dump(**kwargs)
+ 					return super().model_dump(**kwargs)
+ 
+ 			# Set the name for better debugging
+diff --git a/browser_use/controller/service.py b/browser_use/controller/service.py
+index 51276a8acc..57e3adb7b4 100644
+--- a/browser_use/controller/service.py
++++ b/browser_use/controller/service.py
+@@ -477,7 +477,7 @@ async def extract_structured_data(
+ 			'Get the accessibility tree of the page in the format "role name" with the number_of_elements to return',
+ 		)
+ 		async def get_ax_tree(number_of_elements: int, page: Page):
+-			node = await page.accessibility.snapshot(interesting_only=True)
++			node = await cast(Any, page).accessibility.snapshot(interesting_only=True)
+ 
+ 			def flatten_ax_tree(node, lines):
+ 				if not node:
+diff --git a/browser_use/dom/tests/test_accessibility_playground.py b/browser_use/dom/tests/test_accessibility_playground.py
+index 7db47fa7d1..9e44069b8e 100644
+--- a/browser_use/dom/tests/test_accessibility_playground.py
++++ b/browser_use/dom/tests/test_accessibility_playground.py
+@@ -13,6 +13,7 @@
+ """
+ 
+ import asyncio
++from typing import Any, cast
+ 
+ from browser_use.browser.types import async_playwright
+ 
+@@ -74,7 +75,7 @@ async def get_ax_tree(TARGET_URL):
+ 		print(f'Navigating to {TARGET_URL}')
+ 		await page.goto(TARGET_URL, wait_until='domcontentloaded')
+ 
+-		ax_tree_interesting = await page.accessibility.snapshot(interesting_only=True)
++		ax_tree_interesting = await cast(Any, page).accessibility.snapshot(interesting_only=True)
+ 		lines = []
+ 		flatten_ax_tree(ax_tree_interesting, lines)
+ 		print(lines)
+diff --git a/browser_use/llm/google/serializer.py b/browser_use/llm/google/serializer.py
+index 560de25448..834aa8e75a 100644
+--- a/browser_use/llm/google/serializer.py
++++ b/browser_use/llm/google/serializer.py
+@@ -1,4 +1,5 @@
+ import base64
++from typing import cast
+ 
+ from google.genai.types import Content, ContentListUnion, Part
+ 
+@@ -33,7 +34,7 @@ def serialize_messages(messages: list[BaseMessage]) -> tuple[ContentListUnion, s
+ 
+ 		messages = [m.model_copy(deep=True) for m in messages]
+ 
+-		formatted_messages: ContentListUnion = []
++		formatted_messages: list[Content] = []
+ 		system_message: str | None = None
+ 
+ 		for message in messages:
+@@ -95,4 +96,4 @@ def serialize_messages(messages: list[BaseMessage]) -> tuple[ContentListUnion, s
+ 				final_message = Content(role=role, parts=message_parts)
+ 				formatted_messages.append(final_message)
+ 
+-		return formatted_messages, system_message
++		return cast(ContentListUnion, formatted_messages), system_message
+diff --git a/browser_use/telemetry/service.py b/browser_use/telemetry/service.py
+index d703e49c1a..5fbab39059 100644
+--- a/browser_use/telemetry/service.py
++++ b/browser_use/telemetry/service.py
+@@ -83,9 +83,9 @@ def _direct_capture(self, event: BaseTelemetryEvent) -> None:
+ 
+ 		try:
+ 			self._posthog_client.capture(
+-				self.user_id,
+-				event.name,
+-				{**event.properties, **POSTHOG_EVENT_SETTINGS},
++				distinct_id=self.user_id,
++				event=event.name,
++				properties={**event.properties, **POSTHOG_EVENT_SETTINGS},
+ 			)
+ 		except Exception as e:
+ 			logger.error(f'Failed to send telemetry event {event.name}: {e}')
+diff --git a/eval/judge_system.py b/eval/judge_system.py
+index d36cff979a..63d2d60913 100644
+--- a/eval/judge_system.py
++++ b/eval/judge_system.py
+@@ -63,11 +63,12 @@
+ import io
+ import json
+ import logging
++from collections.abc import Iterable
+ from dataclasses import asdict, dataclass
+ from datetime import datetime
+ from enum import Enum
+ from pathlib import Path
+-from typing import Any
++from typing import Any, cast
+ 
+ from PIL import Image
+ 
+@@ -267,7 +268,7 @@ def are_images_identical(img_path1: str, img_path2: str) -> bool:
+ 				return False
+ 
+ 			# Compare pixel data
+-			return list(img1.getdata()) == list(img2.getdata())
++			return list(cast(Iterable[Any], img1.getdata())) == list(cast(Iterable[Any], img2.getdata()))
+ 	except Exception as e:
+ 		logger.warning(f'Failed to compare images {img_path1} and {img_path2}: {e}')
+ 		return False
+diff --git a/pyproject.toml b/pyproject.toml
+index 9a0c9d413c..5feab49272 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -155,17 +155,8 @@ log_level = "DEBUG"
+ [tool.hatch.metadata]
+ allow-direct-references = true
+ 
+-[tool.uv]
+-# required-environments = [
+-#     "sys_platform == 'darwin' and platform_machine == 'arm64'",
+-#     "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+-#     "sys_platform == 'linux' and platform_machine == 'x86_64'",
+-#     "sys_platform == 'linux' and platform_machine == 'aarch64'",
+-#     # "sys_platform == 'linux' and platform_machine == 'arm64'",  # no pytorch wheels available yet
+-#     "sys_platform == 'win32' and platform_machine == 'x86_64'",
+-#     # "sys_platform == 'win32' and platform_machine == 'arm64'",  # no pytorch wheels available yet
+-# ]
+-dev-dependencies = [
++[dependency-groups]
++dev = [
+     "ruff>=0.11.2",
+     "tokencost>=0.1.16",
+     "build>=1.2.2",
+@@ -183,3 +174,20 @@ dev-dependencies = [
+     "pytest-xdist>=3.7.0",
+     # "pytest-playwright-asyncio>=0.7.0",  # not actually needed I think
+ ]
++
++[tool.uv]
++environments = [
++    "sys_platform == 'darwin' and platform_machine == 'arm64'",
++    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
++    "sys_platform == 'linux' and platform_machine == 'x86_64'",
++    "sys_platform == 'linux' and platform_machine == 'aarch64'",
++]
++# required-environments = [
++#     "sys_platform == 'darwin' and platform_machine == 'arm64'",
++#     "sys_platform == 'darwin' and platform_machine == 'x86_64'",
++#     "sys_platform == 'linux' and platform_machine == 'x86_64'",
++#     "sys_platform == 'linux' and platform_machine == 'aarch64'",
++#     # "sys_platform == 'linux' and platform_machine == 'arm64'",  # no pytorch wheels available yet
++#     "sys_platform == 'win32' and platform_machine == 'x86_64'",
++#     # "sys_platform == 'win32' and platform_machine == 'arm64'",  # no pytorch wheels available yet
++# ]

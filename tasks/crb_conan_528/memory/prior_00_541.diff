@@ -1,0 +1,23 @@
+diff --git a/test/conftest.py b/test/conftest.py
+index 0d6d3c76891..6cdbf10abb7 100644
+--- a/test/conftest.py
++++ b/test/conftest.py
+@@ -351,7 +351,7 @@ def pytest_runtest_setup(item):
+         result = _get_tool(tool_name, tool_version)
+         if result is True:
+             version_msg = "Any" if tool_version is None else tool_version
+-            pytest.fail("Required '{}' tool version '{}' is not available".format(tool_name,
++            pytest.skip("Required '{}' tool version '{}' is not available".format(tool_name,
+                                                                                   version_msg))
+         if result is False:
+             version_msg = "Any" if tool_version is None else tool_version
+diff --git a/test/functional/toolchains/meson/_base.py b/test/functional/toolchains/meson/_base.py
+index 4d2d8c5a896..b4cdd1444ee 100644
+--- a/test/functional/toolchains/meson/_base.py
++++ b/test/functional/toolchains/meson/_base.py
+@@ -33,4 +33,4 @@ def _check_binary(self):
+             self.assertIn("main _MSVC_LANG2014", self.t.out)
+         elif platform.system() == "Linux":
+             self.assertIn(f"main {arch_macro['gcc'][host_arch]} defined", self.t.out)
+-            self.assertIn("main __GNUC__9", self.t.out)
++            self.assertIn("main __GNUC__", self.t.out)

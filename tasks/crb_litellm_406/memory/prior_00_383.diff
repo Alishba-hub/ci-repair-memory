@@ -1,0 +1,333 @@
+diff --git a/litellm/utils.py b/litellm/utils.py
+index 4d6356cea0c..ac33788693c 100644
+--- a/litellm/utils.py
++++ b/litellm/utils.py
+@@ -1822,6 +1822,11 @@ def supports_response_schema(
+             f"Model not found or error in checking response schema support. You passed model={model}, custom_llm_provider={custom_llm_provider}. Error: {str(e)}"
+         )
+         return False
++    if custom_llm_provider in (
++        litellm.LlmProviders.VERTEX_AI,
++        "vertex_ai",
++    ) and model.startswith("gemini/"):
++        model = model.split("/", 1)[1]
+ 
+     # providers that globally support response schema
+     PROVIDERS_GLOBALLY_SUPPORT_RESPONSE_SCHEMA = [
+diff --git a/litellm/llms/vertex_ai/common_utils.py b/litellm/llms/vertex_ai/common_utils.py
+index 224200f1d11..4410862794d 100644
+--- a/litellm/llms/vertex_ai/common_utils.py
++++ b/litellm/llms/vertex_ai/common_utils.py
+@@ -51,6 +51,8 @@ def get_supports_response_schema(
+ ) -> bool:
+     if litellm.VertexGeminiConfig._is_model_gemini_spec_model(model):
+         return True
++    if custom_llm_provider == "gemini" and model.startswith("gemini"):
++        return True
+ 
+     _custom_llm_provider = custom_llm_provider
+     if custom_llm_provider == "vertex_ai_beta":
+diff --git a/tests/test_litellm/llms/vertex_ai/test_vertex.py b/tests/test_litellm/llms/vertex_ai/test_vertex.py
+index 1b9de4d0fd9..fbdac0ed4f3 100644
+--- a/tests/test_litellm/llms/vertex_ai/test_vertex.py
++++ b/tests/test_litellm/llms/vertex_ai/test_vertex.py
+@@ -109,6 +109,17 @@ class EventsList(BaseModel):
+         assert mock_post.call_args.kwargs["json"] == expected_request_body
+ 
+ 
++def test_gemini_provider_supports_response_schema():
++    from litellm.llms.vertex_ai.common_utils import get_supports_response_schema
++
++    assert (
++        get_supports_response_schema(
++            model="gemini-1.5-pro", custom_llm_provider="gemini"
++        )
++        is True
++    )
++
++
+ def test_build_vertex_schema():
+     import json
+ 
+diff --git a/litellm/constants.py b/litellm/constants.py
+index d36ad0f228a..8ea3de8d455 100644
+--- a/litellm/constants.py
++++ b/litellm/constants.py
+@@ -159,6 +159,9 @@
+ 
+ ############### LLM Provider Constants ###############
+ ### ANTHROPIC CONSTANTS ###
++ANTHROPIC_WEB_SEARCH_COST_PER_QUERY = float(
++    os.getenv("ANTHROPIC_WEB_SEARCH_COST_PER_QUERY", 0.01)
++)
+ ANTHROPIC_WEB_SEARCH_TOOL_MAX_USES = {
+     "low": 1,
+     "medium": 5,
+diff --git a/litellm/llms/openai/chat/o_series_transformation.py b/litellm/llms/openai/chat/o_series_transformation.py
+index 30647f58687..d4d54f7526c 100644
+--- a/litellm/llms/openai/chat/o_series_transformation.py
++++ b/litellm/llms/openai/chat/o_series_transformation.py
+@@ -131,9 +131,12 @@ def map_openai_params(
+ 
+     def is_model_o_series_model(self, model: str) -> bool:
+         model = model.split("/")[-1]  # could be "openai/o3" or "o3"
+-        return model in litellm.open_ai_chat_completion_models and any(
+-            model.startswith(pfx) for pfx in ("o1", "o3", "o4")
+-        )
++        if model in {"o1", "o3", "o4-mini"}:
++            return True
++        if not model.startswith(("o1-", "o3-", "o4-")):
++            return False
++        suffix = model.split("-", 1)[1]
++        return len(suffix) > 0 and suffix.replace("-", "").isalnum()
+ 
+     @overload
+     def _transform_messages(
+diff --git a/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py b/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
+index 030e557874d..07570f36e3a 100644
+--- a/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
++++ b/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
+@@ -89,7 +89,11 @@ def get_cost_for_built_in_tools(
+                 model=model, custom_llm_provider=custom_llm_provider
+             )
+             model_provider = (model_info or {}).get("litellm_provider")
+-            if custom_llm_provider == "anthropic" or model_provider == "anthropic":
++            if (
++                custom_llm_provider == "anthropic"
++                or model_provider == "anthropic"
++                or StandardBuiltInToolCostTracking._is_anthropic_model(model)
++            ):
+                 return (
+                     StandardBuiltInToolCostTracking.get_cost_for_anthropic_web_search(
+                         model_info=model_info,
+@@ -146,6 +150,11 @@ def response_object_includes_web_search_call(
+             return True
+         return False
+ 
++    @staticmethod
++    def _is_anthropic_model(model: str) -> bool:
++        model = model.split("/", 1)[1] if model.startswith("anthropic/") else model
++        return model.startswith("claude-")
++
+     @staticmethod
+     def response_object_includes_file_search_call(
+         response_object: Any,
+diff --git a/litellm/proxy/management_helpers/object_permission_utils.py b/litellm/proxy/management_helpers/object_permission_utils.py
+index 90ae313c6f2..d19fb7059f2 100644
+--- a/litellm/proxy/management_helpers/object_permission_utils.py
++++ b/litellm/proxy/management_helpers/object_permission_utils.py
+@@ -48,15 +48,15 @@ async def handle_update_object_permission_common(
+     if new_object_permission is None:
+         return None
+ 
+-    # Lookup existing object permission ID and update that entry
+-    object_permission_id_to_use: str = existing_object_permission_id or str(
+-        uuid.uuid4()
+-    )
++    # Lookup the current permission row first. If the entity has no
++    # object_permission_id yet, the lookup intentionally uses None and a new id
++    # is generated only for the upsert create path below.
++    object_permission_id_to_lookup = existing_object_permission_id
+     existing_object_permissions_dict: Dict = {}
+ 
+     existing_object_permission = (
+         await prisma_client.db.litellm_objectpermissiontable.find_unique(
+-            where={"object_permission_id": object_permission_id_to_use},
++            where={"object_permission_id": object_permission_id_to_lookup},
+         )
+     )
+ 
+@@ -66,6 +66,12 @@ async def handle_update_object_permission_common(
+             exclude_unset=True, exclude_none=True
+         )
+ 
++    object_permission_id_to_use = (
++        existing_object_permission.object_permission_id
++        if existing_object_permission is not None
++        else existing_object_permission_id or str(uuid.uuid4())
++    )
++
+     # Handle string JSON object permission
+     if isinstance(new_object_permission, str):
+         new_object_permission = json.loads(new_object_permission)
+diff --git a/litellm/litellm_core_utils/prompt_templates/factory.py b/litellm/litellm_core_utils/prompt_templates/factory.py
+index c39739953e5..2cde680d9ca 100644
+--- a/litellm/litellm_core_utils/prompt_templates/factory.py
++++ b/litellm/litellm_core_utils/prompt_templates/factory.py
+@@ -36,7 +36,7 @@
+ from litellm.types.utils import GenericImageParsingChunk
+ 
+ from .common_utils import convert_content_list_to_str, is_non_content_values_set
+-from .image_handling import convert_url_to_base64
++from .image_handling import IMAGE_FETCH_HEADERS, convert_url_to_base64
+ 
+ 
+ def default_pt(messages):
+@@ -2375,7 +2375,11 @@ async def get_image_details_async(image_url) -> Tuple[str, str]:
+                 params={"concurrent_limit": 1},
+             )
+             # Send a GET request to the image URL
+-            response = await client.get(image_url, follow_redirects=True)
++            response = await client.get(
++                image_url,
++                follow_redirects=True,
++                headers=IMAGE_FETCH_HEADERS,
++            )
+             response.raise_for_status()  # Raise an exception for HTTP errors
+ 
+             return BedrockImageProcessor._post_call_image_processing(response)
+@@ -2388,7 +2392,11 @@ def get_image_details(image_url) -> Tuple[str, str]:
+         try:
+             client = HTTPHandler(concurrent_limit=1)
+             # Send a GET request to the image URL
+-            response = client.get(image_url, follow_redirects=True)
++            response = client.get(
++                image_url,
++                follow_redirects=True,
++                headers=IMAGE_FETCH_HEADERS,
++            )
+             response.raise_for_status()  # Raise an exception for HTTP errors
+ 
+             return BedrockImageProcessor._post_call_image_processing(response)
+diff --git a/litellm/litellm_core_utils/prompt_templates/image_handling.py b/litellm/litellm_core_utils/prompt_templates/image_handling.py
+index a9ff14d6c82..006fc6052e4 100644
+--- a/litellm/litellm_core_utils/prompt_templates/image_handling.py
++++ b/litellm/litellm_core_utils/prompt_templates/image_handling.py
+@@ -11,6 +11,9 @@
+ from litellm.caching.caching import InMemoryCache
+ 
+ MAX_IMGS_IN_MEMORY = 10
++IMAGE_FETCH_HEADERS = {
++    "User-Agent": "LiteLLM/1.0 (+https://github.com/BerriAI/litellm)",
++}
+ 
+ in_memory_cache = InMemoryCache(max_size_in_memory=MAX_IMGS_IN_MEMORY)
+ 
+@@ -55,7 +58,9 @@ async def async_convert_url_to_base64(url: str) -> str:
+     client = litellm.module_level_aclient
+     for _ in range(3):
+         try:
+-            response = await client.get(url, follow_redirects=True)
++            response = await client.get(
++                url, follow_redirects=True, headers=IMAGE_FETCH_HEADERS
++            )
+             return _process_image_response(response, url)
+         except Exception:
+             pass
+@@ -72,7 +77,9 @@ def convert_url_to_base64(url: str) -> str:
+     client = litellm.module_level_client
+     for _ in range(3):
+         try:
+-            response = client.get(url, follow_redirects=True)
++            response = client.get(
++                url, follow_redirects=True, headers=IMAGE_FETCH_HEADERS
++            )
+             return _process_image_response(response, url)
+         except Exception as e:
+             verbose_logger.exception(e)
+diff --git a/litellm/router.py b/litellm/router.py
+index b8db060381e..fcc7cb46c35 100644
+--- a/litellm/router.py
++++ b/litellm/router.py
+@@ -64,7 +64,10 @@
+ from litellm.router_strategy.lowest_tpm_rpm import LowestTPMLoggingHandler
+ from litellm.router_strategy.lowest_tpm_rpm_v2 import LowestTPMLoggingHandler_v2
+ from litellm.router_strategy.simple_shuffle import simple_shuffle
+-from litellm.router_strategy.tag_based_routing import get_deployments_for_tag
++from litellm.router_strategy.tag_based_routing import (
++    filter_deployments_for_tag,
++    get_deployments_for_tag,
++)
+ from litellm.router_utils.add_retry_fallback_headers import (
+     add_fallback_headers_to_response,
+     add_retry_headers_to_response,
+@@ -6370,6 +6373,13 @@ def get_available_deployment(
+                 request_kwargs=request_kwargs,
+             )
+ 
++        healthy_deployments = filter_deployments_for_tag(
++            llm_router_instance=self,
++            model=model,
++            request_kwargs=request_kwargs,
++            healthy_deployments=healthy_deployments,
++        )
++
+         if len(healthy_deployments) == 0:
+             model_ids = self.get_model_ids(model_name=model)
+             _cooldown_time = self.cooldown_cache.get_min_cooldown(
+diff --git a/litellm/router_strategy/tag_based_routing.py b/litellm/router_strategy/tag_based_routing.py
+index e6a936140d7..f8cdda327cc 100644
+--- a/litellm/router_strategy/tag_based_routing.py
++++ b/litellm/router_strategy/tag_based_routing.py
+@@ -43,7 +43,7 @@ def is_valid_deployment_tag(
+     return False
+ 
+ 
+-async def get_deployments_for_tag(
++def filter_deployments_for_tag(
+     llm_router_instance: LitellmRouter,
+     model: str,  # used to raise the correct error
+     healthy_deployments: Union[List[Any], Dict[Any, Any]],
+@@ -122,6 +122,23 @@ async def get_deployments_for_tag(
+     return healthy_deployments
+ 
+ 
++async def get_deployments_for_tag(
++    llm_router_instance: LitellmRouter,
++    model: str,  # used to raise the correct error
++    healthy_deployments: Union[List[Any], Dict[Any, Any]],
++    request_kwargs: Optional[Dict[Any, Any]] = None,
++):
++    """
++    Async wrapper for tag-based deployment filtering.
++    """
++    return filter_deployments_for_tag(
++        llm_router_instance=llm_router_instance,
++        model=model,
++        healthy_deployments=healthy_deployments,
++        request_kwargs=request_kwargs,
++    )
++
++
+ def _get_tags_from_request_kwargs(
+     request_kwargs: Optional[Dict[Any, Any]] = None
+ ) -> List[str]:
+diff --git a/litellm/router_utils/fallback_event_handlers.py b/litellm/router_utils/fallback_event_handlers.py
+index df805e49365..4c270c439aa 100644
+--- a/litellm/router_utils/fallback_event_handlers.py
++++ b/litellm/router_utils/fallback_event_handlers.py
+@@ -133,6 +133,21 @@ async def run_async_fallback(
+             kwargs.setdefault("metadata", {}).update(
+                 {"model_group": kwargs.get("model", None)}
+             )  # update model_group used, if fallbacks are done
++            if isinstance(kwargs.get("model"), str):
++                fallback_deployments = litellm_router.get_model_list(
++                    model_name=kwargs["model"]
++                )
++                if fallback_deployments:
++                    from litellm.router_strategy.tag_based_routing import (
++                        filter_deployments_for_tag,
++                    )
++
++                    filter_deployments_for_tag(
++                        llm_router_instance=litellm_router,
++                        model=kwargs["model"],
++                        healthy_deployments=fallback_deployments,
++                        request_kwargs=kwargs,
++                    )
+             fallback_depth = fallback_depth + 1
+             kwargs["fallback_depth"] = fallback_depth
+             kwargs["max_fallbacks"] = max_fallbacks
+diff --git a/tests/test_litellm/test_main.py b/tests/test_litellm/test_main.py
+index d170a6f914d..6dffb00fe6e 100644
+--- a/tests/test_litellm/test_main.py
++++ b/tests/test_litellm/test_main.py
+@@ -160,7 +160,7 @@ async def test_url_with_format_param(model, sync_mode, monkeypatch):
+                     {
+                         "type": "image_url",
+                         "image_url": {
+-                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
++                            "url": "data:image/jpeg;base64,iVBORw0KGgo=",
+                             "format": "image/png",
+                         },
+                     },

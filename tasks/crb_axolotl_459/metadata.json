@@ -11,11 +11,13 @@
   "error_type": [
     "Package Installation Error"
   ],
+  "error_group": "dependency_env",
   "workflow_path": ".github/workflows/tests.yml",
   "target_files": [
     "setup.py",
     "src/setuptools_axolotl_dynamic_dependencies.py"
   ],
+  "memory_size": 5,
   "memory": [
     {
       "instance_id": "478",
@@ -58,6 +60,33 @@
       ],
       "log_file": "memory/prior_02_483.log",
       "diff_file": "memory/prior_02_483.diff"
+    },
+    {
+      "instance_id": "484",
+      "commit_date": "2025-07-10T21:27:31Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "src/axolotl/cli/train.py"
+      ],
+      "log_file": "memory/prior_03_484.log",
+      "diff_file": "memory/prior_03_484.diff"
+    },
+    {
+      "instance_id": "462",
+      "commit_date": "2025-07-08T22:41:21Z",
+      "error_type": [
+        "Code Formatting",
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "src/axolotl/monkeypatch/accelerate/fsdp2.py"
+      ],
+      "log_file": "memory/prior_04_462.log",
+      "diff_file": "memory/prior_04_462.diff"
     }
   ]
 }

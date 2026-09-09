@@ -1,0 +1,32 @@
+--- step: test ---
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+  /home/runner/.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.10/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+... (4 lines omitted)
+tests/test_litellm/integrations/arize/test_arize_utils.py:184
+tests/test_litellm/integrations/arize/test_arize_utils.py:184
+  /home/runner/work/litellm/litellm/tests/test_litellm/integrations/arize/test_arize_utils.py:184: PytestCollectionWarning: cannot collect test class 'TestArizeLogger' because it has a __init__ constructor (from: tests/test_litellm/integrations/arize/test_arize_utils.py)
+    class TestArizeLogger(CustomLogger):
+tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py:16
+tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py:16
+tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py:16
+tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py:16
+  /home/runner/work/litellm/litellm/tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py:16: PytestCollectionWarning: cannot collect test class 'TestEvent' because it has a __init__ constructor (from: tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py)
+    class TestEvent(BaseModel):
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_litellm/llms/anthropic/experimental_pass_through/messages/test_sse_wrapper.py::test_anthropic_sse_wrapper_event_types - StopAsyncIteration
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+====== 1 failed, 476 passed, 4 skipped, 17 warnings in 251.15s (0:04:11) =======
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.h

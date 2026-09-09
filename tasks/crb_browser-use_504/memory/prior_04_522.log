@@ -1,0 +1,32 @@
+--- step: code-style ---
+check for broken symlinks................................................Passed
+detect destroyed symlinks................................................Passed
+check for case conflicts.................................................Passed
+check illegal windows names..........................(no files to check)Skipped
+check that scripts with shebangs are executable..........................Passed
+mixed line ending........................................................Passed
+fix utf-8 byte order marker..............................................Passed
+fix end of files.........................................................Passed
+detect private key.......................................................Passed
+debug statements (python)................................................Passed
+forbid submodules....................................(no files to check)Skipped
+check for added large files..............................................Passed
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: type-checker ---
+    at m (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeUtils.ts:782:9)
+    at s (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:4404:13)
+    at tl (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:4462:13)
+    at tR (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:10072:26)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:8746:36
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:8809:5
+    at aJ (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:22175:28)
+... (40 lines omitted)
+    at Array.forEach (<anonymous>)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:23370:15
+    at na (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:23486:5)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:4930:39
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:5061:5
+    at eN (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-

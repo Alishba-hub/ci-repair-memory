@@ -46,9 +46,3 @@ claude-code,,crb_taipy_439,taipy,memory_k3,3,1,1,1.0,1,0.0,0,40.6,with_memory
 claude-code,,crb_taipy_439,taipy,no_memory,0,1,1,1.0,1,0.0,0,73.2,no_memory
 claude-code,,crb_uvicorn_305,uvicorn,memory_k3,3,1,0,0.0,1,0.0,0,165.8,with_memory
 claude-code,,crb_uvicorn_305,uvicorn,no_memory,0,1,0,0.0,1,0.0,0,389.1,no_memory
-copilot,,crb_agentscope_342,agentscope,foreign_memory,3,4,0,0.0,1,0.0,0,2.5,foreign_memory
-copilot,,crb_agentscope_342,agentscope,memory_k3,3,10,0,0.0,1,0.0,0,12.2,with_memory
-copilot,,crb_agentscope_342,agentscope,no_memory,0,10,0,0.0,1,0.0,0,9.0,no_memory
-copilot-claude-fable-5.1,claude-fable-5.1,crb_aider_97,aider,foreign_memory,3,2,0,0.0,1,0.0,0,16.4,foreign_memory
-copilot-claude-fable-5.1,claude-fable-5.1,crb_aider_97,aider,memory_k3,3,5,3,0.6,0,0.4899,1,19.1,with_memory
-copilot-claude-fable-5.1,claude-fable-5.1,crb_aider_97,aider,no_memory,0,5,3,0.6,0,0.4899,1,16.6,no_memory

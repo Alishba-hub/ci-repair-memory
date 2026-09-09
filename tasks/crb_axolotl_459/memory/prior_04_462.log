@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+         return model
+@@ -300,8 +300,8 @@ def fsdp2_prepare_model(accelerator, model: torch.nn.Module) -> torch.nn.Module:
+     if auto_wrap_policy is not None:
+         for module in get_module_children_bottom_up(model)[:-1]:
+             if is_peft_model and isinstance(module, lora_layer):
+-                module_log_bias_mismatch = (
+-                    _process_lora_module_for_fsdp(module, fsdp2_kwargs)
++                module_log_bias_mismatch = _process_lora_module_for_fsdp(
++                    module, fsdp2_kwargs
+                 )
+                 log_bias_dtype_mismatch |= module_log_bias_mismatch
+                 # torch.distributed.breakpoint()
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=87590]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__fe36480f-4ec9-44d4-9590-e447e592720f.__actions_cache]
+##[end-action id=__fe36480f-4ec9-44d4-9590-e447e592720f.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

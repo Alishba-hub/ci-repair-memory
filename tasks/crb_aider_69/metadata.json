@@ -1,0 +1,93 @@
+{
+  "task_id": "crb_aider_69",
+  "name": "CI failure in aider (Runtime Error, Syntax Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "69",
+  "repo_name": "aider",
+  "repo_owner": "aider-ai",
+  "sha_fail": "d85078a610cbad69e8561060229aa8f35b4e1163",
+  "sha_success": "856d94c1dcbb5e6cf08fc31fc7e7811c13b50adc",
+  "commit_date": "2025-06-25T11:57:04Z",
+  "error_type": [
+    "Runtime Error",
+    "Syntax Error"
+  ],
+  "error_group": "code_runtime",
+  "workflow_path": ".github/workflows/ubuntu-tests.yml",
+  "target_files": [
+    "aider/io.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "94",
+      "commit_date": "2025-06-19T10:51:27Z",
+      "error_type": [
+        "Assertion Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/basic/test_repo.py"
+      ],
+      "log_file": "memory/prior_00_94.log",
+      "diff_file": "memory/prior_00_94.diff"
+    },
+    {
+      "instance_id": "95",
+      "commit_date": "2025-06-13T12:44:12Z",
+      "error_type": [
+        "Assertion Error",
+        "Runtime Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "aider/models.py",
+        "tests/basic/test_models.py",
+        "tests/basic/test_sendchat.py"
+      ],
+      "log_file": "memory/prior_01_95.log",
+      "diff_file": "memory/prior_01_95.diff"
+    },
+    {
+      "instance_id": "92",
+      "commit_date": "2025-05-30T22:07:32Z",
+      "error_type": [
+        "Assertion Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/basic/test_openrouter.py"
+      ],
+      "log_file": "memory/prior_02_92.log",
+      "diff_file": "memory/prior_02_92.diff"
+    },
+    {
+      "instance_id": "96",
+      "commit_date": "2025-05-25T19:52:47Z",
+      "error_type": [
+        "Assertion Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/basic/test_models.py"
+      ],
+      "log_file": "memory/prior_03_96.log",
+      "diff_file": "memory/prior_03_96.diff"
+    },
+    {
+      "instance_id": "97",
+      "commit_date": "2025-05-08T19:14:41Z",
+      "error_type": [
+        "Assertion Error",
+        "Package Installation Error",
+        "Syntax Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/help/test_help.py"
+      ],
+      "log_file": "memory/prior_04_97.log",
+      "diff_file": "memory/prior_04_97.diff"
+    }
+  ]
+}

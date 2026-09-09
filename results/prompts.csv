@@ -1,0 +1,201 @@
+in_study,task_id,repo,condition,k,memory_available,buildable,reason,chars,lines,sha256
+0,crb_agentscope_342,agentscope,no_memory,0,3,1,,13951,374,e2ddb94e13333b0b
+0,crb_agentscope_342,agentscope,memory_k1,1,3,1,,18642,482,4266f36be407b11d
+0,crb_agentscope_342,agentscope,memory_k3,3,3,1,,27388,691,af52d0b0162db991
+0,crb_agentscope_342,agentscope,memory_k5,5,3,0,"task crb_agentscope_342 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_agno_129,agno,no_memory,0,5,1,,16773,457,02f957230e130638
+1,crb_agno_129,agno,memory_k1,1,5,1,,21121,567,a21d69891344ac08
+1,crb_agno_129,agno,memory_k3,3,5,1,,29575,795,0ad2641438ed3400
+1,crb_agno_129,agno,memory_k5,5,5,1,,37982,995,1e1ebbb22feb5d0d
+1,crb_agno_153,agno,no_memory,0,5,1,,11468,327,3ee8968860ff4300
+1,crb_agno_153,agno,memory_k1,1,5,1,,15939,426,c4838d850cab70ca
+1,crb_agno_153,agno,memory_k3,3,5,1,,24700,656,8b95b9f6d38cd567
+1,crb_agno_153,agno,memory_k5,5,5,1,,33368,888,4fbcfa0b254f54bf
+1,crb_agno_164,agno,no_memory,0,5,1,,16541,486,74bca8a6d2a352e3
+1,crb_agno_164,agno,memory_k1,1,5,1,,20909,592,895b88a3696ea0c5
+1,crb_agno_164,agno,memory_k3,3,5,1,,29507,811,29689c9f725eff56
+1,crb_agno_164,agno,memory_k5,5,5,1,,37750,1004,69c440397a4679c4
+0,crb_agno_180,agno,no_memory,0,3,1,,8134,226,faec4ee71e2f265f
+0,crb_agno_180,agno,memory_k1,1,3,1,,12503,323,39080746a65e0510
+0,crb_agno_180,agno,memory_k3,3,3,1,,21106,488,aa05944c9ffca6dd
+0,crb_agno_180,agno,memory_k5,5,3,0,"task crb_agno_180 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_aider_69,aider,no_memory,0,5,1,,5146,106,a4acccba527cb039
+1,crb_aider_69,aider,memory_k1,1,5,1,,8565,190,79083bf2858a4f58
+1,crb_aider_69,aider,memory_k3,3,5,1,,16079,338,5497dd3dd66be967
+1,crb_aider_69,aider,memory_k5,5,5,1,,22836,493,622bfd66eda4c4a0
+1,crb_aider_92,aider,no_memory,0,5,1,,7573,211,f87edf8221511d31
+1,crb_aider_92,aider,memory_k1,1,5,1,,10661,285,0739ebda02b72090
+1,crb_aider_92,aider,memory_k3,3,5,1,,18680,488,5dd1508ddeafdc4a
+1,crb_aider_92,aider,memory_k5,5,5,1,,27504,659,98c4a1bfcec11149
+1,crb_aider_94,aider,no_memory,0,5,1,,5264,145,101d9e55e12847be
+1,crb_aider_94,aider,memory_k1,1,5,1,,9598,217,935978e242eeb830
+1,crb_aider_94,aider,memory_k3,3,5,1,,15866,367,fd690d6af130b09b
+1,crb_aider_94,aider,memory_k5,5,5,1,,23885,570,1b877156b4c89d89
+0,crb_aider_97,aider,no_memory,0,3,1,,10541,282,326a05774b6acbaa
+0,crb_aider_97,aider,memory_k1,1,3,1,,14891,404,dfad3e6ed3484dce
+0,crb_aider_97,aider,memory_k3,3,3,1,,23715,575,04df728fae3c082a
+0,crb_aider_97,aider,memory_k5,5,3,0,"task crb_aider_97 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_aisuite_372,aisuite,no_memory,0,3,1,,4431,66,a3601b8c928ff2de
+0,crb_aisuite_372,aisuite,memory_k1,1,3,1,,8782,170,e6f9b5f845ce14df
+0,crb_aisuite_372,aisuite,memory_k3,3,3,1,,15785,324,1b949fb058ea6301
+0,crb_aisuite_372,aisuite,memory_k5,5,3,0,"task crb_aisuite_372 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_aisuite_373,aisuite,no_memory,0,3,1,,4433,66,6346be723191218c
+0,crb_aisuite_373,aisuite,memory_k1,1,3,1,,8784,170,f8bb3d9eb28f984e
+0,crb_aisuite_373,aisuite,memory_k3,3,3,1,,15787,324,735742c4ec2be3da
+0,crb_aisuite_373,aisuite,memory_k5,5,3,0,"task crb_aisuite_373 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_aws-cli_144,aws-cli,no_memory,0,3,1,,4875,98,e5786b4fe49fd428
+0,crb_aws-cli_144,aws-cli,memory_k1,1,3,1,,7711,150,9339b7887f993bca
+0,crb_aws-cli_144,aws-cli,memory_k3,3,3,1,,13635,261,9bac3a5d292b4afc
+0,crb_aws-cli_144,aws-cli,memory_k5,5,3,0,"task crb_aws-cli_144 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_aws-cli_146,aws-cli,no_memory,0,3,1,,13953,408,7e735c86bec55995
+0,crb_aws-cli_146,aws-cli,memory_k1,1,3,1,,17030,459,03216cc3e47bf2ea
+0,crb_aws-cli_146,aws-cli,memory_k3,3,3,1,,22873,571,e45764d470a08c7e
+0,crb_aws-cli_146,aws-cli,memory_k5,5,3,0,"task crb_aws-cli_146 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_axolotl_459,axolotl,no_memory,0,5,1,,15700,443,29123c088a0acee9
+1,crb_axolotl_459,axolotl,memory_k1,1,5,1,,19032,535,10acfe0c67cce256
+1,crb_axolotl_459,axolotl,memory_k3,3,5,1,,25065,676,977c87311592eeb0
+1,crb_axolotl_459,axolotl,memory_k5,5,5,1,,29757,787,7cc75fa88732023e
+1,crb_axolotl_473,axolotl,no_memory,0,5,1,,15763,443,2ddd003b7e24b7d9
+1,crb_axolotl_473,axolotl,memory_k1,1,5,1,,17507,488,b8509f30f5c6e017
+1,crb_axolotl_473,axolotl,memory_k3,3,5,1,,23177,638,56749a4659d80766
+1,crb_axolotl_473,axolotl,memory_k5,5,5,1,,29210,779,090e2ffd5e837cf7
+1,crb_axolotl_475,axolotl,no_memory,0,5,1,,15785,436,fc7a87bd2d3917c3
+1,crb_axolotl_475,axolotl,memory_k1,1,5,1,,18189,493,8eb152e21016f648
+1,crb_axolotl_475,axolotl,memory_k3,3,5,1,,23803,632,20ffc906549158eb
+1,crb_axolotl_475,axolotl,memory_k5,5,5,1,,28775,719,5ecb2874c45d0c00
+1,crb_browser-use_501,browser-use,no_memory,0,5,1,,11374,352,a6dc915e1df1292e
+1,crb_browser-use_501,browser-use,memory_k1,1,5,1,,14152,398,73f7931a84f6f674
+1,crb_browser-use_501,browser-use,memory_k3,3,5,1,,19744,525,5b7a92688b21b77e
+1,crb_browser-use_501,browser-use,memory_k5,5,5,1,,24615,609,077e1dcf6a20b83c
+1,crb_browser-use_504,browser-use,no_memory,0,5,1,,15830,439,3a7d38d262fe9a60
+1,crb_browser-use_504,browser-use,memory_k1,1,5,1,,20309,538,09778e3d0fe20418
+1,crb_browser-use_504,browser-use,memory_k3,3,5,1,,27382,690,104ad56dddfbb454
+1,crb_browser-use_504,browser-use,memory_k5,5,5,1,,32974,817,fb3e50f095ddd118
+1,crb_browser-use_512,browser-use,no_memory,0,5,1,,15694,448,e74a9fbf012d1265
+1,crb_browser-use_512,browser-use,memory_k1,1,5,1,,20174,547,da9fbc24d03b5db9
+1,crb_browser-use_512,browser-use,memory_k3,3,5,1,,28997,720,e9edc232e83ad57e
+1,crb_browser-use_512,browser-use,memory_k5,5,5,1,,37819,874,48fe96a6ea157f9f
+0,crb_calibre_232,calibre,no_memory,0,3,1,,13743,362,afdb00a46256ebd8
+0,crb_calibre_232,calibre,memory_k1,1,3,1,,18117,476,2932d596558919a8
+0,crb_calibre_232,calibre,memory_k3,3,3,1,,26206,646,a81a629a3c7077de
+0,crb_calibre_232,calibre,memory_k5,5,3,0,"task crb_calibre_232 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_calibre_233,calibre,no_memory,0,3,1,,13870,365,0f23175a9b1e5b47
+0,crb_calibre_233,calibre,memory_k1,1,3,1,,16873,415,955787ad026f3988
+0,crb_calibre_233,calibre,memory_k3,3,3,1,,25022,615,944577de03f77f4f
+0,crb_calibre_233,calibre,memory_k5,5,3,0,"task crb_calibre_233 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_conan_527,conan,no_memory,0,5,1,,17308,373,2e722150c5314ea8
+1,crb_conan_527,conan,memory_k1,1,5,1,,20852,441,d26bdd4ff720aa5d
+1,crb_conan_527,conan,memory_k3,3,5,1,,28514,587,3bfc1425976eff4b
+1,crb_conan_527,conan,memory_k5,5,5,1,,34574,729,b6b901329e075e87
+1,crb_conan_528,conan,no_memory,0,5,1,,10063,237,9eee5994dfb23145
+1,crb_conan_528,conan,memory_k1,1,5,1,,13710,288,2959bcc63bcd49c9
+1,crb_conan_528,conan,memory_k3,3,5,1,,22410,401,387fe613b96a22db
+1,crb_conan_528,conan,memory_k5,5,5,1,,30310,522,52bb1178e4f1cd69
+0,crb_conan_542,conan,no_memory,0,3,1,,8422,194,577c8bf266622eec
+0,crb_conan_542,conan,memory_k1,1,3,1,,11615,266,c495a318cc2810d8
+0,crb_conan_542,conan,memory_k3,3,3,1,,18924,419,db218e2245242d6f
+0,crb_conan_542,conan,memory_k5,5,3,0,"task crb_conan_542 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_conan_543,conan,no_memory,0,5,1,,8377,189,8d296bbf26ad2c76
+1,crb_conan_543,conan,memory_k1,1,5,1,,12739,253,fe5bfbfb3a51b979
+1,crb_conan_543,conan,memory_k3,3,5,1,,20136,399,5181ec4e99c6c2d7
+1,crb_conan_543,conan,memory_k5,5,5,1,,27403,553,8ee1e069b58704c4
+0,crb_conan_549,conan,no_memory,0,3,1,,9819,207,df8afe6e83db86e7
+0,crb_conan_549,conan,memory_k1,1,3,1,,14175,283,a484cd82589da734
+0,crb_conan_549,conan,memory_k3,3,3,1,,21616,437,0c6cdc1f01a34f95
+0,crb_conan_549,conan,memory_k5,5,3,0,"task crb_conan_549 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_cpython_213,cpython,no_memory,0,3,1,,6583,173,168f4ef28e1ec75e
+0,crb_cpython_213,cpython,memory_k1,1,3,1,,8488,219,4aa91385332b6d59
+0,crb_cpython_213,cpython,memory_k3,3,3,1,,13779,369,8f56fba029505489
+0,crb_cpython_213,cpython,memory_k5,5,3,0,"task crb_cpython_213 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_crewai_563,crewai,no_memory,0,5,1,,13331,317,daf281ffd150891a
+1,crb_crewai_563,crewai,memory_k1,1,5,1,,15908,367,62dec86a701343a8
+1,crb_crewai_563,crewai,memory_k3,3,5,1,,23988,511,fdd773f875ac4292
+1,crb_crewai_563,crewai,memory_k5,5,5,1,,29945,612,2c0001d7ec6ddcc1
+1,crb_crewai_564,crewai,no_memory,0,5,1,,2982,73,afff93a6b6e909b3
+1,crb_crewai_564,crewai,memory_k1,1,5,1,,7110,146,f4a7470fde86b4d8
+1,crb_crewai_564,crewai,memory_k3,3,5,1,,14445,270,fd9da9396dbf4985
+1,crb_crewai_564,crewai,memory_k5,5,5,1,,20813,397,59f7a6ffcbbfe5b2
+1,crb_crewai_567,crewai,no_memory,0,5,1,,6731,147,5815b5de0d80ce66
+1,crb_crewai_567,crewai,memory_k1,1,5,1,,10723,231,e35cd53b456e2b9c
+1,crb_crewai_567,crewai,memory_k3,3,5,1,,17245,373,88682f92506e545e
+1,crb_crewai_567,crewai,memory_k5,5,5,1,,25325,517,70b394926f5d9b5d
+0,crb_dask_300,dask,no_memory,0,3,1,,6727,140,b83c25b830fc351d
+0,crb_dask_300,dask,memory_k1,1,3,1,,11083,210,eb649d533f4b488b
+0,crb_dask_300,dask,memory_k3,3,3,1,,18152,346,eeb462fd60ffcb1c
+0,crb_dask_300,dask,memory_k5,5,3,0,"task crb_dask_300 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_diffusers_22,diffusers,no_memory,0,3,1,,8514,192,b9b58ee970bc8238
+0,crb_diffusers_22,diffusers,memory_k1,1,3,1,,11933,265,0b9fbec64f751cad
+0,crb_diffusers_22,diffusers,memory_k3,3,3,1,,17491,394,922fad414e38f24d
+0,crb_diffusers_22,diffusers,memory_k5,5,3,0,"task crb_diffusers_22 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_django-import-export_29,django-import-export,no_memory,0,3,1,,3389,85,001f6ea3e36be6bd
+0,crb_django-import-export_29,django-import-export,memory_k1,1,3,1,,5920,142,852969f59e76be75
+0,crb_django-import-export_29,django-import-export,memory_k3,3,3,1,,12667,292,87ad5fe492b361f3
+0,crb_django-import-export_29,django-import-export,memory_k5,5,3,0,"task crb_django-import-export_29 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_docsgpt_422,docsgpt,no_memory,0,5,1,,16492,386,deb590a4f859161d
+1,crb_docsgpt_422,docsgpt,memory_k1,1,5,1,,20795,465,11f5038318ef6caf
+1,crb_docsgpt_422,docsgpt,memory_k3,3,5,1,,26421,616,2fbd0d83cd22360f
+1,crb_docsgpt_422,docsgpt,memory_k5,5,5,1,,31854,762,9f6788677206380a
+1,crb_docsgpt_426,docsgpt,no_memory,0,5,1,,8996,233,893f517ba4459b91
+1,crb_docsgpt_426,docsgpt,memory_k1,1,5,1,,12390,324,4979931e24de02d2
+1,crb_docsgpt_426,docsgpt,memory_k3,3,5,1,,18328,490,af38d39a2f6791ca
+1,crb_docsgpt_426,docsgpt,memory_k5,5,5,1,,25830,717,1ff2675e972b6781
+1,crb_docsgpt_430,docsgpt,no_memory,0,5,1,,10884,245,dc7ead5d5d42f650
+1,crb_docsgpt_430,docsgpt,memory_k1,1,5,1,,13945,326,e3984cf4f03fed96
+1,crb_docsgpt_430,docsgpt,memory_k3,3,5,1,,18701,453,73a0fbab0f5296a9
+1,crb_docsgpt_430,docsgpt,memory_k5,5,5,1,,24996,623,775d73fa368ae1db
+0,crb_httpx_41,httpx,no_memory,0,3,1,,6380,212,8cfc478d93687499
+0,crb_httpx_41,httpx,memory_k1,1,3,1,,8443,274,2e379303d840608f
+0,crb_httpx_41,httpx,memory_k3,3,3,1,,12180,375,8c29edd474be52fb
+0,crb_httpx_41,httpx,memory_k5,5,3,0,"task crb_httpx_41 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,crb_kitty_313,kitty,no_memory,0,3,1,,14720,385,0bb3809c51c59832
+0,crb_kitty_313,kitty,memory_k1,1,3,1,,19059,483,ef88011c412705fd
+0,crb_kitty_313,kitty,memory_k3,3,3,1,,25954,643,3175ac2f3a105494
+0,crb_kitty_313,kitty,memory_k5,5,3,0,"task crb_kitty_313 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_litellm_381,litellm,no_memory,0,5,1,,17583,419,6102cfe766fedfd4
+1,crb_litellm_381,litellm,memory_k1,1,5,1,,23437,512,79f9817bcac36f57
+1,crb_litellm_381,litellm,memory_k3,3,5,1,,29639,636,bea42baf67476f13
+1,crb_litellm_381,litellm,memory_k5,5,5,1,,35158,768,05479d0b77368041
+1,crb_litellm_384,litellm,no_memory,0,5,1,,13835,314,53b6e150cb45ea9b
+1,crb_litellm_384,litellm,memory_k1,1,5,1,,16813,384,c0795a205e5713c6
+1,crb_litellm_384,litellm,memory_k3,3,5,1,,23403,516,945a6b70b9ec1e12
+1,crb_litellm_384,litellm,memory_k5,5,5,1,,32252,682,9b1bf07969433c6d
+0,crb_litellm_396,litellm,no_memory,0,3,1,,7974,195,7d553f479c5ce5b2
+0,crb_litellm_396,litellm,memory_k1,1,3,1,,9324,236,053a689975a21f1e
+0,crb_litellm_396,litellm,memory_k3,3,3,1,,16877,388,89bb74807911ab21
+0,crb_litellm_396,litellm,memory_k5,5,3,0,"task crb_litellm_396 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_litellm_406,litellm,no_memory,0,5,1,,11466,292,3a83e8678e0721a5
+1,crb_litellm_406,litellm,memory_k1,1,5,1,,16304,382,b5a6ed3b59875e99
+1,crb_litellm_406,litellm,memory_k3,3,5,1,,21912,511,fb157adf147868f1
+1,crb_litellm_406,litellm,memory_k5,5,5,1,,26721,633,31fe5ddd673b90d6
+0,crb_openai-python_230,openai-python,no_memory,0,3,1,,6234,157,3f6101a5b25e25e8
+0,crb_openai-python_230,openai-python,memory_k1,1,3,1,,7483,199,fc55141bc5fe5bb2
+0,crb_openai-python_230,openai-python,memory_k3,3,3,1,,15369,329,8083426c331057d6
+0,crb_openai-python_230,openai-python,memory_k5,5,3,0,"task crb_openai-python_230 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+1,crb_taipy_437,taipy,no_memory,0,5,1,,13826,390,7c4a1c3ff4edd75d
+1,crb_taipy_437,taipy,memory_k1,1,5,1,,17583,482,427974e2cedc96fe
+1,crb_taipy_437,taipy,memory_k3,3,5,1,,25522,659,6526dd085bc885e3
+1,crb_taipy_437,taipy,memory_k5,5,5,1,,34342,800,9baf63930e9470aa
+1,crb_taipy_439,taipy,no_memory,0,5,1,,12147,354,165f0921e05525ea
+1,crb_taipy_439,taipy,memory_k1,1,5,1,,16737,461,14668c512101b960
+1,crb_taipy_439,taipy,memory_k3,3,5,1,,25120,654,ae34e534800c9494
+1,crb_taipy_439,taipy,memory_k5,5,5,1,,34082,838,1df726405788217b
+1,crb_taipy_441,taipy,no_memory,0,5,1,,20071,536,a0dd85c459166a1c
+1,crb_taipy_441,taipy,memory_k1,1,5,1,,24662,634,0d376c4b0e8751eb
+1,crb_taipy_441,taipy,memory_k3,3,5,1,,33387,850,5e008aca70472ae5
+1,crb_taipy_441,taipy,memory_k5,5,5,1,,41564,1033,9c7aad3ee9271c66
+0,crb_uvicorn_305,uvicorn,no_memory,0,3,1,,9873,267,d6307176efbcd519
+0,crb_uvicorn_305,uvicorn,memory_k1,1,3,1,,14207,363,a9b932f26a2e5e3a
+0,crb_uvicorn_305,uvicorn,memory_k3,3,3,1,,19029,497,8c3adbd35e88c943
+0,crb_uvicorn_305,uvicorn,memory_k5,5,3,0,"task crb_uvicorn_305 has 3 memory items but condition memory_k5 needs 5. Re-import it with scripts/import_ci_repair_bench.py, which stores 5.",0,0,
+0,demo_issue_001,,no_memory,0,0,1,,1869,52,f22fce14791a3ac7
+0,demo_issue_001,,memory_k1,1,0,1,,3017,85,1ceb3e79323e9fd8
+0,demo_issue_001,,memory_k3,3,0,1,,3017,85,208c5a0db00210e9
+0,demo_issue_001,,memory_k5,5,0,1,,3017,85,c9b4a25d167abff7
+0,demo_issue_002,,no_memory,0,0,1,,1775,49,a4a718111a82ff1e
+0,demo_issue_002,,memory_k1,1,0,1,,2929,80,b57a5566518bb61a
+0,demo_issue_002,,memory_k3,3,0,1,,2929,80,2207e16cdb89e723
+0,demo_issue_002,,memory_k5,5,0,1,,2929,80,2a3bb485d0999a8f
+0,demo_issue_003,,no_memory,0,0,1,,2026,77,53d3afbceabd3b66
+0,demo_issue_003,,memory_k1,1,0,1,,2954,107,5e6e83d3950bf45b
+0,demo_issue_003,,memory_k3,3,0,1,,2954,107,288ab993be370046
+0,demo_issue_003,,memory_k5,5,0,1,,2954,107,c91c7e40b7b23778

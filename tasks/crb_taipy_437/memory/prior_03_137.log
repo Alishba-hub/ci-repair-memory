@@ -1,0 +1,27 @@
+--- step: linter ---
+##[start-action display=Run docker run --rm -v $(pwd):/github/workspace --workdir /github/workspace mypy "." "--ignore-missing-imports --implicit-optional --disable-error-code attr-defined --no-namespace-packages --exclude (taipy/templates/|tools/|doc/gui/examples/.*/builder.py|taipy/common/config/config.pyi) --follow-imports skip --disable-error-code import-untyped" "" "";id=__jpetrucciani_mypy-check.run]
+docker run --rm -v $(pwd):/github/workspace --workdir /github/workspace mypy "." "--ignore-missing-imports --implicit-optional --disable-error-code attr-defined --no-namespace-packages --exclude (taipy/templates/|tools/|doc/gui/examples/.*/builder.py|taipy/common/config/config.pyi) --follow-imports skip --disable-error-code import-untyped" "" ""
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
++ '[' '!' -z '' ']'
++ '[' '!' -z '' ']'
++ output_file=/tmp/mypy.out
++ mypy --version
+mypy 2.3.0 (compiled: yes)
++ mypy --ignore-missing-imports --implicit-optional --disable-error-code attr-defined --no-namespace-packages --exclude '(taipy/templates/|tools/|doc/gui/examples/.*/builder.py|taipy/common/config/config.pyi)' --follow-imports skip --disable-error-code import-untyped --show-column-numbers --hide-error-context .
++ tee /tmp/mypy.out
+taipy/gui/page.py:79:24: error: Argument 1 to "set_style" of "Page" has incompatible type "Any | None"; expected "dict[str, dict[str, Any]]"  [arg-type]
+taipy/core/data/_file_datanode_mixin.py:50:27: error: Incompatible types in assignment (expression has type "Any | None", variable has type "str")  [assignment]
+taipy/core/data/excel.py:228:31: error: Value of type "tuple[Any] | list[Any] | set[Any]" is not indexable  [index]
+Found 3 errors in 3 files (checked 1020 source files)
++ exit_code=1
++ python /github.py /tmp/mypy.out
+##[error]Argument 1 to "set_style" of "Page" has incompatible type "Any | None"; expected "dict[str, dict[str, Any]]"  [arg-type]
++ exit 1
+##[error]Incompatible types in assignment (expression has type "Any | None", variable has type "str")  [assignment]
+##[error]Value of type "tuple[Any] | list[Any] | set[Any]" is not indexable  [index]
+##[error]Process completed with exit code 1.
+##[end-action id=__jpetrucciani_mypy-check.run;outcome=failure;conclusion=failure;duration_ms=6348]
+Post job cleanup.
+http.https://github.com/.extraheader

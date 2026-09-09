@@ -1,0 +1,12 @@
+diff --git a/litellm/llms/ollama/completion/handler.py b/litellm/llms/ollama/completion/handler.py
+index 25154639bcf2..b6396e57c32e 100644
+--- a/litellm/llms/ollama/completion/handler.py
++++ b/litellm/llms/ollama/completion/handler.py
+@@ -4,7 +4,6 @@
+ [TODO]: migrate embeddings to a base handler as well.
+ """
+ 
+-import asyncio
+ from typing import Any, Dict, List
+ 
+ import litellm

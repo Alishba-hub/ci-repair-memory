@@ -12,10 +12,12 @@
     "Package Installation Error",
     "Dependency Issues"
   ],
+  "error_group": "dependency_env",
   "workflow_path": ".github/workflows/pytest.yml",
   "target_files": [
     "application/agents/tools/todo_list.py"
   ],
+  "memory_size": 5,
   "memory": [
     {
       "instance_id": "376",
@@ -56,6 +58,35 @@
       ],
       "log_file": "memory/prior_02_424.log",
       "diff_file": "memory/prior_02_424.diff"
+    },
+    {
+      "instance_id": "428",
+      "commit_date": "2025-09-24T08:35:12Z",
+      "error_type": [
+        "Package Installation Error"
+      ],
+      "workflow_filename": "pytest.yml",
+      "changed_files": [
+        "application/api/answer/__init__.py",
+        "application/api/answer/routes/__init__.py",
+        "application/api/answer/routes/answer.py"
+      ],
+      "log_file": "memory/prior_03_428.log",
+      "diff_file": "memory/prior_03_428.diff"
+    },
+    {
+      "instance_id": "425",
+      "commit_date": "2025-09-03T04:27:13Z",
+      "error_type": [
+        "Code Linting",
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "application/agents/base.py"
+      ],
+      "log_file": "memory/prior_04_425.log",
+      "diff_file": "memory/prior_04_425.diff"
     }
   ]
 }

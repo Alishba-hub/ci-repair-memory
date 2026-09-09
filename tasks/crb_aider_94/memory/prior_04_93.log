@@ -1,0 +1,52 @@
+--- step: build (3.10) ---
+==================
+$ 0.0000    2,037 tokens total
+______________________ TestModels.test_max_context_tokens ______________________
+self = <tests.basic.test_models.TestModels testMethod=test_max_context_tokens>
+    def test_max_context_tokens(self):
+        model = Model("gpt-3.5-turbo")
+        self.assertEqual(model.info["max_input_tokens"], 16385)
+        model = Model("gpt-3.5-turbo-16k")
+        self.assertEqual(model.info["max_input_tokens"], 16385)
+        model = Model("gpt-3.5-turbo-1106")
+        self.assertEqual(model.info["max_input_tokens"], 16385)
+        model = Model("gpt-4")
+        self.assertEqual(model.info["max_input_tokens"], 8 * 1024)
+        model = Model("gpt-4-32k")
+>       self.assertEqual(model.info["max_input_tokens"], 32 * 1024)
+E       KeyError: 'max_input_tokens'
+tests/basic/test_models.py:47: KeyError
+_________________ TestRepoMapAllLanguages.test_language_csharp _________________
+self = <tests.basic.test_repomap.TestRepoMapAllLanguages testMethod=test_language_csharp>
+    def test_language_csharp(self):
+>       self._test_language_repo_map("csharp", "cs", "IGreeter")
+tests/basic/test_repomap.py:338:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/basic/test_repomap.py:415: in _test_language_repo_map
+    self.assertGreater(len(result.strip().splitlines()), 1)
+E   AssertionError: 1 not greater than 1
+----------------------------- Captured stdout call -----------------------------
+Skipping file /tmp/tmpbm5edr63/test.cs: Incompatible Language version 15. Must be between 13 and 14
+lang: csharp
+result:
+test.cs
+test.cs
+=========================== short test summary info ============================
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_read_only_with_image_file - AssertionError: 0 != 1
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_tokens_output - AssertionError: False is not true
+FAILED tests/basic/test_models.py::TestModels::test_max_context_tokens - KeyError: 'max_input_tokens'
+FAILED tests/basic/test_repomap.py::TestRepoMapAllLanguages::test_language_csharp - AssertionError: 1 not greater than 1
+ERROR tests/help/test_help.py::TestHelp::test_ask_without_mock - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_edge_cases - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_unix - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_windows - AssertionError: SwitchCoder exception was not raised
+assert False
+ERROR tests/help/test_help.py::TestHelp::test_init - AssertionError: SwitchCoder exception was not raised
+assert False
+======== 4 failed, 456 passed, 1 skipped, 5 errors in 189.85s (0:03:09) ========
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

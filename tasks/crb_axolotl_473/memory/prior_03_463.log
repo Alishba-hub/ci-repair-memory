@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+         Public method that can handle either a single prompt or a batch of prompts.
+         """
++
+         def _remove_none_values(obj):
+             if hasattr(obj, "items"):
+-                return {k: _remove_none_values(v) for k, v in obj.items() if v is not None}
++                return {
++                    k: _remove_none_values(v) for k, v in obj.items() if v is not None
++                }
+             elif isinstance(obj, list):
+                 return [_remove_none_values(elem) for elem in obj]
+             return obj
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=84409]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__7a70e05a-3739-4a4c-bdc6-a337add15e43.__actions_cache]
+##[end-action id=__7a70e05a-3739-4a4c-bdc6-a337add15e43.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

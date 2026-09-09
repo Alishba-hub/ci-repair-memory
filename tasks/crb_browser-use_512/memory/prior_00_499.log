@@ -1,0 +1,40 @@
+--- step: type-checker ---
+/home/runner/work/browser-use/browser-use/browser_use/llm/google/serializer.py
+  /home/runner/work/browser-use/browser-use/browser_use/llm/google/serializer.py:96:31 - error: Argument of type "Content" cannot be assigned to parameter "object" of type "str | PIL_Image | File | Part" in function "append"
+  Â Â Type "Content" is not assignable to type "str | PIL_Image | File | Part"
+  Â Â Â Â "Content" is not assignable to "str"
+  Â Â Â Â "Content" is not assignable to "Image"
+  Â Â Â Â "Content" is not assignable to "File"
+  Â Â Â Â "Content" is not assignable to "Part" (reportArgumentType)
+/home/runner/work/browser-use/browser-use/browser_use/llm/openai/chat.py
+  /home/runner/work/browser-use/browser-use/browser_use/llm/openai/chat.py:142:23 - error: Argument of type "str" cannot be assigned to parameter "reasoning_effort" of type "ReasoningEffort | Omit" in function "create"
+  Â Â Type "str" is not assignable to type "ReasoningEffort | Omit"
+  Â Â Â Â "str" is not assignable to "None"
+  Â Â Â Â "str" is not assignable to "Omit"
+  Â Â Â Â "str" is not assignable to type "Literal['none']"
+  Â Â Â Â "str" is not assignable to type "Literal['minimal']"
+  Â Â Â Â "str" is not assignable to type "Literal['low']"
+  Â Â Â Â "str" is not assignable to type "Literal['medium']"
+  Â Â Â Â "str" is not assignable to type "Literal['high']"
+    ... (reportArgumentType)
+  /home/runner/work/browser-use/browser-use/browser_use/llm/openai/chat.py:163:23 - error: Argument of type "str" cannot be assigned to parameter "reasoning_effort" of type "ReasoningEffort | Omit" in function "create"
+  Â Â Type "str" is not assignable to type "ReasoningEffort | Omit"
+  Â Â Â Â "str" is not assignable to "None"
+  Â Â Â Â "str" is not assignable to "Omit"
+  Â Â Â Â "str" is not assignable to type "Literal['none']"
+  Â Â Â Â "str" is not assignable to type "Literal['minimal']"
+  Â Â Â Â "str" is not assignable to type "Literal['low']"
+  Â Â Â Â "str" is not assignable to type "Literal['medium']"
+  Â Â Â Â "str" is not assignable to type "Literal['high']"
+    ... (reportArgumentType)
+/home/runner/work/browser-use/browser-use/eval/judge_system.py
+  /home/runner/work/browser-use/browser-use/eval/judge_system.py:197:16 - error: Argument of type "ImagingCore" cannot be assigned to parameter "iterable" of type "Iterable[_T@list]" in function "__init__"
+  Â Â "ImagingCore" is incompatible with protocol "Iterable[_T@list]"
+  Â Â Â Â "__iter__" is not present (reportArgumentType)
+  /home/runner/work/browser-use/browser-use/eval/judge_system.py:197:40 - error: Argument of type "ImagingCore" cannot be assigned to parameter "iterable" of type "Iterable[_T@list]" in function "__init__"
+  Â Â "ImagingCore" is incompatible with protocol "Iterable[_T@list]"
+  Â Â Â Â "__iter__" is not present (reportArgumentType)
+15 errors, 0 warnings, 0 informations
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

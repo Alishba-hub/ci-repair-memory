@@ -1,0 +1,26 @@
+--- step: Linux Functional (3.10) ---
+ERROR test/functional/toolchains/google/test_bazel.py::test_basic_exe_6x[Release] - Failed: Required 'bazel' tool version '6.5.0' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_basic_exe_6x[RelWithDebInfo] - Failed: Required 'bazel' tool version '6.5.0' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_basic_exe_6x[MinSizeRel] - Failed: Required 'bazel' tool version '6.5.0' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_basic_exe[Debug] - Failed: Required 'bazel' tool version '7.4.1' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_basic_exe[Release] - Failed: Required 'bazel' tool version '7.4.1' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_basic_exe[RelWithDebInfo] - Failed: Required 'bazel' tool version '7.4.1' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_basic_exe[MinSizeRel] - Failed: Required 'bazel' tool version '7.4.1' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_basic_lib - Failed: Required 'bazel' tool version '8.0.0' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_transitive_libs_consuming_6x[False] - Failed: Required 'bazel' tool version '6.5.0' is not available
+ERROR test/functional/toolchains/google/test_bazel.py::test_transitive_libs_consuming_6x[True] - Failed: Required 'bazel' tool version '6.5.0' is not available
+ERROR test/functional/command/test_install_deploy.py::test_install_deploy[False] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/command/test_install_deploy.py::test_install_deploy[True] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/command/test_install_deploy.py::test_install_full_deploy_layout - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/toolchains/test_premake.py::test_premake_legacy - Failed: Required 'premake' tool version 'Any' is not available
+ERROR test/functional/toolchains/test_premake.py::test_premake_new_generator - Failed: Required 'premake' tool version 'Any' is not available
+ERROR test/functional/toolchains/test_premake.py::test_premake_shared_lib - Failed: Required 'premake' tool version 'Any' is not available
+= 6 failed, 396 passed, 328 skipped, 1 xfailed, 114 warnings, 241 errors in 288.46s (0:04:48) =
+##[error]Process completed with exit code 1.
+##[end-action id=__self.__run;outcome=failure;conclusion=failure;duration_ms=290002]
+##[start-action display=Rename coverage file;id=__self.__run_2]
+##[end-action id=__self.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Upload coverage artifact;id=__self.__actions_upload-artifact]
+##[end-action id=__self.__actions_upload-artifact;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

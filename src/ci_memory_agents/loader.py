@@ -111,3 +111,40 @@ def list_tasks(tasks_root: Path, source: str | None = None) -> list[Task]:
             if source is None or task.source == source:
                 tasks.append(task)
     return tasks
+
+
+#: Written by scripts/import_ci_repair_bench.py. See `study_task_ids`.
+MANIFEST_NAME = "study_population.json"
+
+
+def study_task_ids(tasks_root: Path) -> set[str] | None:
+    """The task ids the current design declares, or None if nothing declares one.
+
+    `tasks/` accumulates. A task imported under an earlier design keeps its folder, and
+    the folder itself says nothing about which study it belongs to -- so every step that
+    globbed `tasks/*` was really acting on "whatever has ever been imported here". That
+    put pre-sweep tasks, which carry too few memory items to fill K=5, into the layout
+    and into the fairness audit, where they read as failures of the study rather than as
+    folders nobody selected.
+
+    None rather than an empty set when the manifest is missing, so callers can tell "no
+    design declared, use everything" from "a design that selected nothing" -- silently
+    treating the first as the second would make an un-imported checkout look empty.
+    """
+    manifest = tasks_root / MANIFEST_NAME
+    if not manifest.exists():
+        return None
+    try:
+        declared = json.loads(manifest.read_text(encoding="utf-8"))["task_ids"]
+    except (json.JSONDecodeError, OSError, KeyError, TypeError):
+        return None
+    return set(declared) or None
+
+
+def list_study_tasks(tasks_root: Path, source: str | None = None) -> list[Task]:
+    """`list_tasks`, narrowed to the declared design population when there is one."""
+    tasks = list_tasks(tasks_root, source=source)
+    declared = study_task_ids(tasks_root)
+    if declared is None:
+        return tasks
+    return [task for task in tasks if task.task_id in declared]

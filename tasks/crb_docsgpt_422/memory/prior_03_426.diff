@@ -1,0 +1,30 @@
+diff --git a/application/agents/tools/todo_list.py b/application/agents/tools/todo_list.py
+index a9a31922b6..409c5aadd1 100644
+--- a/application/agents/tools/todo_list.py
++++ b/application/agents/tools/todo_list.py
+@@ -38,17 +38,21 @@ def _connect(self):
+             self._client = MongoDB.get_client()
+             self._db = self._client[self.database_name]
+             self._col = self._db[self.collection_name]
+-            # Ensure an index on user_id, tool_id
+-            self._col.create_index([("user_id", 1), ("tool_id", 1)], unique=True)
+         except Exception:
+             self._client = None
+             self._db = None
+             self._col = None
++            return
++
++        try:
++            self._col.create_index([("user_id", 1), ("tool_id", 1)], unique=True)
++        except Exception:
++            pass
+ 
+     def _ensure_connection(self):
+-        if not self._col:
++        if self._col is None:
+             self._connect()
+-            if not self._col:
++            if self._col is None:
+                 raise RuntimeError("TodoListTool: no MongoDB connection available")
+ 
+     def execute_action(self, action_name: str, **kwargs):

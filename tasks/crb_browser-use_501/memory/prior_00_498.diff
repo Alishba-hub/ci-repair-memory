@@ -1,0 +1,18 @@
+diff --git a/examples/features/graph_memory.py b/examples/features/graph_memory.py
+index 2cfae55404..c688af7796 100644
+--- a/examples/features/graph_memory.py
++++ b/examples/features/graph_memory.py
+@@ -5,11 +5,12 @@
+ 
+ import asyncio
+ import os
++
+ from dotenv import load_dotenv
++from langchain_openai import ChatOpenAI
+ 
+ from browser_use import Agent
+ from browser_use.agent.memory import MemoryConfig
+-from langchain_openai import ChatOpenAI
+ 
+ load_dotenv()
+ NEO4J_URI = os.getenv('NEO4J_URI')

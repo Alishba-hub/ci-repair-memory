@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+pre-commit hook(s) made changes.
+If you are seeing this message in CI, reproduce locally with: `pre-commit run --all-files`.
+To run `pre-commit` as part of git workflow, use `pre-commit install`.
+All changes made by hooks:
+diff --git a/src/axolotl/prompt_strategies/dpo/chat_template.py b/src/axolotl/prompt_strategies/dpo/chat_template.py
+index 08710c6..f342702 100644
+--- a/src/axolotl/prompt_strategies/dpo/chat_template.py
++++ b/src/axolotl/prompt_strategies/dpo/chat_template.py
+@@ -91,4 +91,4 @@ def default(
+         return result
+-    return transform_fn, {"remove_columns":[field_messages]}
++    return transform_fn, {"remove_columns": [field_messages]}
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=111976]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__2d43097a-ffc5-4e18-b9c2-5c93a0fa003a.__actions_cache]
+##[end-action id=__2d43097a-ffc5-4e18-b9c2-5c93a0fa003a.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

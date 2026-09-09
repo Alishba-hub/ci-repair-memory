@@ -1,0 +1,88 @@
+diff --git a/libs/agno/agno/app/base.py b/libs/agno/agno/app/base.py
+index d1a0880c6b..1031bc5caa 100644
+--- a/libs/agno/agno/app/base.py
++++ b/libs/agno/agno/app/base.py
+@@ -45,6 +45,7 @@ def __init__(
+         self.app_id: Optional[str] = app_id
+         self.name: Optional[str] = name
+         self.description = description
++        self.type: Optional[str] = type
+         self.set_app_id()
+ 
+         if self.agent:
+diff --git a/libs/agno/agno/tools/firecrawl.py b/libs/agno/agno/tools/firecrawl.py
+index aec7b2f033..1c505f5c7c 100644
+--- a/libs/agno/agno/tools/firecrawl.py
++++ b/libs/agno/agno/tools/firecrawl.py
+@@ -6,10 +6,18 @@
+ from agno.utils.log import logger
+ 
+ try:
+-    from firecrawl import FirecrawlApp, ScrapeOptions  # type: ignore[attr-defined]
++    from firecrawl import FirecrawlApp  # type: ignore[attr-defined]
+ except ImportError:
+     raise ImportError("`firecrawl-py` not installed. Please install using `pip install firecrawl-py`")
+ 
++try:
++    from firecrawl import ScrapeOptions as FirecrawlScrapeOptions  # type: ignore[attr-defined]
++except ImportError:
++    try:
++        from firecrawl import V1ScrapeOptions as FirecrawlScrapeOptions  # type: ignore[attr-defined]
++    except ImportError:
++        FirecrawlScrapeOptions = None
++
+ 
+ class CustomJSONEncoder(json.JSONEncoder):
+     """Custom JSON encoder that handles non-serializable types by converting them to strings."""
+@@ -90,6 +98,11 @@ def scrape_website(self, url: str) -> str:
+         scrape_result = self.app.scrape_url(url, **params)
+         return json.dumps(scrape_result.model_dump(), cls=CustomJSONEncoder)
+ 
++    def _build_scrape_options(self) -> Any:
++        if FirecrawlScrapeOptions is not None:
++            return FirecrawlScrapeOptions(formats=self.formats)
++        return {"formats": self.formats}
++
+     def crawl_website(self, url: str, limit: Optional[int] = None) -> str:
+         """Use this function to Crawls a website using Firecrawl.
+ 
+@@ -104,7 +117,7 @@ def crawl_website(self, url: str, limit: Optional[int] = None) -> str:
+         if self.limit or limit:
+             params["limit"] = self.limit or limit
+         if self.formats:
+-            params["scrape_options"] = ScrapeOptions(formats=self.formats)  # type: ignore
++            params["scrape_options"] = self._build_scrape_options()
+ 
+         params["poll_interval"] = self.poll_interval
+ 
+@@ -132,7 +145,7 @@ def search(self, query: str, limit: Optional[int] = None):
+         if self.limit or limit:
+             params["limit"] = self.limit or limit
+         if self.formats:
+-            params["scrape_options"] = ScrapeOptions(formats=self.formats)  # type: ignore
++            params["scrape_options"] = self._build_scrape_options()
+         if self.search_params:
+             params.update(self.search_params)
+ 
+diff --git a/libs/agno/tests/unit/tools/test_firecrawl.py b/libs/agno/tests/unit/tools/test_firecrawl.py
+index 43e60985c1..6f47987767 100644
+--- a/libs/agno/tests/unit/tools/test_firecrawl.py
++++ b/libs/agno/tests/unit/tools/test_firecrawl.py
+@@ -5,7 +5,6 @@
+ from unittest.mock import Mock, patch
+ 
+ import pytest
+-from firecrawl import FirecrawlApp
+ 
+ from agno.tools.firecrawl import FirecrawlTools
+ 
+@@ -17,7 +16,9 @@
+ def mock_firecrawl():
+     """Create a mock FirecrawlApp instance."""
+     with patch("agno.tools.firecrawl.FirecrawlApp") as mock_firecrawl_cls:
+-        mock_app = Mock(spec=FirecrawlApp)
++        # Use a stable method-level spec instead of the upstream class surface,
++        # which may change between firecrawl-py versions.
++        mock_app = Mock(spec=["scrape_url", "crawl_url", "map_url", "search"])
+         mock_firecrawl_cls.return_value = mock_app
+         return mock_app

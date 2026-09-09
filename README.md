@@ -94,9 +94,17 @@ Everything the three research questions depend on lives in
 | Runs per condition | 5 (RQ2) |
 | Memory sizes | K = 1, 3, 5 (RQ3) |
 | Cells per agent | 30 tasks x 4 arms x 5 runs = 600 |
+| Agents | 3 — GitHub Copilot on `claude-fable-5.1`, `gpt-5.4`, `gpt-5.4-mini` |
+| Cells in total | 600 x 3 agents = 1,800 |
+
+`gpt-5.4` and `gpt-5.4-mini` are one family at two sizes, so the pair isolates model
+capacity with harness, prompts and tasks held fixed; `claude-fable-5.1` is the
+cross-vendor comparison.
 
 Task selection is deterministic — no sampling, no seed — so the same parquet yields the
-same 30 tasks on any machine.
+same 30 tasks on any machine. Which 30 they are is recorded in
+`tasks/study_population.json`, written by the importer: `tasks/` accumulates folders
+from earlier designs, and the harness lays out only what the manifest names.
 
 The project explicitly audits whether the memory block contains the answer, and audits
 localisation leakage — a prior fix touching the same file as the target's — separately,
@@ -151,11 +159,18 @@ ci-memory-agents/
 │   ├── judgement.json              the verdict, with the judging prompt's hash
 │   └── token_usage.json            what this run cost
 ├── src/ci_memory_agents/
+│   ├── design.py                   the grid; every script reads it, none overrides it
 │   ├── importer.py loader.py memory.py log_compressor.py prompt_builder.py
 │   ├── oracle.py oracle_github.py oracle_local.py ci_outcome.py static_checks.py
 │   ├── judge.py agreement.py evaluator.py stats.py tokens.py patchio.py
 │   ├── workflow_std.py dashboard_state.py report.py ui.html
 ├── scripts/                   the individual steps run.py calls
+├── results/                   the analysis snapshot, rewritten whole on every export
+│   ├── runs.csv                    one row per run; everything else derives from it
+│   ├── rq1_memory_effect.csv rq2_consistency.csv rq3_memory_size.csv
+│   ├── by_error_group.csv by_repo.csv population.csv
+│   ├── memory_history.csv          every (failure log, gold patch) pair, and the K arms it appears in
+│   └── prompts.csv                 each arm's prompt, hashed and measured
 ├── results_archive/           frozen results from an earlier protocol; not current
 └── vscode-extension/          drives GitHub Copilot, which has no CLI
 ```
@@ -167,7 +182,7 @@ agent's fix removes the same root cause — not when the text matches.
 
 | | |
 |---|---|
-| `import_ci_repair_bench.py` | Builds task folders from the dataset |
+| `import_ci_repair_bench.py` | Builds task folders from the dataset, and writes `tasks/study_population.json` |
 | `materialize_repos.py` | Replaces gold-file trees with real checkouts, so localisation is part of the task |
 | `audit_leakage.py` | **Proves the experiment is fair** — how much of each answer is visible in each condition |
 | `validate_pipeline.py` | Calibrates the textual diagnostics and Pass@K. **Not** the judge |
@@ -176,6 +191,7 @@ agent's fix removes the same root cause — not when the text matches.
 | `auto_run.py` | Runs the agent over pending cells, in parallel, resumable |
 | `judge_runs.py` | The model judge |
 | `score_runs.py` | **The scorer.** Oracle precedence, coverage, rates, power, token accounting |
+| `export_results.py` | Writes `results/*.csv` — the analysis snapshot, no API key needed |
 | `dashboard.py` | Browser view |
 
 If you call these directly rather than through `run.py`, one rule matters: use

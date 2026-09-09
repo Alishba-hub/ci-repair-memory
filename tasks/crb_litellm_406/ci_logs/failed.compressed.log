@@ -1,0 +1,29 @@
+--- step: test ---
+  Differing items:
+  {'contents': [{'parts': [{'text': 'List important events from the 20th century.'}, {'text': "Use this JSON schema: \n ...d': ['events'], 'title': 'EventsList', 'type': 'object', 'propertyOrdering': ['events']}\n    ```"}], 'role': 'user'}]} != {'contents': [{'parts': [{'text': 'List important events from the 20th century.'}], 'role': 'user'}]}
+  {'generationConfig': {'response_mime_type': 'application/json'}} != {'generationConfig': {'response_mime_type': 'application/json', 'response_schema': {'properties': {'events': {'items':...le': 'Events', 'type': 'array'}}, 'propertyOrdering': ['events'], 'required': ['events'], 'title': 'EventsList', ...}}}
+  Full diff:
+    {
+     'contents': [{'parts': [{'text': 'List important events from the 20th '
+  -                                   'century.'}],
+  ?                                              -
+  +                                   'century.'},
+  +                          {'text': 'Use this JSON schema: \n'
+  +                                   '    ```json \n'
+  +                                   "    {'properties': {'events': {'items': "
+... (30 lines omitted)
+  -                                                                               'title': 'CalendarEvent',
+  -                                                                               'type': 'object'},
+  -                                                                     'title': 'Events',
+  -                                                                     'type': 'array'}},
+  -                                           'propertyOrdering': ['events'],
+  -                                           'required': ['events'],
+  -                                           'title': 'EventsList',
+  -                                           'type': 'object'}},
+    }
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+====== 1 failed, 237 passed, 2 skipped, 17 warnings in 102.50s (0:01:42) =======
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://github.com/.extraheader

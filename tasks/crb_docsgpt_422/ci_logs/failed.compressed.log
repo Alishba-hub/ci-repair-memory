@@ -1,0 +1,28 @@
+--- step: Run tests and count coverage (3.12) ---
+application/__init__.py                                       0      0   100%
+application/agents/__init__.py                                0      0   100%
+application/agents/agent_creator.py                          10      0   100%
+application/agents/base.py                                  190     22    88%   77, 156-168, 218, 230, 248-251, 338-339, 380-381, 392-393, 396-400
+application/agents/classic_agent.py                          15      0   100%
+application/agents/react_agent.py                           134      6    96%   61-64, 179, 200, 236-237
+application/agents/tools/api_tool.py                         41     27    34%   21, 26-63, 69, 72
+application/agents/tools/base.py                             11      3    73%   7, 14, 21
+... (141 lines omitted)
+application/vectorstore/milvus.py                            21     11    48%   11-23, 26-27, 30-32, 35, 38
+application/vectorstore/mongodb.py                           89     76    15%   18-36, 39-64, 67-77, 110-124, 127, 130-151, 154-166, 169-177
+application/vectorstore/pgvector.py                         156    139    11%   19-52, 56-60, 64-108, 112-143, 153-186, 190-203, 207, 211-237, 241-278, 282-298, 302-303
+application/vectorstore/qdrant.py                            66     53    20%   9-66, 69, 72, 75, 78, 83-108, 111-125, 128-136
+application/vectorstore/vector_creator.py                    14      4    71%   21-24
+application/worker.py                                       541    489    10%   52, 59, 77-95, 99-106, 110-144, 148-212, 237-353, 377-677, 692-744, 764-780, 784-801, 812-884, 899-924, 957-1128, 1134-1244, 1249-1255
+application/wsgi.py                                           4      4     0%   1-5
+---------------------------------------------------------------------------------------
+TOTAL                                                      9553   5465    43%
+Coverage HTML written to dir htmlcov
+Coverage XML written to file coverage.xml
+=========================== short test summary info ============================
+FAILED tests/api/answer/routes/test_base.py::TestCompleteStreamMethod::test_streams_sources - TypeError: BaseAnswerResource.complete_stream() got an unexpected keyword argument 'retriever'
+FAILED tests/api/answer/routes/test_base.py::TestCompleteStreamMethod::test_handles_error_during_streaming - TypeError: BaseAnswerResource.complete_stream() got an unexpected keyword argument 'retriever'
+FAILED tests/api/answer/routes/test_base.py::TestCompleteStreamMethod::test_saves_conversation_when_enabled - TypeError: BaseAnswerResource.complete_stream() got an unexpected keyword argument 'retriever'
+FAILED tests/api/answer/routes/test_base.py::TestCompleteStreamMethod::test_logs_to_user_logs_collection - TypeError: BaseAnswerResource.complete_stream() got an unexpected keyword argument 'retriever'
+======================== 4 failed, 512 passed in 56.10s ========================
+##[error]Process completed with exit 

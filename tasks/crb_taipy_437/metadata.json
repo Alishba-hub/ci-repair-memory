@@ -1,0 +1,147 @@
+{
+  "task_id": "crb_taipy_437",
+  "name": "CI failure in taipy (Test Failure, Dependency Issues)",
+  "source": "ci-repair-bench",
+  "instance_id": "437",
+  "repo_name": "taipy",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "2f45919d3e7f5032b8c4690eedc5ddfc87fdc1ac",
+  "sha_success": "fe62ee0f68e152ab176877f43d6f23e6319b29ee",
+  "commit_date": "2025-09-24T09:43:07Z",
+  "error_type": [
+    "Test Failure",
+    "Dependency Issues"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/overall-tests.yml",
+  "target_files": [
+    "Pipfile",
+    "taipy/core/_orchestrator/_orchestrator.py",
+    "taipy/core/data/_file_datanode_mixin.py",
+    "tests/core/_orchestrator/test_orchestrator.py",
+    "pytest.ini",
+    "taipy.sqlite3.db",
+    "taipy/gui/utils/patch.py",
+    "tests/core/notification/test_events_published.py",
+    "tests/gui/e2e/test_metric_indicator.py",
+    "tests/gui/gui_specific/test_run_thread.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "136",
+      "commit_date": "2025-07-11T08:22:33Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "taipy/gui/gui.py",
+        "taipy/core/job/_job_converter.py",
+        "Pipfile",
+        "tools/packages/pipfiles/Pipfile3.10.max",
+        "tools/packages/pipfiles/Pipfile3.11.max",
+        "tools/packages/pipfiles/Pipfile3.12.max",
+        "tools/packages/pipfiles/Pipfile3.9.max",
+        "taipy/core/job/job.py",
+        "tests/core/conftest.py",
+        "tests/core/utils/__init__.py",
+        "taipy/core/sequence/_sequence_fs_repository.py",
+        "taipy/core/sequence/_sequence_manager_factory.py",
+        "taipy/core/sequence/_sequence_converter.py",
+        "taipy/core/_entity/_reload.py",
+        "taipy/core/sequence/_sequence_manager.py",
+        "taipy/core/sequence/_sequence_model.py",
+        "taipy/core/sequence/sequence.py",
+        "taipy/core/_orchestrator/_orchestrator.py"
+      ],
+      "log_file": "memory/prior_00_136.log",
+      "diff_file": "memory/prior_00_136.diff"
+    },
+    {
+      "instance_id": "134",
+      "commit_date": "2025-06-12T08:58:22Z",
+      "error_type": [
+        "Dependency Issues",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "frontend/taipy-gui/src/components/Taipy/Metric.spec.tsx",
+        "frontend/taipy-gui/src/components/Taipy/Metric.tsx",
+        "taipy.sqlite3.db",
+        "taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py",
+        "taipy/core/job/job.py",
+        "tests/conftest.py",
+        "tests/gui/e2e/renderers/test_html_rendering.py",
+        "tools/packages/pipfiles/Pipfile3.10.max",
+        "tools/packages/pipfiles/Pipfile3.11.max",
+        "tools/packages/pipfiles/Pipfile3.12.max",
+        "tools/packages/pipfiles/Pipfile3.9.max",
+        "Pipfile",
+        "tests/core/_orchestrator/test_orchestrator.py"
+      ],
+      "log_file": "memory/prior_01_134.log",
+      "diff_file": "memory/prior_01_134.diff"
+    },
+    {
+      "instance_id": "138",
+      "commit_date": "2025-06-02T16:21:36Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "tests/gui/config/test_filename.py",
+        "Pipfile",
+        "tools/packages/pipfiles/Pipfile3.10.max",
+        "tools/packages/pipfiles/Pipfile3.11.max",
+        "tools/packages/pipfiles/Pipfile3.12.max",
+        "tools/packages/pipfiles/Pipfile3.9.max",
+        "taipy/core/_entity/_reload.py",
+        "tests/core/_orchestrator/test_orchestrator.py"
+      ],
+      "log_file": "memory/prior_02_138.log",
+      "diff_file": "memory/prior_02_138.diff"
+    },
+    {
+      "instance_id": "137",
+      "commit_date": "2025-05-26T14:52:19Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "taipy/core/data/excel.py",
+        "taipy/gui/page.py",
+        "taipy/core/data/_file_datanode_mixin.py",
+        "taipy/core/_entity/_reload.py",
+        "taipy.sqlite3.db",
+        "Pipfile"
+      ],
+      "log_file": "memory/prior_03_137.log",
+      "diff_file": "memory/prior_03_137.diff"
+    },
+    {
+      "instance_id": "133",
+      "commit_date": "2025-05-22T09:35:58Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "taipy/core/data/_file_datanode_mixin.py",
+        "taipy/core/data/excel.py",
+        "taipy/gui/page.py",
+        "tests/gui/gui_specific/test_notification_on_close.py",
+        "taipy/rest/commons/apispec.py",
+        "Pipfile",
+        "tests/core/_orchestrator/_dispatcher/test_dispatcher__needs_to_run.py",
+        "tests/core/scenario/test_scenario_manager.py",
+        "tests/core/_orchestrator/test_orchestrator.py"
+      ],
+      "log_file": "memory/prior_04_133.log",
+      "diff_file": "memory/prior_04_133.diff"
+    }
+  ]
+}

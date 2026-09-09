@@ -1,0 +1,339 @@
+diff --git a/taipy/core/data/_file_datanode_mixin.py b/taipy/core/data/_file_datanode_mixin.py
+index bc7db18623..3932c970b5 100644
+--- a/taipy/core/data/_file_datanode_mixin.py
++++ b/taipy/core/data/_file_datanode_mixin.py
+@@ -47,14 +47,17 @@ class _FileDataNodeMixin:
+     __logger = _TaipyLogger._get_logger()
+ 
+     def __init__(self, properties: Dict) -> None:
+-        self._path: str = properties.get(self._PATH_KEY, properties.get(self._DEFAULT_PATH_KEY))
+-        self._is_generated: bool = properties.get(self._IS_GENERATED_KEY, self._path is None)
++        configured_path: Optional[str] = properties.get(self._PATH_KEY, properties.get(self._DEFAULT_PATH_KEY))
++        self._is_generated: bool = properties.get(self._IS_GENERATED_KEY, configured_path is None)
+         self._last_edit_date: Optional[datetime] = None
++        self._path: str
+ 
+-        if self._path and ".data" in self._path:
+-            self._path = self._migrate_path(self.storage_type(), self._path)  # type: ignore[attr-defined]
+-        if not self._path:
++        if configured_path and ".data" in configured_path:
++            configured_path = self._migrate_path(self.storage_type(), configured_path)  # type: ignore[attr-defined]
++        if not configured_path:
+             self._path = self._build_path(self.storage_type())  # type: ignore[attr-defined]
++        else:
++            self._path = configured_path
+ 
+         properties[self._IS_GENERATED_KEY] = self._is_generated
+         properties[self._PATH_KEY] = self._path
+diff --git a/taipy/core/data/excel.py b/taipy/core/data/excel.py
+index 471e7907a7..ee02f406b3 100644
+--- a/taipy/core/data/excel.py
++++ b/taipy/core/data/excel.py
+@@ -179,6 +179,7 @@ def _read_as(self, path: str):
+             user_provided_sheet_names = properties.get(self.__SHEET_NAME_PROPERTY) or []
+             if not isinstance(user_provided_sheet_names, (list, set, tuple)):
+                 user_provided_sheet_names = [user_provided_sheet_names]
++            user_provided_sheet_names = list(user_provided_sheet_names)
+ 
+             provided_sheet_names = user_provided_sheet_names or sheet_names
+ 
+diff --git a/taipy/gui/page.py b/taipy/gui/page.py
+index 89abcc2374..52414890f7 100644
+--- a/taipy/gui/page.py
++++ b/taipy/gui/page.py
+@@ -79,7 +79,8 @@ def __init__(self, **kwargs) -> None:
+         # Special variables only use for page reloading in notebook context
+         self._notebook_gui: t.Optional["Gui"] = None
+         self._notebook_page: t.Optional["_Page"] = None
+-        self.set_style(kwargs.get("style", None))
++        style = kwargs.get("style")
++        self.set_style(style if style is not None else {})
+         self._script_paths(kwargs.get("script_paths", None))
+ 
+     def create_page(self) -> t.Union[Page, str, None]:
+diff --git a/tests/gui/gui_specific/test_notification_on_close.py b/tests/gui/gui_specific/test_notification_on_close.py
+index b1d5dc8b9b..d04848dfcd 100644
+--- a/tests/gui/gui_specific/test_notification_on_close.py
++++ b/tests/gui/gui_specific/test_notification_on_close.py
+@@ -12,10 +12,10 @@
+ import inspect
+ import json
+ from contextlib import nullcontext
+-from flask import g
+ 
+ import pandas as pd
+ import pytest
++from flask import g
+ 
+ from taipy.gui import Gui
+ from taipy.gui.utils import _get_module_name_from_frame, _TaipyContent
+diff --git a/taipy/rest/commons/apispec.py b/taipy/rest/commons/apispec.py
+index ae9dd75c2e..2cd2ccd269 100644
+--- a/taipy/rest/commons/apispec.py
++++ b/taipy/rest/commons/apispec.py
+@@ -17,7 +17,6 @@
+ from flask import Blueprint, current_app, jsonify, render_template
+ from flask.views import MethodView
+ 
+-
+ _RE_URL = re.compile(r"<(?:[^:<>]+:)?([^<>]+)>")
+ 
+ 
+diff --git a/Pipfile b/Pipfile
+index a99a998d00..785304d7b9 100644
+--- a/Pipfile
++++ b/Pipfile
+@@ -20,7 +20,7 @@ markdown = "==3.4.4"
+ marshmallow = "==3.20.1"
+ networkx = "==2.6"
+ openpyxl = "==3.1.2"
+-pandas = "==1.3.5"
++pandas = "==2.2.3"
+ pyarrow = "==16.0.0"
+ pymongo = {extras = ["srv"], version = "==4.6.3"}
+ python-dotenv = "==1.0.0"
+diff --git a/tests/core/_orchestrator/_dispatcher/test_dispatcher__needs_to_run.py b/tests/core/_orchestrator/_dispatcher/test_dispatcher__needs_to_run.py
+index 0ab6580bee..6bfda8c698 100644
+--- a/tests/core/_orchestrator/_dispatcher/test_dispatcher__needs_to_run.py
++++ b/tests/core/_orchestrator/_dispatcher/test_dispatcher__needs_to_run.py
+@@ -69,16 +69,18 @@ def test_need_to_run_skippable_task_no_validity_period_on_output():
+ 
+ 
+ def test_need_to_run_skippable_task_with_validity_period_on_output():
+-    hello_cfg = Config.configure_data_node("hello", default_data="Hello ")
+-    hello_world_cfg = Config.configure_data_node("output", validity_period=timedelta(days=1))
+-    task_cfg = Config.configure_task("name", nothing, [hello_cfg], [hello_world_cfg], skippable=True)
++    hello_cfg = Config.configure_in_memory_data_node("hello_validity_period", default_data="Hello ")
++    hello_world_cfg = Config.configure_in_memory_data_node(
++        "output_validity_period", validity_period=timedelta(days=1)
++    )
++    task_cfg = Config.configure_task("name_validity_period", nothing, [hello_cfg], [hello_world_cfg], skippable=True)
+     task = _create_task_from_config(task_cfg)
+     dispatcher = _JobDispatcher(_OrchestratorFactory._build_orchestrator())
+ 
+     assert dispatcher._needs_to_run(task)  # output data is not edited
+ 
+-    task.output["output"].write("Hello world !")  # output data is edited
+-    output_edit_time = task.output["output"].last_edit_date
++    task.output["output_validity_period"].write("Hello world !")  # output data is edited
++    output_edit_time = task.output["output_validity_period"].last_edit_date
+ 
+     with freezegun.freeze_time(output_edit_time + timedelta(minutes=30)):  # 30 min after edit time
+         assert not dispatcher._needs_to_run(task)  # output data is written and validity period not expired
+diff --git a/tests/core/scenario/test_scenario_manager.py b/tests/core/scenario/test_scenario_manager.py
+index 6167658523..20cb7f02c7 100644
+--- a/tests/core/scenario/test_scenario_manager.py
++++ b/tests/core/scenario/test_scenario_manager.py
+@@ -307,7 +307,7 @@ def test_create_scenario_does_not_modify_config():
+ 
+ 
+ def test_create_and_delete_scenario():
+-    creation_date_1 = datetime.now()
++    creation_date_1 = datetime(2021, 1, 1, 12, 0, 0)
+     creation_date_2 = creation_date_1 + timedelta(minutes=10)
+ 
+     name_1 = "name_1"
+diff --git a/tests/core/_orchestrator/test_orchestrator.py b/tests/core/_orchestrator/test_orchestrator.py
+index 9484ec8478..8cb10619c5 100644
+--- a/tests/core/_orchestrator/test_orchestrator.py
++++ b/tests/core/_orchestrator/test_orchestrator.py
+@@ -72,7 +72,7 @@ def test_submit_task_multithreading_multiple_task():
+             assert task_2.output[f"{task_2.config_id}_output0"].read() == 0
+             assert_true_after_time(job_1.is_running)
+             assert_true_after_time(job_2.is_running)
+-            assert dispatcher._nb_available_workers == 0
++            _assert_available_workers(dispatcher, 0)
+             assert_submission_status(submission_1, SubmissionStatus.RUNNING)
+             assert_submission_status(submission_2, SubmissionStatus.RUNNING)
+ 
+@@ -80,14 +80,14 @@ def test_submit_task_multithreading_multiple_task():
+         assert_true_after_time(job_1.is_running)
+         assert task_2.output[f"{task_2.config_id}_output0"].read() == 42
+         assert task_1.output[f"{task_1.config_id}_output0"].read() == 0
+-        assert dispatcher._nb_available_workers == 1
++        _assert_available_workers(dispatcher, 1)
+         assert_submission_status(submission_1, SubmissionStatus.RUNNING)
+         assert_submission_status(submission_2, SubmissionStatus.COMPLETED)
+ 
+     assert_true_after_time(job_1.is_completed)
+-    assert job_2.is_completed()
++    assert_true_after_time(job_2.is_completed)
+     assert task_1.output[f"{task_1.config_id}_output0"].read() == 42
+-    assert dispatcher._nb_available_workers == 2
++    _assert_available_workers(dispatcher, 2)
+     assert_submission_status(submission_1, SubmissionStatus.COMPLETED)
+     assert_submission_status(submission_2, SubmissionStatus.COMPLETED)
+ 
+@@ -114,20 +114,20 @@ def test_submit_submittable_multithreading_multiple_task():
+             assert task_2.output[f"{task_2.config_id}_output0"].read() == 0
+             assert_true_after_time(job_1.is_running)
+             assert_true_after_time(job_2.is_running)
+-            assert dispatcher._nb_available_workers == 0  # Two processes used
++            _assert_available_workers(dispatcher, 0)  # Two processes used
+             assert_submission_status(submission, SubmissionStatus.RUNNING)
+         assert_true_after_time(job_2.is_completed)
+         assert_true_after_time(job_1.is_running)
+         assert task_2.output[f"{task_2.config_id}_output0"].read() == 42
+         assert task_1.output[f"{task_1.config_id}_output0"].read() == 0
+         assert_submission_status(submission, SubmissionStatus.RUNNING)
+-        assert dispatcher._nb_available_workers == 1  # job 1 is completed: One process used
++        _assert_available_workers(dispatcher, 1)  # job 1 is completed: One process used
+ 
+     assert_true_after_time(job_1.is_completed)
+-    assert job_2.is_completed()
++    assert_true_after_time(job_2.is_completed)
+     assert task_1.output[f"{task_1.config_id}_output0"].read() == 42
+     assert_submission_status(submission, SubmissionStatus.COMPLETED)
+-    assert dispatcher._nb_available_workers == 2  # No more process used.
++    _assert_available_workers(dispatcher, 2)  # No more process used.
+ 
+ 
+ @pytest.mark.orchestrator_dispatcher
+@@ -146,7 +146,7 @@ def test_submit_task_multithreading_multiple_task_in_sync_way_to_check_job_statu
+         submission_0 = _Orchestrator.submit_task(task_0)
+         job_0 = submission_0._jobs[0]
+         assert_true_after_time(job_0.is_running)
+-        assert dispatcher._nb_available_workers == 1
++        _assert_available_workers(dispatcher, 1)
+         assert_submission_status(submission_0, SubmissionStatus.RUNNING)
+         with lock_1:
+             with lock_2:
+@@ -156,18 +156,18 @@ def test_submit_task_multithreading_multiple_task_in_sync_way_to_check_job_statu
+                 job_2 = submission_2._jobs[0]
+                 submission_1 = _Orchestrator.submit_task(task_1)
+                 job_1 = submission_1._jobs[0]
+-                assert job_0.is_running()
++                assert_true_after_time(job_0.is_running)
+                 assert_true_after_time(job_1.is_pending)
+                 assert_true_after_time(job_2.is_running)
+                 assert_submission_status(submission_0, SubmissionStatus.RUNNING)
+                 assert_submission_status(submission_1, SubmissionStatus.PENDING)
+                 assert_submission_status(submission_2, SubmissionStatus.RUNNING)
+-                assert dispatcher._nb_available_workers == 0
++                _assert_available_workers(dispatcher, 0)
+ 
+             assert_true_after_time(job_0.is_running)
+             assert_true_after_time(job_1.is_running)
+             assert_true_after_time(job_2.is_completed)
+-            assert dispatcher._nb_available_workers == 0
++            _assert_available_workers(dispatcher, 0)
+             assert task_2.output[f"{task_2.config_id}_output0"].read() == 42
+             assert task_1.output[f"{task_1.config_id}_output0"].read() == 0
+             assert_submission_status(submission_0, SubmissionStatus.RUNNING)
+@@ -176,8 +176,8 @@ def test_submit_task_multithreading_multiple_task_in_sync_way_to_check_job_statu
+ 
+         assert_true_after_time(job_0.is_running)
+         assert_true_after_time(job_1.is_completed)
+-        assert job_2.is_completed()
+-        assert dispatcher._nb_available_workers == 1
++        assert_true_after_time(job_2.is_completed)
++        _assert_available_workers(dispatcher, 1)
+         assert task_1.output[f"{task_1.config_id}_output0"].read() == 42
+         assert task_0.output[f"{task_0.config_id}_output0"].read() == 0
+         assert_submission_status(submission_0, SubmissionStatus.RUNNING)
+@@ -185,9 +185,9 @@ def test_submit_task_multithreading_multiple_task_in_sync_way_to_check_job_statu
+         assert_submission_status(submission_2, SubmissionStatus.COMPLETED)
+ 
+     assert_true_after_time(job_0.is_completed)
+-    assert job_1.is_completed()
+-    assert job_2.is_completed()
+-    assert dispatcher._nb_available_workers == 2
++    assert_true_after_time(job_1.is_completed)
++    assert_true_after_time(job_2.is_completed)
++    _assert_available_workers(dispatcher, 2)
+     assert task_0.output[f"{task_0.config_id}_output0"].read() == 42
+     assert_submission_status(_SubmissionManager._get(job_0.submit_id), SubmissionStatus.COMPLETED)
+     assert_submission_status(_SubmissionManager._get(job_1.submit_id), SubmissionStatus.COMPLETED)
+@@ -215,35 +215,35 @@ def test_blocked_task():
+     assert foo.is_ready_for_reading  # foo is ready
+     assert not bar.is_ready_for_reading  # But bar is not ready
+     assert not baz.is_ready_for_reading  # neither does baz
+-    assert len(_Orchestrator.blocked_jobs) == 0
++    _assert_blocked_jobs_count(0)
+     submission_2 = _Orchestrator.submit_task(task_2)
+     job_2 = submission_2._jobs[0]  # job 2 is submitted
+-    assert job_2.is_blocked()  # since bar is not is_valid the job 2 is blocked
+-    assert dispatcher._nb_available_workers == 4  # No process used
++    assert_true_after_time(job_2.is_blocked)  # since bar is not is_valid the job 2 is blocked
++    _assert_available_workers(dispatcher, 4)  # No process used
+     assert_submission_status(_SubmissionManager._get(job_2.submit_id), SubmissionStatus.BLOCKED)
+-    assert len(_Orchestrator.blocked_jobs) == 1  # One job (job 2) is blocked
++    _assert_blocked_jobs_count(1)  # One job (job 2) is blocked
+     with lock_2:
+         with lock_1:
+             submission_1 = _Orchestrator.submit_task(task_1)
+             job_1 = submission_1._jobs[0]  # job 1 is submitted and locked
+             assert_true_after_time(job_1.is_running)  # so it is still running
+-            assert dispatcher._nb_available_workers == 3  # One process used for job 1
++            _assert_available_workers(dispatcher, 3)  # One process used for job 1
+             assert not _DataManager._get(bar.id).is_ready_for_reading  # And bar still not ready
+-            assert job_2.is_blocked  # the job_2 remains blocked
++            assert_true_after_time(job_2.is_blocked)  # the job_2 remains blocked
+             assert_submission_status(submission_1, SubmissionStatus.RUNNING)
+             assert_submission_status(submission_2, SubmissionStatus.BLOCKED)
+         assert_true_after_time(job_1.is_completed)  # job1 unlocked and can complete
+         assert _DataManager._get(bar.id).is_ready_for_reading  # bar becomes ready
+         assert _DataManager._get(bar.id).read() == 2  # the data is computed and written
+         assert_true_after_time(job_2.is_running)  # And job 2 can start running
+-        assert dispatcher._nb_available_workers == 3  # One process used for job 2
+-        assert len(_Orchestrator.blocked_jobs) == 0
++        _assert_available_workers(dispatcher, 3)  # One process used for job 2
++        _assert_blocked_jobs_count(0)
+         assert_submission_status(submission_1, SubmissionStatus.COMPLETED)
+         assert_submission_status(submission_2, SubmissionStatus.RUNNING)
+     assert_true_after_time(job_2.is_completed)  # job 2 unlocked so it can complete
+     assert _DataManager._get(baz.id).is_ready_for_reading  # baz becomes ready
+     assert _DataManager._get(baz.id).read() == 6  # the data is computed and written
+-    assert dispatcher._nb_available_workers == 4  # No more process used.
++    _assert_available_workers(dispatcher, 4)  # No more process used.
+     assert_submission_status(submission_1, SubmissionStatus.COMPLETED)
+     assert_submission_status(submission_2, SubmissionStatus.COMPLETED)
+ 
+@@ -268,7 +268,7 @@ def test_blocked_submittable():
+     assert foo.is_ready_for_reading  # foo is ready
+     assert not bar.is_ready_for_reading  # But bar is not ready
+     assert not baz.is_ready_for_reading  # neither does baz
+-    assert len(_Orchestrator.blocked_jobs) == 0
++    _assert_blocked_jobs_count(0)
+     with lock_2:
+         with lock_1:
+             submission = _Orchestrator.submit(scenario)  # scenario is submitted
+@@ -276,25 +276,33 @@ def test_blocked_submittable():
+             job_1, job_2 = tasks_jobs[task_1.id], tasks_jobs[task_2.id]
+             assert_true_after_time(job_1.is_running)  # job 1 is submitted and locked so it is still running
+             assert not _DataManager._get(bar.id).is_ready_for_reading  # And bar still not ready
+-            assert job_2.is_blocked  # the job_2 remains blocked
++            assert_true_after_time(job_2.is_blocked)  # the job_2 remains blocked
+             assert_submission_status(submission, SubmissionStatus.RUNNING)
+-            assert dispatcher._nb_available_workers == 1
++            _assert_available_workers(dispatcher, 1)
+         assert_true_after_time(job_1.is_completed)  # job1 unlocked and can complete
+         assert _DataManager._get(bar.id).is_ready_for_reading  # bar becomes ready
+         assert _DataManager._get(bar.id).read() == 2  # the data is computed and written
+         assert_true_after_time(job_2.is_running)  # And job 2 can start running
+         # currently used since the previous process is not used anymore
+-        assert len(_Orchestrator.blocked_jobs) == 0
++        _assert_blocked_jobs_count(0)
+         assert_submission_status(submission, SubmissionStatus.RUNNING)
+-        assert dispatcher._nb_available_workers == 1  # Still one process
++        _assert_available_workers(dispatcher, 1)  # Still one process
+     assert_true_after_time(job_2.is_completed)  # job 2 unlocked so it can complete
+     assert _DataManager._get(baz.id).is_ready_for_reading  # baz becomes ready
+     assert _DataManager._get(baz.id).read() == 6  # the data is computed and written
+     assert_submission_status(submission, SubmissionStatus.COMPLETED)
+-    assert dispatcher._nb_available_workers == 2  # No more process used.
++    _assert_available_workers(dispatcher, 2)  # No more process used.
+ 
+ 
+ # ################################  UTIL METHODS    ##################################
++def _assert_available_workers(dispatcher: _StandaloneJobDispatcher, expected_workers: int):
++    assert_true_after_time(lambda: dispatcher._nb_available_workers == expected_workers)
++
++
++def _assert_blocked_jobs_count(expected_count: int):
++    assert_true_after_time(lambda: len(_Orchestrator.blocked_jobs) == expected_count)
++
++
+ def _create_task(function, nb_outputs=1):
+     output_dn_config_id = "".join(random.choice(string.ascii_lowercase) for _ in range(10))
+     dn_input_configs = [

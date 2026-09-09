@@ -1,0 +1,43 @@
+{
+  "source": "ci-repair-bench",
+  "n_repos": 10,
+  "tasks_per_repo": 3,
+  "memory_size": 5,
+  "min_prior": 5,
+  "max_files": 15,
+  "semantic_only": true,
+  "k_values": [
+    1,
+    3,
+    5
+  ],
+  "task_ids": [
+    "crb_agno_129",
+    "crb_agno_153",
+    "crb_agno_164",
+    "crb_aider_69",
+    "crb_aider_92",
+    "crb_aider_94",
+    "crb_axolotl_459",
+    "crb_axolotl_473",
+    "crb_axolotl_475",
+    "crb_browser-use_501",
+    "crb_browser-use_504",
+    "crb_browser-use_512",
+    "crb_conan_527",
+    "crb_conan_528",
+    "crb_conan_543",
+    "crb_crewai_563",
+    "crb_crewai_564",
+    "crb_crewai_567",
+    "crb_docsgpt_422",
+    "crb_docsgpt_426",
+    "crb_docsgpt_430",
+    "crb_litellm_381",
+    "crb_litellm_384",
+    "crb_litellm_406",
+    "crb_taipy_437",
+    "crb_taipy_439",
+    "crb_taipy_441"
+  ]
+}

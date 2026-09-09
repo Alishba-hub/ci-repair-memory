@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import statistics
 import sys
@@ -41,13 +42,15 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from ci_memory_agents import design
 from ci_memory_agents.evaluator import pass_at_k
-from ci_memory_agents.loader import list_tasks
+from ci_memory_agents.loader import list_tasks, study_task_ids
 from ci_memory_agents.prompt_builder import (
     ALL_CONDITIONS,
     CONDITIONS,
     NO_MEMORY,
     PAIR,
+    InsufficientMemoryError,
     arm_kind,
+    build_prompt,
     canonical_condition,
     condition_k,
 )
@@ -372,8 +375,17 @@ def split_by(rows: list[dict], key: str) -> list[dict]:
 
 
 def population(tasks_root: Path) -> list[dict]:
+    """Every task folder on disk, flagged for whether the current design selected it.
+
+    Filtering to the design instead would leave `runs.csv` referring to tasks that
+    appear in no other file: runs collected against an earlier population are real, and
+    dropping their tasks from the only table that describes a task makes those runs
+    unreadable. The flag answers both questions from one file.
+    """
+    declared = study_task_ids(tasks_root)
     return [
         {
+            "in_study": declared is None or task.task_id in declared,
             "task_id": task.task_id,
             "repo": task.repo_name,
             "error_group": task.error_group,
@@ -386,6 +398,96 @@ def population(tasks_root: Path) -> list[dict]:
         }
         for task in list_tasks(tasks_root)
     ]
+
+
+def memory_history(tasks_root: Path) -> list[dict]:
+    """One row per (task, memory slot): the history each K arm actually renders.
+
+    This is the file to read when checking that the memory arms are what they claim.
+    The K sets are nested, so slot `order` 0 is the K=1 item, 0-2 are K=3 and 0-4 are
+    K=5; `included_in_k` spells that out per row rather than leaving it to be inferred
+    from a rule stated in a docstring somewhere else. `is_earlier` is the ordering
+    invariant the audit enforces -- a memory item dated on or after its target is a
+    fact about the future and would invalidate the arm it appears in.
+    """
+    declared = study_task_ids(tasks_root)
+    rows: list[dict] = []
+    for task in list_tasks(tasks_root):
+        for order, item in enumerate(task.memory):
+            ks = [k for k in design.K_VALUES if order < k]
+            rows.append(
+                {
+                    "in_study": declared is None or task.task_id in declared,
+                    "task_id": task.task_id,
+                    "repo": task.repo_name,
+                    "order": order,
+                    "instance_id": item.instance_id,
+                    "commit_date": item.commit_date,
+                    "target_commit_date": task.commit_date,
+                    "is_earlier": bool(
+                        task.commit_date and item.commit_date < task.commit_date
+                    ),
+                    "error_type": item.error_type,
+                    "changed_files": item.changed_files,
+                    "included_in_k": ks,
+                    "log_file": item.log_path.name,
+                    "diff_file": item.diff_path.name,
+                    "log_chars": _chars(item.log_path),
+                    "diff_chars": _chars(item.diff_path),
+                }
+            )
+    return rows
+
+
+def _chars(path: Path) -> int:
+    try:
+        return len(path.read_text(encoding="utf-8", errors="replace"))
+    except OSError:
+        return 0
+
+
+def prompts(tasks_root: Path) -> list[dict]:
+    """One row per (task, arm): the prompt that arm would send, measured and hashed.
+
+    Two things are being maintained here. The hash makes a prompt change visible --
+    results collected either side of an edited template are not the same experiment,
+    and nothing else on disk records that. The `chars` column makes the length
+    confound measurable: memory arms are necessarily longer than the control, and a
+    reviewer asking whether the effect is memory or merely context needs the number
+    rather than an assurance.
+
+    An arm a task cannot fill is recorded with `buildable` false and the reason, not
+    omitted -- a missing row reads as an arm nobody looked at.
+    """
+    declared = study_task_ids(tasks_root)
+    rows: list[dict] = []
+    for task in list_tasks(tasks_root):
+        for condition in CONDITIONS:
+            row = {
+                "in_study": declared is None or task.task_id in declared,
+                "task_id": task.task_id,
+                "repo": task.repo_name,
+                "condition": condition,
+                "k": condition_k(condition),
+                "memory_available": task.memory_size,
+            }
+            try:
+                text = build_prompt(task, condition)
+            except InsufficientMemoryError as error:
+                rows.append({**row, "buildable": False, "reason": str(error),
+                             "chars": 0, "lines": 0, "sha256": ""})
+                continue
+            rows.append(
+                {
+                    **row,
+                    "buildable": True,
+                    "reason": "",
+                    "chars": len(text),
+                    "lines": text.count(chr(10)) + 1,
+                    "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()[:16],
+                }
+            )
+    return rows
 
 
 def main() -> int:
@@ -490,9 +592,22 @@ def main() -> int:
         ),
         write_csv(
             out_root / "population.csv",
-            ["task_id", "repo", "error_group", "error_type", "source", "commit_date",
-             "memory_available", "supports_max_k", "gold_files"],
+            ["in_study", "task_id", "repo", "error_group", "error_type", "source",
+             "commit_date", "memory_available", "supports_max_k", "gold_files"],
             population(tasks_root),
+        ),
+        write_csv(
+            out_root / "memory_history.csv",
+            ["in_study", "task_id", "repo", "order", "instance_id", "commit_date",
+             "target_commit_date", "is_earlier", "error_type", "changed_files",
+             "included_in_k", "log_file", "diff_file", "log_chars", "diff_chars"],
+            memory_history(tasks_root),
+        ),
+        write_csv(
+            out_root / "prompts.csv",
+            ["in_study", "task_id", "repo", "condition", "k", "memory_available", "buildable",
+             "reason", "chars", "lines", "sha256"],
+            prompts(tasks_root),
         ),
     ]
 

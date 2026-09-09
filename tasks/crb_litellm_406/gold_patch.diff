@@ -1,0 +1,202 @@
+diff --git a/litellm/llms/vertex_ai/gemini/transformation.py b/litellm/llms/vertex_ai/gemini/transformation.py
+index 39edb9642e2..09ca22af648 100644
+--- a/litellm/llms/vertex_ai/gemini/transformation.py
++++ b/litellm/llms/vertex_ai/gemini/transformation.py
+@@ -62,6 +62,20 @@
+     LiteLLMLoggingObj = Any
+ 
+ 
++def _is_google_ai_studio_gemini_model(
++    model: str,
++    custom_llm_provider: Literal["vertex_ai", "vertex_ai_beta", "gemini"],
++) -> bool:
++    if custom_llm_provider != "gemini":
++        return False
++
++    normalized_model = model.removeprefix("models/")
++    if normalized_model.startswith("gemini/"):
++        normalized_model = normalized_model.split("/", 1)[1]
++
++    return normalized_model.startswith("gemini-")
++
++
+ def _process_gemini_image(image_url: str, format: Optional[str] = None) -> PartType:
+     """
+     Given an image URL, return the appropriate PartType for Gemini
+@@ -325,7 +339,10 @@ def _transform_request_body(
+         supports_response_schema = get_supports_response_schema(
+             model=model, custom_llm_provider=custom_llm_provider
+         )
+-        if supports_response_schema is False:
++        if supports_response_schema is False and not _is_google_ai_studio_gemini_model(
++            model=model,
++            custom_llm_provider=custom_llm_provider,
++        ):
+             user_response_schema_message = response_schema_prompt(
+                 model=model, response_schema=optional_params.get("response_schema")  # type: ignore
+             )
+diff --git a/tests/test_litellm/llms/vertex_ai/test_vertex.py b/tests/test_litellm/llms/vertex_ai/test_vertex.py
+index d4679b5ceb3..7460059f48c 100644
+--- a/tests/test_litellm/llms/vertex_ai/test_vertex.py
++++ b/tests/test_litellm/llms/vertex_ai/test_vertex.py
+@@ -10,7 +10,7 @@
+ import litellm.litellm_core_utils.prompt_templates.factory
+ 
+ load_dotenv()
+-from unittest.mock import MagicMock
++from unittest.mock import MagicMock, patch
+ 
+ sys.path.insert(
+     0, os.path.abspath("../..")
+@@ -109,6 +109,51 @@ class EventsList(BaseModel):
+         assert mock_post.call_args.kwargs["json"] == expected_request_body
+ 
+ 
++def test_completion_pydantic_obj_keeps_gemini_schema_when_support_check_false(
++    monkeypatch,
++):
++    from pydantic import BaseModel
++
++    import litellm.llms.vertex_ai.gemini.transformation as gemini_transformation
++    from litellm.llms.custom_httpx.http_handler import HTTPHandler
++
++    class CalendarEvent(BaseModel):
++        name: str
++        date: str
++        participants: list[str]
++
++    class EventsList(BaseModel):
++        events: list[CalendarEvent]
++
++    monkeypatch.setattr(
++        gemini_transformation,
++        "get_supports_response_schema",
++        lambda model, custom_llm_provider: False,
++    )
++
++    client = HTTPHandler()
++    with patch.object(client, "post", new=MagicMock()) as mock_post:
++        mock_post.return_value = {}
++        try:
++            litellm.completion(
++                model="gemini/gemini-1.5-pro",
++                messages=[
++                    {
++                        "role": "user",
++                        "content": "List important events from the 20th century.",
++                    }
++                ],
++                response_format=EventsList,
++                client=client,
++            )
++        except Exception:
++            pass
++
++        request_body = mock_post.call_args.kwargs["json"]
++        assert len(request_body["contents"][0]["parts"]) == 1
++        assert "response_schema" in request_body["generationConfig"]
++
++
+ def test_build_vertex_schema():
+     import json
+ 
+@@ -1261,7 +1306,7 @@ def test_vertex_embedding_url(model, expected_url):
+     assert endpoint == "predict"
+ 
+ 
+-from unittest.mock import Mock, patch
++from unittest.mock import Mock
+ 
+ import pytest
+ 
+diff --git a/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py b/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
+index 4b64c0f55b9..882e7f5736c 100644
+--- a/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
++++ b/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
+@@ -28,6 +28,8 @@ class StandardBuiltInToolCostTracking:
+     Example: Web Search
+     """
+ 
++    DEFAULT_ANTHROPIC_WEB_SEARCH_COST_PER_REQUEST = 0.01
++
+     @staticmethod
+     def get_cost_for_anthropic_web_search(
+         model_info: Optional[ModelInfo] = None,
+@@ -36,10 +38,6 @@ def get_cost_for_anthropic_web_search(
+         """
+         Get the cost of using a web search tool for Anthropic.
+         """
+-        ## Check if web search requests are in the usage object
+-        if model_info is None:
+-            return 0.0
+-
+         if (
+             usage is None
+             or usage.server_tool_use is None
+@@ -47,6 +45,13 @@ def get_cost_for_anthropic_web_search(
+         ):
+             return 0.0
+ 
++        ## Check if web search requests are in the usage object
++        if model_info is None:
++            return (
++                StandardBuiltInToolCostTracking.DEFAULT_ANTHROPIC_WEB_SEARCH_COST_PER_REQUEST
++                * usage.server_tool_use.web_search_requests
++            )
++
+         ## Get the cost per web search request
+         search_context_pricing: SearchContextCostPerQuery = (
+             model_info.get("search_context_cost_per_query", {}) or {}
+@@ -55,7 +60,9 @@ def get_cost_for_anthropic_web_search(
+             "search_context_size_medium", 0.0
+         )
+         if cost_per_web_search_request is None or cost_per_web_search_request == 0.0:
+-            return 0.0
++            cost_per_web_search_request = (
++                StandardBuiltInToolCostTracking.DEFAULT_ANTHROPIC_WEB_SEARCH_COST_PER_REQUEST
++            )
+ 
+         ## Calculate the total cost
+         total_cost = (
+diff --git a/litellm/llms/openai/chat/o_series_transformation.py b/litellm/llms/openai/chat/o_series_transformation.py
+index 30647f58687..25c6ce5d0ed 100644
+--- a/litellm/llms/openai/chat/o_series_transformation.py
++++ b/litellm/llms/openai/chat/o_series_transformation.py
+@@ -131,6 +131,9 @@ def map_openai_params(
+ 
+     def is_model_o_series_model(self, model: str) -> bool:
+         model = model.split("/")[-1]  # could be "openai/o3" or "o3"
++        known_o_series_models = {"o1", "o1-preview", "o3", "o3-mini", "o4-mini"}
++        if model in known_o_series_models:
++            return True
+         return model in litellm.open_ai_chat_completion_models and any(
+             model.startswith(pfx) for pfx in ("o1", "o3", "o4")
+         )
+diff --git a/litellm/router_strategy/base_routing_strategy.py b/litellm/router_strategy/base_routing_strategy.py
+index 6e410ef14a3..afa75da5283 100644
+--- a/litellm/router_strategy/base_routing_strategy.py
++++ b/litellm/router_strategy/base_routing_strategy.py
+@@ -230,7 +230,9 @@ async def _sync_in_memory_spend_with_redis(self):
+             # 1. Push all provider spend increments to Redis
+             redis_values = await self._push_in_memory_increments_to_redis()
+             if redis_values is None:
+-                return
++                redis_values = await self.dual_cache.redis_cache.async_batch_get_cache(
++                    key_list=cache_keys_list
++                )
+ 
+             # 4. Merge
+             for key in cache_keys_list:
+diff --git a/tests/test_litellm/test_main.py b/tests/test_litellm/test_main.py
+index e69292f5693..6f194d6c82c 100644
+--- a/tests/test_litellm/test_main.py
++++ b/tests/test_litellm/test_main.py
+@@ -160,7 +160,7 @@ async def test_url_with_format_param(model, sync_mode, monkeypatch):
+                     {
+                         "type": "image_url",
+                         "image_url": {
+-                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
++                            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
+                             "format": "image/png",
+                         },
+                     },

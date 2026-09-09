@@ -1,0 +1,50 @@
+--- step: syntax-errors ---
+          patchright==1.59.1
+          patchright==1.60.0
+          patchright==1.60.1
+          patchright==1.61.1
+          patchright==1.61.2
+      and patchright>=1.52.5 has no `platform_machine == 'x86_64' and
+      sys_platform == 'win32'`-compatible wheels, we can conclude that
+      patchright>=1.52.5 cannot be used.
+      And because your project depends on patchright>=1.52.5 and your
+      project requires browser-use[all], we can conclude that your project's
+      requirements are unsatisfiable.
+hint: The resolution failed for an environment that is not the current one, consider limiting the environments with `tool.uv.environments`.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: code-style ---
+          patchright==1.59.1
+          patchright==1.60.0
+          patchright==1.60.1
+          patchright==1.61.1
+          patchright==1.61.2
+      and patchright>=1.52.5 has no `platform_machine == 'x86_64' and
+      sys_platform == 'win32'`-compatible wheels, we can conclude that
+      patchright>=1.52.5 cannot be used.
+      And because your project depends on patchright>=1.52.5 and your
+      project requires browser-use[all], we can conclude that your project's
+      requirements are unsatisfiable.
+hint: The resolution failed for an environment that is not the current one, consider limiting the environments with `tool.uv.environments`.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: type-checker ---
+          patchright==1.59.1
+          patchright==1.60.0
+          patchright==1.60.1
+          patchright==1.61.1
+          patchright==1.61.2
+      and patchright>=1.52.5 has no `platform_machine == 'x86_64' and
+      sys_platform == 'win32'`-compatible wheels, we can conclude that
+      patchright>=1.52.5 cannot be used.
+      And because your project depends on patchright>=1.52.5 and your
+      project requires browser-use[all], we can conclude that your project's
+      requirements are unsatisfiable.
+hint: The resolution failed for an environment that is not the current one, consider limiting the environments with `tool.uv.environments`.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

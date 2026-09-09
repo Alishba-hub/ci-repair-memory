@@ -1,0 +1,43 @@
+diff --git a/lib/crewai/tests/tracing/test_tracing.py b/lib/crewai/tests/tracing/test_tracing.py
+index be6c41af24..15f773d4a6 100644
+--- a/lib/crewai/tests/tracing/test_tracing.py
++++ b/lib/crewai/tests/tracing/test_tracing.py
+@@ -322,7 +322,15 @@ def test_trace_listener_setup_correctly_for_crew(self):
+     def test_trace_listener_setup_correctly_for_flow(self):
+         """Test that trace listener is set up correctly when enabled"""
+ 
+-        with patch.dict(os.environ, {"CREWAI_TRACING_ENABLED": "true"}):
++        with patch.dict(
++            os.environ,
++            {
++                "CREWAI_TRACING_ENABLED": "true",
++                "CREWAI_DISABLE_TELEMETRY": "false",
++                "CREWAI_DISABLE_TRACKING": "false",
++                "OTEL_SDK_DISABLED": "false",
++            },
++        ):
+             class FlowExample(Flow):
+                 @start()
+                 def start(self):
+diff --git a/lib/crewai/tests/test_llm.py b/lib/crewai/tests/test_llm.py
+index 3d8a1282e..8e5b00a2c 100644
+--- a/lib/crewai/tests/test_llm.py
++++ b/lib/crewai/tests/test_llm.py
+@@ -648,7 +648,7 @@ def test_handle_streaming_tool_calls_no_tools(mock_emit):
+ 
+ @pytest.mark.vcr(filter_headers=["authorization"])
+ def test_llm_call_when_stop_is_unsupported(caplog):
+-    llm = LLM(model="o1-mini", stop=["stop"], is_litellm=True)
++    llm = LLM(model="openai/o1-mini", stop=["stop"], is_litellm=True)
+     with caplog.at_level(logging.INFO):
+         result = llm.call("What is the capital of France?")
+         assert "Retrying LLM call without the unsupported 'stop'" in caplog.text
+@@ -661,7 +661,7 @@ def test_llm_call_when_stop_is_unsupported_when_additional_drop_params_is_provid
+     caplog,
+ ):
+     llm = LLM(
+-        model="o1-mini",
++        model="openai/o1-mini",
+         stop=["stop"],
+         additional_drop_params=["another_param"],
+         is_litellm=True,

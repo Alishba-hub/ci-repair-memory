@@ -108,6 +108,19 @@ arriving cold does not. We are testing whether handing it that history closes th
 
 ## 3. How the experiment is set up
 
+> **This section describes the pilot as it was actually run: two arms, 10 runs per
+> condition, 24 tasks, one agent.** The design has since been widened -- four arms
+> (`no_memory` and K = 1, 3, 5), 5 runs per condition, 30 tasks over 10 repositories,
+> and three Copilot models -- and `src/ci_memory_agents/design.py` is the authority on
+> it. Nothing below has been re-run under the wider design, so §3 is left describing
+> the population the numbers in §7 actually came from. Rewriting it to match the
+> current grid would attach these findings to a study that has not happened.
+>
+> The confound noted at the end of this section is one the wider design addresses: the
+> placebo arm `foreign_memory` carries the same volume of history from a *different*
+> project, and is laid out with
+> `python scripts/run_experiment.py --mode prompts --conditions foreign_memory`.
+
 Each **task** is one real broken build. The agent is given:
 
 - the project's code as it was at the moment it broke,

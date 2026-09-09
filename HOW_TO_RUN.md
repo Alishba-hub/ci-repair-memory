@@ -122,7 +122,8 @@ Dry run -- nothing was changed
 
 | Command | What it does |
 |---|---|
-| `python run.py` | Everything not yet done: check fairness, lay out cells, run the agent, judge, report |
+| `python run.py` | Everything not yet done: check fairness, lay out cells, run the agent, judge, report, refresh `results/*.csv` |
+| `python run.py --verify` | The same, then decide the runs by really executing CI |
 | `python run.py tasks` | List projects and pick what to run |
 | `python run.py status` | Progress, and whether the result is defensible yet |
 | `python run.py doctor` | Check this machine, change nothing |
@@ -136,6 +137,14 @@ Dry run -- nothing was changed
 Useful options: `--runs N` (repeats per condition, default 5), `--parallel N` (default 6),
 `--timeout N` (seconds per run, default 900), `--agent copilot`, `--exe <path>` if the
 agent binary is not found automatically, `--quick` for a two-run smoke test on one task.
+
+`--verify` is opt-in rather than part of every run because it force-pushes a branch to a
+fork under your account and spends Actions minutes. Those are real, outward-facing side
+effects, and they should not happen because someone typed `python run.py`.
+
+The agents are the three in `design.py`: `--agent copilot-claude-fable-5.1`,
+`--agent copilot-gpt-5.4`, `--agent copilot-gpt-5.4-mini`. Each keeps its own folder
+under `runs/`, so two models can never share a result.
 
 ---
 
@@ -308,7 +317,7 @@ cannot run one faithfully. 17 of 24 tasks distil. Report those instances separat
 ## Starting over
 
 ```powershell
-python scripts\import_ci_repair_bench.py --limit 24 --max-per-project 2
+python scripts\import_ci_repair_bench.py
 python run.py doctor
 ```
 
@@ -347,6 +356,7 @@ the work is wasted.
 | `scripts/score_runs.py` | **The scorer.** Oracle precedence, coverage, rates, power |
 | `scripts/validate_instances.py` | Proves each instance is red before repair |
 | `scripts/materialize_repos.py` | Replaces gold-file trees with real checkouts |
+| `scripts/export_results.py` | Writes `results/*.csv`, including `memory_history.csv` and `prompts.csv` |
 | `scripts/dashboard.py` | The browser view |
 
 One rule if you call them directly: **use `score_runs.py --mode report`, not

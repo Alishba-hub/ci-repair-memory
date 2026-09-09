@@ -1,0 +1,97 @@
+{
+  "task_id": "crb_docsgpt_422",
+  "name": "CI failure in docsgpt (Runtime Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "422",
+  "repo_name": "docsgpt",
+  "repo_owner": "arc53",
+  "sha_fail": "39b871ce5e33ecaa12e176f850014d7f1a0fc81a",
+  "sha_success": "248a0b8e6a790d65a3e47ce1972967cdf5baf786",
+  "commit_date": "2025-10-29T13:48:34Z",
+  "error_type": [
+    "Runtime Error"
+  ],
+  "error_group": "code_runtime",
+  "workflow_path": ".github/workflows/pytest.yml",
+  "target_files": [
+    "application/api/answer/services/conversation_service.py",
+    "application/api/answer/services/prompt_renderer.py",
+    "application/api/answer/services/stream_processor.py",
+    "application/templates/template_engine.py",
+    "docs/pages/Guides/Customising-prompts.mdx",
+    "tests/api/answer/routes/test_base.py",
+    "tests/api/answer/services/test_prompt_renderer.py",
+    "tests/api/answer/services/test_stream_processor.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "430",
+      "commit_date": "2025-10-28T10:14:37Z",
+      "error_type": [
+        "Runtime Error",
+        "Test Failure",
+        "Configuration Error"
+      ],
+      "workflow_filename": "pytest.yml",
+      "changed_files": [
+        "tests/test_todo_tool.py"
+      ],
+      "log_file": "memory/prior_00_430.log",
+      "diff_file": "memory/prior_00_430.diff"
+    },
+    {
+      "instance_id": "429",
+      "commit_date": "2025-10-27T09:37:21Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "tests/agents/test_base_agent.py"
+      ],
+      "log_file": "memory/prior_01_429.log",
+      "diff_file": "memory/prior_01_429.diff"
+    },
+    {
+      "instance_id": "433",
+      "commit_date": "2025-10-19T15:21:25Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "application/parser/embedding_pipeline.py"
+      ],
+      "log_file": "memory/prior_02_433.log",
+      "diff_file": "memory/prior_02_433.diff"
+    },
+    {
+      "instance_id": "426",
+      "commit_date": "2025-10-07T16:15:56Z",
+      "error_type": [
+        "Package Installation Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "pytest.yml",
+      "changed_files": [
+        "application/agents/tools/todo_list.py"
+      ],
+      "log_file": "memory/prior_03_426.log",
+      "diff_file": "memory/prior_03_426.diff"
+    },
+    {
+      "instance_id": "376",
+      "commit_date": "2025-10-07T12:57:38Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "tests/test_todo_tool.py"
+      ],
+      "log_file": "memory/prior_04_376.log",
+      "diff_file": "memory/prior_04_376.diff"
+    }
+  ]
+}

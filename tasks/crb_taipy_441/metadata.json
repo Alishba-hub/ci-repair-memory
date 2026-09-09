@@ -1,0 +1,149 @@
+{
+  "task_id": "crb_taipy_441",
+  "name": "CI failure in taipy (Test Failure, Dependency Issues, Runtime Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "441",
+  "repo_name": "taipy",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "873b04ac9ecd4ea48e46af92ba2a8825ca781eb6",
+  "sha_success": "1abbaa811393ca10a4c01f5b6548ac2e25c8e659",
+  "commit_date": "2025-10-16T17:58:54Z",
+  "error_type": [
+    "Test Failure",
+    "Dependency Issues",
+    "Runtime Error"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/overall-tests.yml",
+  "target_files": [
+    "frontend/taipy-gui/src/components/Taipy/Metric.spec.tsx",
+    "frontend/taipy-gui/src/components/Taipy/Metric.tsx",
+    "taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py",
+    "tools/packages/pipfiles/Pipfile3.10.max",
+    "tools/packages/pipfiles/Pipfile3.11.max",
+    "tools/packages/pipfiles/Pipfile3.12.max",
+    "tools/packages/pipfiles/Pipfile3.9.max",
+    "Pipfile",
+    "tests/gui/builder/control/test_image.py",
+    "tests/gui/builder/control/test_indicator.py",
+    "tests/gui/builder/control/test_metric.py",
+    "tests/gui/control/test_image.py",
+    "tests/gui/control/test_menu.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "443",
+      "commit_date": "2025-10-07T15:17:10Z",
+      "error_type": [
+        "Runtime Error",
+        "Assertion Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "taipy.sqlite3.db",
+        "tests/gui/e2e/test_metric_indicator.py",
+        "tests/gui/e2e/test_resizing.py",
+        "tests/gui/notebook/test_notebook_simple_gui.py",
+        "tools/packages/pipfiles/Pipfile3.11.max",
+        "tools/packages/pipfiles/Pipfile3.12.max",
+        "tools/packages/taipy-core/setup.requirements.txt",
+        "Pipfile",
+        "taipy/gui/_renderers/factory.py"
+      ],
+      "log_file": "memory/prior_00_443.log",
+      "diff_file": "memory/prior_00_443.diff"
+    },
+    {
+      "instance_id": "439",
+      "commit_date": "2025-10-02T10:25:40Z",
+      "error_type": [
+        "Dependency Issues"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "Pipfile",
+        "taipy/rest/commons/apispec.py"
+      ],
+      "log_file": "memory/prior_01_439.log",
+      "diff_file": "memory/prior_01_439.diff"
+    },
+    {
+      "instance_id": "437",
+      "commit_date": "2025-09-24T09:43:07Z",
+      "error_type": [
+        "Test Failure",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "Pipfile",
+        "taipy/core/_orchestrator/_orchestrator.py",
+        "taipy/core/data/_file_datanode_mixin.py",
+        "tests/core/_orchestrator/test_orchestrator.py",
+        "pytest.ini",
+        "taipy.sqlite3.db",
+        "taipy/gui/utils/patch.py",
+        "tests/core/notification/test_events_published.py",
+        "tests/gui/e2e/test_metric_indicator.py",
+        "tests/gui/gui_specific/test_run_thread.py"
+      ],
+      "log_file": "memory/prior_02_437.log",
+      "diff_file": "memory/prior_02_437.diff"
+    },
+    {
+      "instance_id": "440",
+      "commit_date": "2025-09-23T14:42:40Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "taipy/rest/commons/apispec.py",
+        "tests/gui/utils/test_patch.py",
+        "Pipfile",
+        "taipy/core/data/_file_datanode_mixin.py",
+        "taipy/core/submission/_submission_manager.py",
+        "tests/core/_orchestrator/test_orchestrator.py",
+        "pytest.ini",
+        "tests/gui/e2e/test_metric_indicator.py",
+        "tools/coverage_check.py",
+        "tests/core/utils/__init__.py",
+        "taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py",
+        "taipy/gui/_warnings.py",
+        "tests/gui/notebook/test_notebook_simple_gui.py",
+        "taipy/core/_orchestrator/_orchestrator.py",
+        "tests/core/conftest.py"
+      ],
+      "log_file": "memory/prior_03_440.log",
+      "diff_file": "memory/prior_03_440.diff"
+    },
+    {
+      "instance_id": "436",
+      "commit_date": "2025-09-15T16:11:17Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "overall-tests.yml",
+      "changed_files": [
+        "tests/gui/notebook/test_notebook_simple_gui.py",
+        "Pipfile",
+        "pytest.ini",
+        "taipy.sqlite3.db",
+        "taipy/core/taipy.py",
+        "tests/gui/e2e/test_metric_indicator.py",
+        "tests/gui/gui_specific/test_run_thread.py",
+        "taipy/core/_orchestrator/_dispatcher/_development_job_dispatcher.py",
+        "taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py",
+        "taipy/core/_orchestrator/_dispatcher/_standalone_job_dispatcher.py",
+        "tests/core/notification/test_events_published.py",
+        "taipy/core/job/_job_converter.py",
+        "taipy/core/_orchestrator/_orchestrator.py",
+        "tests/core/conftest.py"
+      ],
+      "log_file": "memory/prior_04_436.log",
+      "diff_file": "memory/prior_04_436.diff"
+    }
+  ]
+}

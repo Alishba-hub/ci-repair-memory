@@ -1,0 +1,253 @@
+diff --git a/browser_use/cli.py b/browser_use/cli.py
+index 975ea8f255..89c9a5cc55 100644
+--- a/browser_use/cli.py
++++ b/browser_use/cli.py
+@@ -855,8 +855,9 @@ def update_tasks_panel(self) -> None:
+ 				# Extract original task(s)
+ 				original_tasks = []
+ 				for msg in message_history:
+-					if hasattr(msg, 'message') and hasattr(msg.message, 'content'):
+-						content = msg.message.content
++					message = getattr(msg, 'message', None)
++					if message is not None and hasattr(message, 'content'):
++						content = getattr(message, 'content')
+ 						if isinstance(content, str) and 'Your ultimate task is:' in content:
+ 							task_text = content.split('"""')[1].strip()
+ 							original_tasks.append(task_text)
+diff --git a/browser_use/dom/tests/test_accessibility_playground.py b/browser_use/dom/tests/test_accessibility_playground.py
+index 7db47fa7d1..9e44069b8e 100644
+--- a/browser_use/dom/tests/test_accessibility_playground.py
++++ b/browser_use/dom/tests/test_accessibility_playground.py
+@@ -13,6 +13,7 @@
+ """
+ 
+ import asyncio
++from typing import Any, cast
+ 
+ from browser_use.browser.types import async_playwright
+ 
+@@ -74,7 +75,7 @@ async def get_ax_tree(TARGET_URL):
+ 		print(f'Navigating to {TARGET_URL}')
+ 		await page.goto(TARGET_URL, wait_until='domcontentloaded')
+ 
+-		ax_tree_interesting = await page.accessibility.snapshot(interesting_only=True)
++		ax_tree_interesting = await cast(Any, page).accessibility.snapshot(interesting_only=True)
+ 		lines = []
+ 		flatten_ax_tree(ax_tree_interesting, lines)
+ 		print(lines)
+diff --git a/browser_use/llm/anthropic/chat.py b/browser_use/llm/anthropic/chat.py
+index e3a45cb894..6f83accda7 100644
+--- a/browser_use/llm/anthropic/chat.py
++++ b/browser_use/llm/anthropic/chat.py
+@@ -1,11 +1,10 @@
+ import json
+ from collections.abc import Mapping
+ from dataclasses import dataclass
+-from typing import Any, TypeVar, overload
++from typing import Any, TypeVar, cast, overload
+ 
+ import httpx
+ from anthropic import (
+-	NOT_GIVEN,
+ 	APIConnectionError,
+ 	APIStatusError,
+ 	AsyncAnthropic,
+@@ -130,12 +129,14 @@ async def ainvoke(
+ 		try:
+ 			if output_format is None:
+ 				# Normal completion without structured output
+-				response = await self.get_client().messages.create(
+-					model=self.model,
+-					messages=anthropic_messages,
+-					system=system_prompt or NOT_GIVEN,
++				create_params: dict[str, Any] = {
++					'model': self.model,
++					'messages': anthropic_messages,
+ 					**self._get_client_params_for_invoke(),
+-				)
++				}
++				if system_prompt is not None:
++					create_params['system'] = system_prompt
++				response = await cast(Any, self.get_client().messages).create(**create_params)
+ 
+ 				usage = self._get_usage(response)
+ 
+@@ -172,14 +173,16 @@ async def ainvoke(
+ 				# Force the model to use this tool
+ 				tool_choice = ToolChoiceToolParam(type='tool', name=tool_name)
+ 
+-				response = await self.get_client().messages.create(
+-					model=self.model,
+-					messages=anthropic_messages,
+-					tools=[tool],
+-					system=system_prompt or NOT_GIVEN,
+-					tool_choice=tool_choice,
++				create_params: dict[str, Any] = {
++					'model': self.model,
++					'messages': anthropic_messages,
++					'tools': [tool],
++					'tool_choice': tool_choice,
+ 					**self._get_client_params_for_invoke(),
+-				)
++				}
++				if system_prompt is not None:
++					create_params['system'] = system_prompt
++				response = await cast(Any, self.get_client().messages).create(**create_params)
+ 
+ 				usage = self._get_usage(response)
+ 
+diff --git a/browser_use/llm/aws/chat_anthropic.py b/browser_use/llm/aws/chat_anthropic.py
+index 5d94fdc753..45734138e0 100644
+--- a/browser_use/llm/aws/chat_anthropic.py
++++ b/browser_use/llm/aws/chat_anthropic.py
+@@ -1,15 +1,14 @@
+ import json
+ from collections.abc import Mapping
+ from dataclasses import dataclass
+-from typing import TYPE_CHECKING, Any, TypeVar, overload
++from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
+ 
+ from anthropic import (
+-	NOT_GIVEN,
+ 	APIConnectionError,
+ 	APIStatusError,
+-	AsyncAnthropicBedrock,
+ 	RateLimitError,
+ )
++from anthropic.lib.bedrock import AsyncAnthropicBedrock
+ from anthropic.types import CacheControlEphemeralParam, Message, ToolParam
+ from anthropic.types.text_block import TextBlock
+ from anthropic.types.tool_choice_tool_param import ToolChoiceToolParam
+@@ -157,12 +156,14 @@ async def ainvoke(
+ 		try:
+ 			if output_format is None:
+ 				# Normal completion without structured output
+-				response = await self.get_client().messages.create(
+-					model=self.model,
+-					messages=anthropic_messages,
+-					system=system_prompt or NOT_GIVEN,
++				create_params: dict[str, Any] = {
++					'model': self.model,
++					'messages': anthropic_messages,
+ 					**self._get_client_params_for_invoke(),
+-				)
++				}
++				if system_prompt is not None:
++					create_params['system'] = system_prompt
++				response = await cast(Any, self.get_client().messages).create(**create_params)
+ 
+ 				usage = self._get_usage(response)
+ 
+@@ -199,14 +200,16 @@ async def ainvoke(
+ 				# Force the model to use this tool
+ 				tool_choice = ToolChoiceToolParam(type='tool', name=tool_name)
+ 
+-				response = await self.get_client().messages.create(
+-					model=self.model,
+-					messages=anthropic_messages,
+-					tools=[tool],
+-					system=system_prompt or NOT_GIVEN,
+-					tool_choice=tool_choice,
++				create_params: dict[str, Any] = {
++					'model': self.model,
++					'messages': anthropic_messages,
++					'tools': [tool],
++					'tool_choice': tool_choice,
+ 					**self._get_client_params_for_invoke(),
+-				)
++				}
++				if system_prompt is not None:
++					create_params['system'] = system_prompt
++				response = await cast(Any, self.get_client().messages).create(**create_params)
+ 
+ 				usage = self._get_usage(response)
+ 
+diff --git a/browser_use/llm/google/serializer.py b/browser_use/llm/google/serializer.py
+index 560de25448..834aa8e75a 100644
+--- a/browser_use/llm/google/serializer.py
++++ b/browser_use/llm/google/serializer.py
+@@ -1,4 +1,5 @@
+ import base64
++from typing import cast
+ 
+ from google.genai.types import Content, ContentListUnion, Part
+ 
+@@ -33,7 +34,7 @@ def serialize_messages(messages: list[BaseMessage]) -> tuple[ContentListUnion, s
+ 
+ 		messages = [m.model_copy(deep=True) for m in messages]
+ 
+-		formatted_messages: ContentListUnion = []
++		formatted_messages: list[Content] = []
+ 		system_message: str | None = None
+ 
+ 		for message in messages:
+@@ -95,4 +96,4 @@ def serialize_messages(messages: list[BaseMessage]) -> tuple[ContentListUnion, s
+ 				final_message = Content(role=role, parts=message_parts)
+ 				formatted_messages.append(final_message)
+ 
+-		return formatted_messages, system_message
++		return cast(ContentListUnion, formatted_messages), system_message
+diff --git a/eval/judge_system.py b/eval/judge_system.py
+index 3072b0723d..55d2902167 100644
+--- a/eval/judge_system.py
++++ b/eval/judge_system.py
+@@ -7,9 +7,10 @@
+ import io
+ import json
+ import logging
++from collections.abc import Iterable
+ from enum import Enum
+ from pathlib import Path
+-from typing import Any
++from typing import Any, cast
+ 
+ from PIL import Image
+ from pydantic import BaseModel
+@@ -194,7 +195,7 @@ def are_images_identical(img_path1: str, img_path2: str) -> bool:
+ 				return False
+ 
+ 			# Compare pixel data
+-			return list(img1.getdata()) == list(img2.getdata())
++			return list(cast(Iterable[Any], img1.getdata())) == list(cast(Iterable[Any], img2.getdata()))
+ 	except Exception as e:
+ 		logger.warning(f'Failed to compare images {img_path1} and {img_path2}: {e}')
+ 		return False
+diff --git a/pyproject.toml b/pyproject.toml
+index f990f3056e..67418fafcc 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -158,17 +158,8 @@ log_level = "DEBUG"
+ [tool.hatch.metadata]
+ allow-direct-references = true
+ 
+-[tool.uv]
+-# required-environments = [
+-#     "sys_platform == 'darwin' and platform_machine == 'arm64'",
+-#     "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+-#     "sys_platform == 'linux' and platform_machine == 'x86_64'",
+-#     "sys_platform == 'linux' and platform_machine == 'aarch64'",
+-#     # "sys_platform == 'linux' and platform_machine == 'arm64'",  # no pytorch wheels available yet
+-#     "sys_platform == 'win32' and platform_machine == 'x86_64'",
+-#     # "sys_platform == 'win32' and platform_machine == 'arm64'",  # no pytorch wheels available yet
+-# ]
+-dev-dependencies = [
++[dependency-groups]
++dev = [
+     "ruff>=0.11.2",
+     "tokencost>=0.1.16",
+     "build>=1.2.2",
+@@ -189,3 +180,14 @@ dev-dependencies = [
+     # "pytest-playwright-asyncio>=0.7.0",  # not actually needed I think
+     "pytest-timeout>=2.4.0",
+ ]
++
++[tool.uv]
++# required-environments = [
++#     "sys_platform == 'darwin' and platform_machine == 'arm64'",
++#     "sys_platform == 'darwin' and platform_machine == 'x86_64'",
++#     "sys_platform == 'linux' and platform_machine == 'x86_64'",
++#     "sys_platform == 'linux' and platform_machine == 'aarch64'",
++#     # "sys_platform == 'linux' and platform_machine == 'arm64'",  # no pytorch wheels available yet
++#     "sys_platform == 'win32' and platform_machine == 'x86_64'",
++#     # "sys_platform == 'win32' and platform_machine == 'arm64'",  # no pytorch wheels available yet
++# ]

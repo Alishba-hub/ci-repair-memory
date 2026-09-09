@@ -1,0 +1,29 @@
+--- step: overall-tests (3.9, ubuntu-latest, max) ---
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/gui/builder/control/test_chart.py::test_chart_builder_1[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/builder/control/test_chart.py::test_chart_builder_2[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/builder/control/test_chart.py::test_map_builder[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/builder/control/test_chart.py::test_chart_indexed_properties_builder[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/builder/control/test_chart.py::test_chart_indexed_properties_with_arrays_builder[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/builder/control/test_chart.py::test_chart_multi_data[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/builder/control/test_chart.py::test_chart_none_data[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/control/test_chart.py::test_chart_md_1[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/control/test_chart.py::test_chart_html_1[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/control/test_chart.py::test_chart_html_2[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/control/test_chart.py::test_map_md[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/control/test_chart.py::test_chart_indexed_properties[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/control/test_chart.py::test_chart_indexed_properties_with_arrays[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/control/test_chart.py::test_chart_multi_data[flask] - AssertionError: response.status_code 500 != 200
+FAILED tests/gui/control/test_chart.py::test_chart_none_data[flask] - AssertionError: response.status_code 500 != 200
+= 15 failed, 1998 passed, 21 skipped, 90 deselected, 582 warnings in 773.53s (0:12:53) =
+##[error]Process completed with exit code 1.
+Post job cleanup.
+##[start-action display=Restore cached frontend build;id=__3f916a31-fa27-40c8-883a-3d2c2fd41474.cache-fe-build]
+##[end-action id=__3f916a31-fa27-40c8-883a-3d2c2fd41474.cache-fe-build;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Run actions/setup-node@v4;id=__3f916a31-fa27-40c8-883a-3d2c2fd41474.__actions_setup-node]
+##[end-action id=__3f916a31-fa27-40c8-883a-3d2c2fd41474.__actions_setup-node;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Run actions/setup-python@v5;id=__3f916a31-fa27-40c8-883a-3d2c2fd41474.__actions_setup-python]
+##[end-action id=__3f916a31-fa27-40c8-883a-3d2c2fd41474.__actions_setup-python;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.co

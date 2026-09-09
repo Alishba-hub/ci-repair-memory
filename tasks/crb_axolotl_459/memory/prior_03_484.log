@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+diff --git a/src/axolotl/cli/train.py b/src/axolotl/cli/train.py
+index 80fbc91..d0cf845 100644
+--- a/src/axolotl/cli/train.py
++++ b/src/axolotl/cli/train.py
+@@ -111,7 +111,8 @@ def ray_train_func(kwargs: dict):
+     # Register plugins in Ray workers
+     if cfg.get("plugins"):
+-        from axolotl.cli.config import prepare_plugins, plugin_set_cfg
++        from axolotl.cli.config import plugin_set_cfg, prepare_plugins
++
+         prepare_plugins(cfg)
+         plugin_set_cfg(cfg)
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=85983]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__bd317ae5-e81c-4bdf-8df6-37f02dd41300.__actions_cache]
+##[end-action id=__bd317ae5-e81c-4bdf-8df6-37f02dd41300.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

@@ -1,0 +1,206 @@
+diff --git a/browser_use/controller/service.py b/browser_use/controller/service.py
+index 243a306ba4..768d1c57ce 100644
+--- a/browser_use/controller/service.py
++++ b/browser_use/controller/service.py
+@@ -470,7 +470,7 @@ async def extract_structured_data(
+ 			'Get the accessibility tree of the page in the format "role name" with the number_of_elements to return',
+ 		)
+ 		async def get_ax_tree(number_of_elements: int, page: Page):
+-			node = await page.accessibility.snapshot(interesting_only=True)
++			node = await cast(Any, page).accessibility.snapshot(interesting_only=True)
+ 
+ 			def flatten_ax_tree(node, lines):
+ 				if not node:
+diff --git a/browser_use/dom/tests/test_accessibility_playground.py b/browser_use/dom/tests/test_accessibility_playground.py
+index 7db47fa7d1..9e44069b8e 100644
+--- a/browser_use/dom/tests/test_accessibility_playground.py
++++ b/browser_use/dom/tests/test_accessibility_playground.py
+@@ -13,6 +13,7 @@
+ """
+ 
+ import asyncio
++from typing import Any, cast
+ 
+ from browser_use.browser.types import async_playwright
+ 
+@@ -74,7 +75,7 @@ async def get_ax_tree(TARGET_URL):
+ 		print(f'Navigating to {TARGET_URL}')
+ 		await page.goto(TARGET_URL, wait_until='domcontentloaded')
+ 
+-		ax_tree_interesting = await page.accessibility.snapshot(interesting_only=True)
++		ax_tree_interesting = await cast(Any, page).accessibility.snapshot(interesting_only=True)
+ 		lines = []
+ 		flatten_ax_tree(ax_tree_interesting, lines)
+ 		print(lines)
+diff --git a/browser_use/llm/anthropic/chat.py b/browser_use/llm/anthropic/chat.py
+index de61f5bea0..79a65b20c8 100644
+--- a/browser_use/llm/anthropic/chat.py
++++ b/browser_use/llm/anthropic/chat.py
+@@ -5,7 +5,6 @@
+ 
+ import httpx
+ from anthropic import (
+-	NOT_GIVEN,
+ 	APIConnectionError,
+ 	APIStatusError,
+ 	AsyncAnthropic,
+@@ -129,12 +128,14 @@ async def ainvoke(
+ 		try:
+ 			if output_format is None:
+ 				# Normal completion without structured output
+-				response = await self.get_client().messages.create(
+-					model=self.model,
+-					messages=anthropic_messages,
+-					system=system_prompt or NOT_GIVEN,
++				create_params: dict[str, Any] = {
++					'model': self.model,
++					'messages': anthropic_messages,
+ 					**self._get_client_params_for_invoke(),
+-				)
++				}
++				if system_prompt is not None:
++					create_params['system'] = system_prompt
++				response = await self.get_client().messages.create(**create_params)
+ 
+ 				usage = self._get_usage(response)
+ 
+@@ -171,14 +172,16 @@ async def ainvoke(
+ 				# Force the model to use this tool
+ 				tool_choice = ToolChoiceToolParam(type='tool', name=tool_name)
+ 
+-				response = await self.get_client().messages.create(
+-					model=self.model,
+-					messages=anthropic_messages,
+-					tools=[tool],
+-					system=system_prompt or NOT_GIVEN,
+-					tool_choice=tool_choice,
++				create_params: dict[str, Any] = {
++					'model': self.model,
++					'messages': anthropic_messages,
++					'tools': [tool],
++					'tool_choice': tool_choice,
+ 					**self._get_client_params_for_invoke(),
+-				)
++				}
++				if system_prompt is not None:
++					create_params['system'] = system_prompt
++				response = await self.get_client().messages.create(**create_params)
+ 
+ 				usage = self._get_usage(response)
+ 
+diff --git a/browser_use/llm/google/serializer.py b/browser_use/llm/google/serializer.py
+index 560de25448..834aa8e75a 100644
+--- a/browser_use/llm/google/serializer.py
++++ b/browser_use/llm/google/serializer.py
+@@ -1,4 +1,5 @@
+ import base64
++from typing import cast
+ 
+ from google.genai.types import Content, ContentListUnion, Part
+ 
+@@ -33,7 +34,7 @@ def serialize_messages(messages: list[BaseMessage]) -> tuple[ContentListUnion, s
+ 
+ 		messages = [m.model_copy(deep=True) for m in messages]
+ 
+-		formatted_messages: ContentListUnion = []
++		formatted_messages: list[Content] = []
+ 		system_message: str | None = None
+ 
+ 		for message in messages:
+@@ -95,4 +96,4 @@ def serialize_messages(messages: list[BaseMessage]) -> tuple[ContentListUnion, s
+ 				final_message = Content(role=role, parts=message_parts)
+ 				formatted_messages.append(final_message)
+ 
+-		return formatted_messages, system_message
++		return cast(ContentListUnion, formatted_messages), system_message
+diff --git a/browser_use/telemetry/service.py b/browser_use/telemetry/service.py
+index d703e49c1a..5fbab39059 100644
+--- a/browser_use/telemetry/service.py
++++ b/browser_use/telemetry/service.py
+@@ -83,9 +83,9 @@ def _direct_capture(self, event: BaseTelemetryEvent) -> None:
+ 
+ 		try:
+ 			self._posthog_client.capture(
+-				self.user_id,
+-				event.name,
+-				{**event.properties, **POSTHOG_EVENT_SETTINGS},
++				distinct_id=self.user_id,
++				event=event.name,
++				properties={**event.properties, **POSTHOG_EVENT_SETTINGS},
+ 			)
+ 		except Exception as e:
+ 			logger.error(f'Failed to send telemetry event {event.name}: {e}')
+diff --git a/pyproject.toml b/pyproject.toml
+index 938531a08a..1ad2d241ec 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -156,17 +156,8 @@ log_level = "DEBUG"
+ [tool.hatch.metadata]
+ allow-direct-references = true
+ 
+-[tool.uv]
+-# required-environments = [
+-#     "sys_platform == 'darwin' and platform_machine == 'arm64'",
+-#     "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+-#     "sys_platform == 'linux' and platform_machine == 'x86_64'",
+-#     "sys_platform == 'linux' and platform_machine == 'aarch64'",
+-#     # "sys_platform == 'linux' and platform_machine == 'arm64'",  # no pytorch wheels available yet
+-#     "sys_platform == 'win32' and platform_machine == 'x86_64'",
+-#     # "sys_platform == 'win32' and platform_machine == 'arm64'",  # no pytorch wheels available yet
+-# ]
+-dev-dependencies = [
++[dependency-groups]
++dev = [
+     "ruff>=0.11.2",
+     "tokencost>=0.1.16",
+     "build>=1.2.2",
+@@ -187,3 +178,14 @@ dev-dependencies = [
+     # "pytest-playwright-asyncio>=0.7.0",  # not actually needed I think
+     "pytest-timeout>=2.4.0",
+ ]
++
++[tool.uv]
++# required-environments = [
++#     "sys_platform == 'darwin' and platform_machine == 'arm64'",
++#     "sys_platform == 'darwin' and platform_machine == 'x86_64'",
++#     "sys_platform == 'linux' and platform_machine == 'x86_64'",
++#     "sys_platform == 'linux' and platform_machine == 'aarch64'",
++#     # "sys_platform == 'linux' and platform_machine == 'arm64'",  # no pytorch wheels available yet
++#     "sys_platform == 'win32' and platform_machine == 'x86_64'",
++#     # "sys_platform == 'win32' and platform_machine == 'arm64'",  # no pytorch wheels available yet
++# ]
+diff --git a/tests/ci/test_filesystem.py b/tests/ci/test_filesystem.py
+index 666c7fb5d7..9bb1e54348 100644
+--- a/tests/ci/test_filesystem.py
++++ b/tests/ci/test_filesystem.py
+@@ -428,10 +428,9 @@ async def test_from_state(self, temp_filesystem):
+ 		file_obj = fs2.get_file('custom.txt')
+ 		assert file_obj is not None
+ 		assert file_obj.content == 'Custom content'
+-		assert (
+-			fs2.get_file('extracted_content_0.md').content is not None
+-			and fs2.get_file('extracted_content_0.md').content == 'Extracted data'
+-		)
++		extracted_file = fs2.get_file('extracted_content_0.md')
++		assert extracted_file is not None
++		assert extracted_file.content == 'Extracted data'
+ 
+ 		# Verify files exist on disk
+ 		assert (fs2.data_dir / 'results.md').exists()
+diff --git a/eval/judge_system.py b/eval/judge_system.py
+index 0cc8c3a94d..d99961e6d5 100644
+--- a/eval/judge_system.py
++++ b/eval/judge_system.py
+@@ -63,11 +63,11 @@
+ import io
+ import json
+ import logging
++from collections.abc import Iterable
+ from dataclasses import asdict, dataclass
+ from datetime import datetime
+ from enum import Enum
+ from pathlib import Path
+-from collections.abc import Iterable
+ from typing import Any, cast
+ 
+ from PIL import Image

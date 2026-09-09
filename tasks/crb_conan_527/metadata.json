@@ -1,0 +1,118 @@
+{
+  "task_id": "crb_conan_527",
+  "name": "CI failure in conan (Environment Error, Test Failure, Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "527",
+  "repo_name": "conan",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "459cfd9a9110080f68d50b9ae3b63fa17b0f2f0c",
+  "sha_success": "4e748cd6230c476de9b994941fd4e0ac53e2c660",
+  "commit_date": "2025-07-15T09:51:03Z",
+  "error_type": [
+    "Environment Error",
+    "Test Failure",
+    "Test Failure"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/main.yml",
+  "target_files": [
+    "test/functional/toolchains/meson/_base.py",
+    "test/functional/tools/system/package_manager_test.py",
+    "test/conftest.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "539",
+      "commit_date": "2025-07-08T17:59:31Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "conan/test/assets/sources.py",
+        "test/conftest_user.py"
+      ],
+      "log_file": "memory/prior_00_539.log",
+      "diff_file": "memory/prior_00_539.diff"
+    },
+    {
+      "instance_id": "540",
+      "commit_date": "2025-06-18T13:26:16Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/meson/test_meson.py",
+        "test/functional/toolchains/meson/test_pkg_config_reuse.py",
+        "test/functional/toolchains/meson/test_test.py"
+      ],
+      "log_file": "memory/prior_01_540.log",
+      "diff_file": "memory/prior_01_540.diff"
+    },
+    {
+      "instance_id": "526",
+      "commit_date": "2025-06-10T10:44:59Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/google/test_bazel.py",
+        "test/functional/tools_versions_test.py",
+        "conan/internal/api/new/bazel_7_exe.py",
+        "test/functional/toolchains/cmake/test_cmake.py",
+        "conan/internal/api/new/bazel_exe.py",
+        "conan/internal/api/new/bazel_lib.py",
+        "test/conftest.py",
+        "test/unittests/test_tool_detection.py",
+        "conan/internal/api/new/bazel_7_lib.py",
+        "test/integration/command/test_new.py"
+      ],
+      "log_file": "memory/prior_02_526.log",
+      "diff_file": "memory/prior_02_526.diff"
+    },
+    {
+      "instance_id": "546",
+      "commit_date": "2025-05-22T08:21:25Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/meson/test_meson.py",
+        "test/functional/toolchains/meson/test_pkg_config_reuse.py",
+        "test/functional/toolchains/meson/test_preprocessor_definitions.py",
+        "test/functional/toolchains/meson/test_test.py"
+      ],
+      "log_file": "memory/prior_03_546.log",
+      "diff_file": "memory/prior_03_546.diff"
+    },
+    {
+      "instance_id": "550",
+      "commit_date": "2025-05-13T08:03:43Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/meson/test_test.py"
+      ],
+      "log_file": "memory/prior_04_550.log",
+      "diff_file": "memory/prior_04_550.diff"
+    }
+  ]
+}

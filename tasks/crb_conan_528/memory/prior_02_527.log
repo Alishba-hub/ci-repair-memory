@@ -1,0 +1,16 @@
+--- step: Linux Functional (3.10) ---
+FAILED test/functional/tools/system/package_manager_test.py::test_apt_check - AssertionError: assert 'dpkg-query: no packages found matching non-existing1:i386' in '\n======== Exporting recipe to the cache ========\ntest/1.0: Exporting package recipe: /tmp/tmph1weowgvconans/path wi...2547ab797ebff64704\ntest/1.0: Package folder /tmp/tmpsvks_0j1conans/path with spaces/.conan2/p/b/test695e1f59bcf13/p\n'
+ +  where '\n======== Exporting recipe to the cache ========\ntest/1.0: Exporting package recipe: /tmp/tmph1weowgvconans/path wi...2547ab797ebff64704\ntest/1.0: Package folder /tmp/tmpsvks_0j1conans/path with spaces/.conan2/p/b/test695e1f59bcf13/p\n' = <conan.test.utils.tools.TestClient object at 0x7f21d2d4d6c0>.out
+FAILED test/functional/tools/system/package_manager_test.py::test_build_require - AssertionError: assert 'dpkg-query: no packages found matching non-existing1' in '\n======== Exporting recipe to the cache ========\nconsumer/1.0: Exporting package recipe: /tmp/tmphlxrhrwmconans/pat...b797ebff64704\nconsumer/1.0: Package folder /tmp/tmpl4y0qsebconans/path with spaces/.conan2/p/b/consu60ef184f0214b/p\n'
+ +  where '\n======== Exporting recipe to the cache ========\nconsumer/1.0: Exporting package recipe: /tmp/tmphlxrhrwmconans/pat...b797ebff64704\nconsumer/1.0: Package folder /tmp/tmpl4y0qsebconans/path with spaces/.conan2/p/b/consu60ef184f0214b/p\n' = <conan.test.utils.tools.TestClient object at 0x7f21d0557460>.out
+FAILED test/functional/tools/system/package_manager_test.py::test_apt_install_substitutes - assert 'dpkg-query: no packages found matching non-existing1' in '\n======== Exporting recipe to the cache ========\ntest/1.0: Exporting package recipe: /tmp/tmpk42njhatconans/path wi..., ["non-existing3", "non-existing4"])\n\tConanException: None of the installs for the package substitutes succeeded.\n'
+ +  where '\n======== Exporting recipe to the cache ========\ntest/1.0: Exporting package recipe: /tmp/tmpk42njhatconans/path wi..., ["non-existing3", "non-existing4"])\n\tConanException: None of the installs for the package substitutes succeeded.\n' = <conan.test.utils.tools.TestClient object at 0x7f79810a9ea0>.out
+= 7 failed, 385 passed, 326 skipped, 1 xfailed, 104 warnings, 238 errors in 304.63s (0:05:04) =
+##[error]Process completed with exit code 1.
+##[end-action id=__self.__run;outcome=failure;conclusion=failure;duration_ms=306139]
+##[start-action display=Rename coverage file;id=__self.__run_2]
+##[end-action id=__self.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Upload coverage artifact;id=__self.__actions_upload-artifact]
+##[end-action id=__self.__actions_upload-artifact;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

@@ -1,0 +1,160 @@
+diff --git a/libs/agno/agno/tools/firecrawl.py b/libs/agno/agno/tools/firecrawl.py
+index aec7b2f033..ec5b8a12ff 100644
+--- a/libs/agno/agno/tools/firecrawl.py
++++ b/libs/agno/agno/tools/firecrawl.py
+@@ -8,7 +8,15 @@
+ try:
+     from firecrawl import FirecrawlApp, ScrapeOptions  # type: ignore[attr-defined]
+ except ImportError:
+-    raise ImportError("`firecrawl-py` not installed. Please install using `pip install firecrawl-py`")
++    try:
++        from firecrawl import FirecrawlApp, V1ScrapeOptions as ScrapeOptions  # type: ignore[attr-defined]
++    except ImportError:
++        try:
++            from firecrawl import FirecrawlApp  # type: ignore[attr-defined]
++
++            ScrapeOptions = None
++        except ImportError:
++            raise ImportError("`firecrawl-py` not installed. Please install using `pip install firecrawl-py`")
+ 
+ 
+ class CustomJSONEncoder(json.JSONEncoder):
+@@ -77,6 +85,13 @@ def __init__(
+ 
+         super().__init__(name="firecrawl_tools", tools=tools, **kwargs)
+ 
++    def _get_scrape_options(self) -> Optional[Any]:
++        if not self.formats:
++            return None
++        if ScrapeOptions is None:
++            return {"formats": self.formats}
++        return ScrapeOptions(formats=self.formats)
++
+     def scrape_website(self, url: str) -> str:
+         """Use this function to scrape a website using Firecrawl.
+ 
+@@ -103,8 +118,9 @@ def crawl_website(self, url: str, limit: Optional[int] = None) -> str:
+         params: Dict[str, Any] = {}
+         if self.limit or limit:
+             params["limit"] = self.limit or limit
+-        if self.formats:
+-            params["scrape_options"] = ScrapeOptions(formats=self.formats)  # type: ignore
++        scrape_options = self._get_scrape_options()
++        if scrape_options is not None:
++            params["scrape_options"] = scrape_options
+ 
+         params["poll_interval"] = self.poll_interval
+ 
+@@ -131,8 +147,9 @@ def search(self, query: str, limit: Optional[int] = None):
+         params: Dict[str, Any] = {}
+         if self.limit or limit:
+             params["limit"] = self.limit or limit
+-        if self.formats:
+-            params["scrape_options"] = ScrapeOptions(formats=self.formats)  # type: ignore
++        scrape_options = self._get_scrape_options()
++        if scrape_options is not None:
++            params["scrape_options"] = scrape_options
+         if self.search_params:
+             params.update(self.search_params)
+ 
+diff --git a/libs/agno/agno/utils/whatsapp.py b/libs/agno/agno/utils/whatsapp.py
+index 2657b24c02..c2e3ef3f28 100644
+--- a/libs/agno/agno/utils/whatsapp.py
++++ b/libs/agno/agno/utils/whatsapp.py
+@@ -1,11 +1,13 @@
+ import os
+-from typing import Optional
++from typing import Any, Dict, Optional, Union
+ 
+ import httpx
+ import requests
+ 
+ from agno.utils.log import log_debug, log_error
+ 
++WhatsAppMediaResponse = Union[bytes, Dict[str, Any]]
++
+ 
+ def get_access_token() -> str:
+     access_token = os.getenv("WHATSAPP_ACCESS_TOKEN")
+@@ -21,7 +23,7 @@ def get_phone_number_id() -> str:
+     return phone_number_id
+ 
+ 
+-def get_media(media_id: str) -> dict:
++def get_media(media_id: str) -> WhatsAppMediaResponse:
+     """
+     Sends a GET request to the Facebook Graph API to retrieve media information.
+ 
+@@ -51,7 +53,7 @@ def get_media(media_id: str) -> dict:
+         return {"error": str(e)}
+ 
+ 
+-async def get_media_async(media_id: str) -> dict:
++async def get_media_async(media_id: str) -> WhatsAppMediaResponse:
+     """
+     Sends a GET request to the Facebook Graph API to retrieve media information.
+ 
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b72123..c4eb219876 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -38,11 +38,12 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+     if ws_pyproject_toml.exists() and ws_pyproject_toml.is_file():
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+-            agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            agno_conf_workspace_dir = agno_conf.get("workspace")
++            if isinstance(agno_conf_workspace_dir, str):
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)
+diff --git a/libs/agno/pyproject.toml b/libs/agno/pyproject.toml
+index 569c4b9da0..4c2138ab79 100644
+--- a/libs/agno/pyproject.toml
++++ b/libs/agno/pyproject.toml
+@@ -314,6 +314,7 @@ module = [
+   "email_validator.*",
+   "e2b_code_interpreter.*",
+   "exa_py.*",
++  "fastembed.*",
+   "fastapi.*",
+   "filetype.*",
+   "firecrawl.*",
+@@ -385,6 +386,7 @@ module = [
+   "tweepy.*",
+   "twilio.*",
+   "tzlocal.*",
++  "unstructured.*",
+   "upstash_vector.*",
+   "urllib3.*",
+   "uvicorn.*",
+diff --git a/libs/agno/tests/unit/tools/test_firecrawl.py b/libs/agno/tests/unit/tools/test_firecrawl.py
+index 43e60985c1..26f278d442 100644
+--- a/libs/agno/tests/unit/tools/test_firecrawl.py
++++ b/libs/agno/tests/unit/tools/test_firecrawl.py
+@@ -5,7 +5,6 @@
+ from unittest.mock import Mock, patch
+ 
+ import pytest
+-from firecrawl import FirecrawlApp
+ 
+ from agno.tools.firecrawl import FirecrawlTools
+ 
+@@ -17,7 +16,9 @@
+ def mock_firecrawl():
+     """Create a mock FirecrawlApp instance."""
+     with patch("agno.tools.firecrawl.FirecrawlApp") as mock_firecrawl_cls:
+-        mock_app = Mock(spec=FirecrawlApp)
++        # Avoid coupling tests to a specific firecrawl-py class surface.
++        # We only need the methods used by FirecrawlTools in these tests.
++        mock_app = Mock()
+         mock_firecrawl_cls.return_value = mock_app
+         return mock_app

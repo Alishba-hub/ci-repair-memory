@@ -1,0 +1,30 @@
+diff --git a/libs/agno/agno/cli/auth_server.py b/libs/agno/agno/cli/auth_server.py
+index 039c69352..9ba6d9e38 100644
+--- a/libs/agno/agno/cli/auth_server.py
++++ b/libs/agno/agno/cli/auth_server.py
+@@ -99,7 +99,7 @@ class CliAuthRequestHandler(BaseHTTPRequestHandler):
+         </html>
+         """
+         self._set_html_response(html, status_code=200)
+-        self.server.running = False
++        self.server.shutdown()  # Properly shut down the server
+ 
+     def _set_response(self):
+         self.send_response(204)
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b7212..46576e1d8 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,7 +39,11 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++            agno_conf_workspace_dir_path = (
++                ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                if agno_conf_workspace_dir_str is not None
++                else ws_root_path
++            )
+             logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+             if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+                 return agno_conf_workspace_dir_path

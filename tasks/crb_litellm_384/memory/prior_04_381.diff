@@ -1,0 +1,144 @@
+diff --git a/litellm/llms/github_copilot/chat/transformation.py b/litellm/llms/github_copilot/chat/transformation.py
+index 395eb81c5ba..4f0d935107f 100644
+--- a/litellm/llms/github_copilot/chat/transformation.py
++++ b/litellm/llms/github_copilot/chat/transformation.py
+@@ -9,6 +9,7 @@
+ 
+ class GithubCopilotConfig(OpenAIConfig):
+     GITHUB_COPILOT_API_BASE = "https://api.github.com/copilot/v1"
++
+     def __init__(
+         self,
+         api_key: Optional[str] = None,
+@@ -16,7 +17,7 @@ def __init__(
+         custom_llm_provider: str = "openai",
+     ) -> None:
+         super().__init__()
+-        self.authenticator = Authenticator()
++        self.authenticator: Optional[Authenticator] = None
+ 
+     def _get_openai_compatible_provider_info(
+         self,
+@@ -27,6 +28,8 @@ def _get_openai_compatible_provider_info(
+     ) -> Tuple[Optional[str], Optional[str], str]:
+         api_base = self.GITHUB_COPILOT_API_BASE
+         try:
++            if self.authenticator is None:
++                self.authenticator = Authenticator()
+             dynamic_api_key = self.authenticator.get_api_key()
+         except GetAPIKeyError as e:
+             raise AuthenticationError(
+diff --git a/litellm/llms/bedrock/common_utils.py b/litellm/llms/bedrock/common_utils.py
+index 2a8fdc148bd..cfb9e053744 100644
+--- a/litellm/llms/bedrock/common_utils.py
++++ b/litellm/llms/bedrock/common_utils.py
+@@ -390,6 +390,9 @@ def get_non_litellm_routing_model_name(model: str) -> str:
+         if model.startswith("bedrock/"):
+             model = model.split("/", 1)[1]
+ 
++        if model.startswith("bedrock_converse/"):
++            model = model.split("/", 1)[1]
++
+         if model.startswith("converse/"):
+             model = model.split("/", 1)[1]
+ 
+diff --git a/litellm/router_strategy/base_routing_strategy.py b/litellm/router_strategy/base_routing_strategy.py
+index 6e410ef14a3..afa75da5283 100644
+--- a/litellm/router_strategy/base_routing_strategy.py
++++ b/litellm/router_strategy/base_routing_strategy.py
+@@ -230,7 +230,9 @@ async def _sync_in_memory_spend_with_redis(self):
+             # 1. Push all provider spend increments to Redis
+             redis_values = await self._push_in_memory_increments_to_redis()
+             if redis_values is None:
+-                return
++                redis_values = await self.dual_cache.redis_cache.async_batch_get_cache(
++                    key_list=cache_keys_list
++                )
+ 
+             # 4. Merge
+             for key in cache_keys_list:
+diff --git a/tests/test_litellm/test_main.py b/tests/test_litellm/test_main.py
+index 02f51dccf80..b2e2ac5bdac 100644
+--- a/tests/test_litellm/test_main.py
++++ b/tests/test_litellm/test_main.py
+@@ -160,7 +160,7 @@ async def test_url_with_format_param(model, sync_mode, monkeypatch):
+                     {
+                         "type": "image_url",
+                         "image_url": {
+-                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
++                            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
+                             "format": "image/png",
+                         },
+                     },
+diff --git a/tests/test_litellm/llms/github_copilot/test_github_copilot_transformation.py b/tests/test_litellm/llms/github_copilot/test_github_copilot_transformation.py
+index 0e5a149f042..6e7d23327b9 100644
+--- a/tests/test_litellm/llms/github_copilot/test_github_copilot_transformation.py
++++ b/tests/test_litellm/llms/github_copilot/test_github_copilot_transformation.py
+@@ -29,6 +29,8 @@
+     GetDeviceCodeError,
+     RefreshAPIKeyError,
+ )
++from litellm.types.utils import LlmProviders
++from litellm.utils import ProviderConfigManager
+ 
+ 
+ def test_github_copilot_config_get_openai_compatible_provider_info():
+@@ -75,6 +77,17 @@ def test_github_copilot_config_get_openai_compatible_provider_info():
+     assert "Failed to get API key" in str(excinfo.value)
+ 
+ 
++def test_github_copilot_provider_chat_config():
++    """GitHub Copilot should resolve before unrelated provider branches."""
++
++    provider_config = ProviderConfigManager.get_provider_chat_config(
++        model="gpt-4",
++        provider=LlmProviders.GITHUB_COPILOT,
++    )
++
++    assert isinstance(provider_config, GithubCopilotConfig)
++
++
+ @patch("litellm.llms.github_copilot.authenticator.Authenticator.get_api_key")
+ @patch("litellm.llms.openai.openai.OpenAIChatCompletion.completion")
+ def test_completion_github_copilot_mock_response(mock_completion, mock_get_api_key):
+@@ -125,4 +138,3 @@ def test_completion_github_copilot_mock_response(mock_completion, mock_get_api_k
+     )  # Model name should be without provider prefix
+     assert kwargs.get("messages") == messages
+ 
+-
+diff --git a/litellm/utils.py b/litellm/utils.py
+index cd2dd86722f..e2ebeaba6f6 100644
+--- a/litellm/utils.py
++++ b/litellm/utils.py
+@@ -6767,6 +6767,8 @@ def get_provider_chat_config(  # noqa: PLR0915
+             return litellm.DataRobotConfig()
+         elif litellm.LlmProviders.GEMINI == provider:
+             return litellm.GoogleAIStudioGeminiConfig()
++        elif litellm.LlmProviders.GRADIENT_AI == provider:
++            return litellm.GradientAIConfig()
+         elif (
+             litellm.LlmProviders.AI21 == provider
+             or litellm.LlmProviders.AI21_CHAT == provider
+diff --git a/tests/test_litellm/test_utils.py b/tests/test_litellm/test_utils.py
+index 437ec8cc1eb..b3a163a9b60 100644
+--- a/tests/test_litellm/test_utils.py
++++ b/tests/test_litellm/test_utils.py
+@@ -617,6 +617,18 @@ def test_supports_tool_choice_simple_tests():
+     assert litellm.utils.supports_tool_choice(model="perplexity/sonar") is False
+ 
+ 
++def test_gradient_ai_provider_chat_config():
++    from litellm.types.utils import LlmProviders
++    from litellm.utils import ProviderConfigManager
++
++    config = ProviderConfigManager.get_provider_chat_config(
++        model="deepseek-r1-distill-llama-70b",
++        provider=LlmProviders.GRADIENT_AI,
++    )
++
++    assert isinstance(config, litellm.GradientAIConfig)
++
++
+ def test_check_provider_match():
+     """
+     Test the _check_provider_match function for various provider scenarios

@@ -1,0 +1,81 @@
+diff --git a/libs/agno/agno/utils/models/claude.py b/libs/agno/agno/utils/models/claude.py
+index 0863b7694fd..c1dc9cd67b1 100644
+--- a/libs/agno/agno/utils/models/claude.py
++++ b/libs/agno/agno/utils/models/claude.py
+@@ -3,7 +3,7 @@
+ 
+ from agno.media import File, Image
+ from agno.models.message import Message
+-from agno.utils.log import log_error, log_info, log_warning
++from agno.utils.log import log_error, log_warning
+ 
+ try:
+     from anthropic.types import (
+diff --git a/libs/agno/agno/utils/whatsapp.py b/libs/agno/agno/utils/whatsapp.py
+index 2657b24c026..c2df352349e 100644
+--- a/libs/agno/agno/utils/whatsapp.py
++++ b/libs/agno/agno/utils/whatsapp.py
+@@ -1,5 +1,5 @@
+ import os
+-from typing import Optional
++from typing import Any, Dict, Optional, Union
+ 
+ import httpx
+ import requests
+@@ -21,7 +21,7 @@ def get_phone_number_id() -> str:
+     return phone_number_id
+ 
+ 
+-def get_media(media_id: str) -> dict:
++def get_media(media_id: str) -> Union[bytes, Dict[str, Any]]:
+     """
+     Sends a GET request to the Facebook Graph API to retrieve media information.
+ 
+@@ -51,7 +51,7 @@ def get_media(media_id: str) -> dict:
+         return {"error": str(e)}
+ 
+ 
+-async def get_media_async(media_id: str) -> dict:
++async def get_media_async(media_id: str) -> Union[bytes, Dict[str, Any]]:
+     """
+     Sends a GET request to the Facebook Graph API to retrieve media information.
+ 
+@@ -182,7 +182,7 @@ async def send_image_message_async(
+ 
+     headers = {"Authorization": f"Bearer {access_token}"}
+ 
+-    data = {
++    data: Dict[str, Any] = {
+         "messaging_product": "whatsapp",
+         "recipient_type": "individual",
+         "to": recipient,
+@@ -201,7 +201,8 @@ async def send_image_message_async(
+ 
+     except httpx.HTTPStatusError as e:
+         log_error(f"Failed to send WhatsApp image message: {e}")
+-        log_error(f"Error response: {e.response.text if hasattr(e, 'response') else 'No response text'}")
++        error_response = e.response.text if e.response is not None else "No response text"
++        log_error(f"Error response: {error_response}")
+         raise
+     except Exception as e:
+         log_error(f"Unexpected error sending WhatsApp image message: {str(e)}")
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b72123a..900fa57e004 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,10 +39,11 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            if isinstance(agno_conf_workspace_dir_str, str):
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)

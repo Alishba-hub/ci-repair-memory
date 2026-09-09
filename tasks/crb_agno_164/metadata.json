@@ -1,0 +1,105 @@
+{
+  "task_id": "crb_agno_164",
+  "name": "CI failure in agno (Syntax Error, Dependency Issues)",
+  "source": "ci-repair-bench",
+  "instance_id": "164",
+  "repo_name": "agno",
+  "repo_owner": "agno-agi",
+  "sha_fail": "33ed019c7f623b9fb89b1430b38c7e7a7aefa57c",
+  "sha_success": "4a4afd74cf19bc66f350b9d4cc895478471a9019",
+  "commit_date": "2025-05-22T11:13:02Z",
+  "error_type": [
+    "Syntax Error",
+    "Dependency Issues"
+  ],
+  "error_group": "code_runtime",
+  "workflow_path": ".github/workflows/test.yml",
+  "target_files": [
+    "libs/agno/agno/agent/agent.py",
+    "libs/agno/agno/utils/whatsapp.py",
+    "libs/agno/agno/workspace/helpers.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "71",
+      "commit_date": "2025-05-22T11:01:02Z",
+      "error_type": [
+        "Dependency Issues",
+        "Code Linting"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/knowledge/website.py",
+        "libs/agno/agno/utils/whatsapp.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_00_71.log",
+      "diff_file": "memory/prior_00_71.diff"
+    },
+    {
+      "instance_id": "160",
+      "commit_date": "2025-05-22T04:19:43Z",
+      "error_type": [
+        "Code Linting",
+        "Syntax Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/utils/models/claude.py",
+        "libs/agno/agno/utils/whatsapp.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_01_160.log",
+      "diff_file": "memory/prior_01_160.diff"
+    },
+    {
+      "instance_id": "188",
+      "commit_date": "2025-05-21T14:56:04Z",
+      "error_type": [
+        "Syntax Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/eval/accuracy.py",
+        "libs/agno/agno/utils/whatsapp.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_02_188.log",
+      "diff_file": "memory/prior_02_188.diff"
+    },
+    {
+      "instance_id": "178",
+      "commit_date": "2025-05-21T08:51:52Z",
+      "error_type": [
+        "Syntax Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/tools/mcp.py",
+        "libs/agno/agno/utils/whatsapp.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_03_178.log",
+      "diff_file": "memory/prior_03_178.diff"
+    },
+    {
+      "instance_id": "177",
+      "commit_date": "2025-05-20T11:52:39Z",
+      "error_type": [
+        "Dependency Issues",
+        "Code Linting"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/tools/toolkit.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_04_177.log",
+      "diff_file": "memory/prior_04_177.diff"
+    }
+  ]
+}

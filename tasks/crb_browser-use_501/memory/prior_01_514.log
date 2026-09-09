@@ -1,0 +1,16 @@
+--- step: code-style ---
+@@ -1907,11 +1909,7 @@ class Agent(Generic[Context]):
+ 				result = None
+ 				if i < len(results):
+ 					result = results[i].model_dump()
+-				playwright_actions.append({
+-					'action_name': action_name,
+-					'params': params,
+-					'result': result
+-				})
++				playwright_actions.append({'action_name': action_name, 'params': params, 'result': result})
+ 		# Save to file if output_path is provided and logging level is debug
+ 		if output_path and os.environ.get('BROWSER_USE_LOGGING_LEVEL', '').lower() == 'debug':
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

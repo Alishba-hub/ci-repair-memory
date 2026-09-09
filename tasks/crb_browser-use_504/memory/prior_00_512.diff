@@ -1,0 +1,129 @@
+diff --git a/browser_use/dom/playground/test_accessibility.py b/browser_use/dom/playground/test_accessibility.py
+index 7db47fa7d1..3f7803a986 100644
+--- a/browser_use/dom/playground/test_accessibility.py
++++ b/browser_use/dom/playground/test_accessibility.py
+@@ -74,7 +74,7 @@ async def get_ax_tree(TARGET_URL):
+ 		print(f'Navigating to {TARGET_URL}')
+ 		await page.goto(TARGET_URL, wait_until='domcontentloaded')
+ 
+-		ax_tree_interesting = await page.accessibility.snapshot(interesting_only=True)
++		ax_tree_interesting = await page.accessibility.snapshot(interesting_only=True)  # type: ignore[attr-defined]
+ 		lines = []
+ 		flatten_ax_tree(ax_tree_interesting, lines)
+ 		print(lines)
+diff --git a/browser_use/llm/anthropic/chat.py b/browser_use/llm/anthropic/chat.py
+index e3a45cb894..39bde2abd6 100644
+--- a/browser_use/llm/anthropic/chat.py
++++ b/browser_use/llm/anthropic/chat.py
+@@ -133,7 +133,7 @@ async def ainvoke(
+ 				response = await self.get_client().messages.create(
+ 					model=self.model,
+ 					messages=anthropic_messages,
+-					system=system_prompt or NOT_GIVEN,
++					system=system_prompt if system_prompt is not None else NOT_GIVEN,  # type: ignore[assignment]
+ 					**self._get_client_params_for_invoke(),
+ 				)
+ 
+@@ -176,7 +176,7 @@ async def ainvoke(
+ 					model=self.model,
+ 					messages=anthropic_messages,
+ 					tools=[tool],
+-					system=system_prompt or NOT_GIVEN,
++					system=system_prompt if system_prompt is not None else NOT_GIVEN,  # type: ignore[assignment]
+ 					tool_choice=tool_choice,
+ 					**self._get_client_params_for_invoke(),
+ 				)
+diff --git a/browser_use/llm/aws/chat_anthropic.py b/browser_use/llm/aws/chat_anthropic.py
+index 5d94fdc753..72fb298d61 100644
+--- a/browser_use/llm/aws/chat_anthropic.py
++++ b/browser_use/llm/aws/chat_anthropic.py
+@@ -3,11 +3,11 @@
+ from dataclasses import dataclass
+ from typing import TYPE_CHECKING, Any, TypeVar, overload
+ 
+-from anthropic import (
++from anthropic import (  # pyright: ignore[reportPrivateImportUsage]
+ 	NOT_GIVEN,
+ 	APIConnectionError,
+ 	APIStatusError,
+-	AsyncAnthropicBedrock,
++	AsyncAnthropicBedrock,  # type: ignore[attr-defined]
+ 	RateLimitError,
+ )
+ from anthropic.types import CacheControlEphemeralParam, Message, ToolParam
+@@ -160,7 +160,7 @@ async def ainvoke(
+ 				response = await self.get_client().messages.create(
+ 					model=self.model,
+ 					messages=anthropic_messages,
+-					system=system_prompt or NOT_GIVEN,
++					system=system_prompt if system_prompt is not None else NOT_GIVEN,  # type: ignore[assignment]
+ 					**self._get_client_params_for_invoke(),
+ 				)
+ 
+@@ -203,7 +203,7 @@ async def ainvoke(
+ 					model=self.model,
+ 					messages=anthropic_messages,
+ 					tools=[tool],
+-					system=system_prompt or NOT_GIVEN,
++					system=system_prompt if system_prompt is not None else NOT_GIVEN,  # type: ignore[assignment]
+ 					tool_choice=tool_choice,
+ 					**self._get_client_params_for_invoke(),
+ 				)
+diff --git a/browser_use/llm/google/serializer.py b/browser_use/llm/google/serializer.py
+index 560de25448..53ae582faa 100644
+--- a/browser_use/llm/google/serializer.py
++++ b/browser_use/llm/google/serializer.py
+@@ -33,7 +33,7 @@ def serialize_messages(messages: list[BaseMessage]) -> tuple[ContentListUnion, s
+ 
+ 		messages = [m.model_copy(deep=True) for m in messages]
+ 
+-		formatted_messages: ContentListUnion = []
++		formatted_messages: list[Content] = []
+ 		system_message: str | None = None
+ 
+ 		for message in messages:
+@@ -95,4 +95,4 @@ def serialize_messages(messages: list[BaseMessage]) -> tuple[ContentListUnion, s
+ 				final_message = Content(role=role, parts=message_parts)
+ 				formatted_messages.append(final_message)
+ 
+-		return formatted_messages, system_message
++		return formatted_messages, system_message  # type: ignore[return-value]
+diff --git a/eval/judge_system.py b/eval/judge_system.py
+index 3072b0723d..698fd76248 100644
+--- a/eval/judge_system.py
++++ b/eval/judge_system.py
+@@ -194,7 +194,7 @@ def are_images_identical(img_path1: str, img_path2: str) -> bool:
+ 				return False
+ 
+ 			# Compare pixel data
+-			return list(img1.getdata()) == list(img2.getdata())
++			return list(img1.getdata()) == list(img2.getdata())  # type: ignore[return-value]
+ 	except Exception as e:
+ 		logger.warning(f'Failed to compare images {img_path1} and {img_path2}: {e}')
+ 		return False
+diff --git a/eval/service.py b/eval/service.py
+index c96fed6d26..395d67b486 100644
+--- a/eval/service.py
++++ b/eval/service.py
+@@ -154,7 +154,9 @@ def create_browserbase_session() -> str:
+ 	try:
+ 		from browserbase import Browserbase
+ 	except ImportError:
+-		raise ImportError('browserbase package is required for Browserbase functionality. Install it with: pip install browserbase')
++		raise ImportError(
++			'browserbase package is required for Browserbase functionality. Install it with: pip install browserbase'
++		)
+ 
+ 	try:
+ 		bb = Browserbase(api_key=BROWSERBASE_API_KEY)
+@@ -181,7 +183,9 @@ async def create_hyperbrowser_session() -> str:
+ 		from hyperbrowser import AsyncHyperbrowser
+ 		from hyperbrowser.models import CreateSessionParams
+ 	except ImportError:
+-		raise ImportError('hyperbrowser package is required for Hyperbrowser functionality. Install it with: pip install hyperbrowser')
++		raise ImportError(
++			'hyperbrowser package is required for Hyperbrowser functionality. Install it with: pip install hyperbrowser'
++		)
+ 
+ 	try:
+ 		client = AsyncHyperbrowser(api_key=HYPERBROWSER_API_KEY)

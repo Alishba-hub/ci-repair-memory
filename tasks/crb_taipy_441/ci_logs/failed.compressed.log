@@ -1,0 +1,16 @@
+--- step: overall-tests (3.10, ubuntu-latest, max) ---
+FAILED tests/gui/builder/control/test_indicator.py::test_indicator_builder[flask] - AssertionError: "display="{!12.0 not in <Part libClassName="taipy-part" key="Part.0" ><div ><Indicator libClassName="taipy-indicator" key="Indicator.0" display="{!12.0!}" min="{!1.0!}" max="{!20.0!}" defaultValue="{!15!}" value="{!_TpN_tpec_TpExPr_val_TPMDL_0!}" format="%.2f" updateVars="value=_TpN_tpec_TpExPr_val_TPMDL_0" /></div></Part>
+FAILED tests/gui/builder/control/test_metric.py::test_metric_builder_linear[flask] - AssertionError: value="{!42.0} not in <Part libClassName="taipy-part" key="Part.0" ><div ><Metric libClassName="taipy-metric" key="Metric.0" value="{!42.0!}" type="linear" min="{!0!}" max="{!100!}" /></div></Part>
+FAILED tests/gui/control/test_image.py::test_image_url_md[flask] - AssertionError: content="{!_TpCi_tpec_TpExPr_content_TPMDL_0} not in <div class="md-para" key="div.0"><Image content="{!_TpCi_tpec_TpExPr_content_TPMDL_0!}" defaultContent="some_url" key="Image.0" libClassName="taipy-image"/></div>
+FAILED tests/gui/control/test_menu.py::test_menu_md[flask] - AssertionError: lov="{!_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0onAction="on_menu_action" not in <div class="md-para" key="div.0"><MenuCtl defaultLov="[&quot;Item 1&quot;, &quot;Item 2&quot;, &quot;Item 3&quot;, &quot;Item 4&quot;]" defaultValue="[]" key="MenuCtl.0" libClassName="taipy-menu" lov="{!_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0!}" onAction="on_menu_action" updateVars="lov=_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0"/></div>
+FAILED tests/gui/control/test_menu.py::test_menu_html[flask] - AssertionError: lov="{!_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0updateVars="lov=_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0" not in <MenuCtl libClassName="taipy-menu" key="MenuCtl.0" defaultValue="[]" defaultLov="[&quot;Item 1&quot;, &quot;Item 2&quot;, &quot;Item 3&quot;, &quot;Item 4&quot;]" lov="{!_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0!}" updateVars="lov=_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0" />
+= 6 failed, 2007 passed, 21 skipped, 90 deselected, 586 warnings in 364.16s (0:06:04) =
+##[error]Process completed with exit code 1.
+Post job cleanup.
+##[start-action display=Restore cached frontend build;id=__69da65bd-02fd-48be-a57b-b490589a1d4f.cache-fe-build]
+##[end-action id=__69da65bd-02fd-48be-a57b-b490589a1d4f.cache-fe-build;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Run actions/setup-node@v4;id=__69da65bd-02fd-48be-a57b-b490589a1d4f.__actions_setup-node]
+##[end-action id=__69da65bd-02fd-48be-a57b-b490589a1d4f.__actions_setup-node;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Run actions/setup-python@v5;id=__69da65bd-02fd-48be-a57b-b490589a1d4f.__actions_setup-python]
+##[end-action id=__69da65bd-02fd-48be-a57b-b490589a1d4f.__actions_setup-python;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post

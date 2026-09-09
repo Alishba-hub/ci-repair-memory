@@ -106,22 +106,80 @@ def build_task(row: dict, memory_rows: list[dict], task_dir: Path, log_budget: i
     return None
 
 
+def _created_paths(diff: str) -> list[str]:
+    """Paths the diff creates from nothing (`--- /dev/null`)."""
+    created, previous = [], ""
+    for line in diff.splitlines():
+        if line.startswith("+++ ") and previous.startswith("--- /dev/null"):
+            target = line[4:].strip()
+            if target.startswith("b/"):
+                target = target[2:]
+            if target != "/dev/null":
+                created.append(target)
+        previous = line
+    return created
+
+
 def _apply_diff(repo_after: Path, diff: str) -> str | None:
+    """Apply the maintainer's patch to the fetched tree, trying progressively looser rules.
+
+    One `git apply` with fixed flags rejected roughly a quarter of otherwise eligible
+    instances, and the design lost whole repositories to it: camel contributed nothing
+    and the study silently ran on nine repositories instead of ten. The failures were
+    not bad data, they were two mechanical mismatches between a diff written against a
+    full checkout and the focused tree we fetch.
+
+    `--- /dev/null` hunks create a file that the fetch already retrieved, because the
+    path exists at sha_fail even though the diff adds it; git refuses with "already
+    exists in working directory". Removing the file first makes the hunk mean what it
+    says.
+
+    Context mismatches are the other half. `git apply` is exact by design and has no
+    fuzz setting, so a hunk whose surrounding lines drifted fails outright; GNU patch
+    will match it at an offset or with reduced context. Fuzz is only reached after the
+    exact attempts fail, so nothing that applies cleanly is ever applied loosely.
+    """
+    for path in _created_paths(diff):
+        target = repo_after / path
+        if target.exists():
+            target.unlink()
+
     subprocess.run(["git", "init", "-q"], cwd=repo_after, check=True, capture_output=True)
-    with tempfile.NamedTemporaryFile("w", suffix=".diff", delete=False, encoding="utf-8", newline="") as handle:
-        handle.write(diff if diff.endswith("\n") else diff + "\n")
+    with tempfile.NamedTemporaryFile(
+        "w", suffix=".diff", delete=False, encoding="utf-8", newline=""
+    ) as handle:
+        handle.write(diff if diff.endswith(chr(10)) else diff + chr(10))
         patch_path = handle.name
+
+    attempts = (
+        (["git", "apply", "-p1", "--whitespace=nowarn", "--ignore-whitespace", patch_path],
+         "git apply"),
+        (["git", "apply", "-p1", "--whitespace=nowarn", "--ignore-space-change",
+          "--recount", patch_path], "git apply --recount"),
+        (["patch", "-p1", "-l", "-F", "3", "--no-backup-if-mismatch", "-i", patch_path],
+         "patch -F3"),
+    )
+    failures = []
     try:
-        result = subprocess.run(
-            ["git", "apply", "-p1", "--whitespace=nowarn", "--ignore-whitespace", patch_path],
-            cwd=repo_after,
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            return f"git apply failed: {result.stderr.strip().splitlines()[:1]}"
+        for command, label in attempts:
+            try:
+                result = subprocess.run(
+                    command, cwd=repo_after, capture_output=True, text=True
+                )
+            except FileNotFoundError:
+                # GNU patch is not everywhere. Its absence narrows what can be
+                # imported; it must not crash the import.
+                failures.append(f"{label}: not installed")
+                continue
+            if result.returncode == 0:
+                break
+            detail = (result.stderr or result.stdout or "").strip().splitlines()
+            failures.append(f"{label}: {detail[0] if detail else 'failed'}")
+        else:
+            return "patch would not apply -- " + "; ".join(failures)
     finally:
         Path(patch_path).unlink(missing_ok=True)
+
     shutil.rmtree(repo_after / ".git", ignore_errors=True, onexc=_force_remove)
     return None
 

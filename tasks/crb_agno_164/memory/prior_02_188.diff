@@ -1,0 +1,55 @@
+diff --git a/libs/agno/agno/eval/accuracy.py b/libs/agno/agno/eval/accuracy.py
+index 6e38d89bf..c92a8b7c9 100644
+--- a/libs/agno/agno/eval/accuracy.py
++++ b/libs/agno/agno/eval/accuracy.py
+@@ -304,7 +304,7 @@ Remember: You must only compare the agent_output to the expected_output. The exp
+                 status = Status(f"Running evaluation {i + 1}...", spinner="dots", speed=1.0, refresh_per_second=10)
+                 live_log.update(status)
+ 
+-                agent_output = self.agent.run(message=eval_input).content
++                agent_output = self.agent.run(message=eval_input).content if self.agent else None
+                 if not agent_output:
+                     logger.error(f"Failed to generate a valid answer on iteration {i + 1}: {agent_output}")
+                     continue
+diff --git a/libs/agno/agno/utils/whatsapp.py b/libs/agno/agno/utils/whatsapp.py
+index 2657b24c0..b093afcce 100644
+--- a/libs/agno/agno/utils/whatsapp.py
++++ b/libs/agno/agno/utils/whatsapp.py
+@@ -46,7 +46,7 @@ def get_media(media_id: str) -> dict:
+         response = requests.get(media_url, headers=headers)
+         response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+         data = response.content
+-        return data
++        return {"data": data}
+     except requests.exceptions.RequestException as e:
+         return {"error": str(e)}
+ 
+@@ -78,7 +78,7 @@ async def get_media_async(media_id: str) -> dict:
+             response = await client.get(media_url, headers=headers)
+             response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+             data = response.content
+-        return data
++        return {"data": data}
+     except httpx.HTTPStatusError as e:
+         return {"error": str(e)}
+ 
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b7212..b9394c513 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,10 +39,11 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            if agno_conf_workspace_dir_str is not None:
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)

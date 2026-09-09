@@ -1,0 +1,124 @@
+diff --git a/libs/agno/agno/knowledge/website.py b/libs/agno/agno/knowledge/website.py
+index 859d75da498..859037cb9ee 100644
+--- a/libs/agno/agno/knowledge/website.py
++++ b/libs/agno/agno/knowledge/website.py
+@@ -76,24 +76,20 @@ def load(
+         log_info("Loading knowledge base")
+ 
+         # Given that the crawler needs to parse the URL before existence can be checked
+-        # We optionally check if the website url exists in the vector db if recreate is False and skip_existing is True
++        # We check if the website url exists in the vector db if recreate is False
+         urls_to_read = self.urls.copy()
+-        if not recreate and skip_existing:
+-            filtered_urls = []
++        if not recreate:
+             for url in urls_to_read:
+                 log_debug(f"Checking if {url} exists in the vector db")
+                 if self.vector_db.name_exists(name=url):
+                     log_debug(f"Skipping {url} as it exists in the vector db")
+-                else:
+-                    filtered_urls.append(url)
+-            urls_to_read = filtered_urls
++                    urls_to_read.remove(url)
+ 
+         num_documents = 0
+         for url in urls_to_read:
+-            document_list = self.reader.read(url=url)
+-            if document_list:
++            if document_list := self.reader.read(url=url):
+                 # Filter out documents which already exist in the vector db
+-                if not recreate and skip_existing:
++                if not recreate:
+                     document_list = [document for document in document_list if not self.vector_db.doc_exists(document)]
+                     if not document_list:
+                         continue
+@@ -139,22 +135,19 @@ async def async_load(
+         num_documents = 0
+ 
+         urls_to_read = self.urls.copy()
+-        if not recreate and skip_existing:
+-            filtered_urls = []
+-            for url in urls_to_read:
++        if not recreate:
++            for url in urls_to_read[:]:
+                 log_debug(f"Checking if {url} exists in the vector db")
+-                name_exists = await vector_db.async_name_exists(name=url)
++                name_exists = vector_db.async_name_exists(name=url)
+                 if name_exists:
+                     log_debug(f"Skipping {url} as it exists in the vector db")
+-                else:
+-                    filtered_urls.append(url)
+-            urls_to_read = filtered_urls
++                    urls_to_read.remove(url)
+ 
+         async def process_url(url: str) -> List[Document]:
+             try:
+                 document_list = await reader.async_read(url=url)
+ 
+-                if not recreate and skip_existing:
++                if not recreate:
+                     filtered_documents = []
+                     for document in document_list:
+                         if not await vector_db.async_doc_exists(document):
+@@ -180,8 +173,4 @@ async def process_url(url: str) -> List[Document]:
+ 
+         if self.optimize_on is not None and num_documents > self.optimize_on:
+             log_debug("Optimizing Vector DB")
+-            # Prefer an async optimize if the vector DB exposes it, otherwise fall back to sync optimize
+-            if hasattr(vector_db, "async_optimize") and callable(getattr(vector_db, "async_optimize")):
+-                await vector_db.async_optimize()
+-            elif hasattr(vector_db, "optimize") and callable(getattr(vector_db, "optimize")):
+-                vector_db.optimize()
++            vector_db.optimize()
+diff --git a/libs/agno/agno/utils/whatsapp.py b/libs/agno/agno/utils/whatsapp.py
+index 2657b24c026..8a5ff9afdd2 100644
+--- a/libs/agno/agno/utils/whatsapp.py
++++ b/libs/agno/agno/utils/whatsapp.py
+@@ -1,5 +1,5 @@
+ import os
+-from typing import Optional
++from typing import Any, Dict, Optional, Union
+ 
+ import httpx
+ import requests
+@@ -21,7 +21,7 @@ def get_phone_number_id() -> str:
+     return phone_number_id
+ 
+ 
+-def get_media(media_id: str) -> dict:
++def get_media(media_id: str) -> Union[bytes, Dict[str, Any]]:
+     """
+     Sends a GET request to the Facebook Graph API to retrieve media information.
+ 
+@@ -51,7 +51,7 @@ def get_media(media_id: str) -> dict:
+         return {"error": str(e)}
+ 
+ 
+-async def get_media_async(media_id: str) -> dict:
++async def get_media_async(media_id: str) -> Union[bytes, Dict[str, Any]]:
+     """
+     Sends a GET request to the Facebook Graph API to retrieve media information.
+ 
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b72123a..ee0c523ffb3 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -38,11 +38,13 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+     if ws_pyproject_toml.exists() and ws_pyproject_toml.is_file():
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+-            agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            workspace_val = agno_conf.get("workspace")
++            if isinstance(workspace_val, str) and workspace_val:
++                agno_conf_workspace_dir_path = ws_root_path / workspace_val
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
++
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)

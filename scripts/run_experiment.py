@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from ci_memory_agents import design
 from ci_memory_agents.evaluator import evaluate_submission, pass_at_k
-from ci_memory_agents.loader import list_tasks
+from ci_memory_agents.loader import list_tasks, study_task_ids
 from ci_memory_agents.prompt_builder import (
     ALL_CONDITIONS,
     CONDITIONS,
@@ -39,7 +39,22 @@ def _is_stale(workspace: Path, repo_before: Path) -> bool:
 def command_prompts(args, tasks_root: Path, runs_root: Path) -> int:
     tasks = _select(tasks_root, args)
     refreshed: list[Path] = []
+
+    # The design's arms by default. `--conditions` exists so the placebo arm can be laid
+    # out at all: `foreign_memory` is defined in prompt_builder and was reachable from
+    # no command, which left the length confound -- memory prompts are longer than the
+    # control's, so an effect could be context rather than memory -- with no way to
+    # measure it. It is deliberately not in CONDITIONS; asking for it is explicit.
     conditions = CONDITIONS
+    if getattr(args, "conditions", ""):
+        wanted = [c.strip() for c in args.conditions.split(",") if c.strip()]
+        unknown = [c for c in wanted if c not in ALL_CONDITIONS]
+        if unknown:
+            raise SystemExit(
+                f"unknown condition(s) {', '.join(unknown)}. "
+                f"Known: {', '.join(ALL_CONDITIONS)}"
+            )
+        conditions = tuple(wanted)
 
     # A task that cannot fill every arm is dropped from the layout entirely, not just
     # from the arms it cannot fill. Laying out its no_memory and memory_k1 cells would
@@ -307,6 +322,12 @@ def select_tasks(tasks_root: Path, source=None, task_id=None, projects=None, lim
     against another.
     """
     tasks = list_tasks(tasks_root, source=source)
+    # The declared design population. An explicit --task-id still reaches a leftover
+    # from an earlier design, so old runs stay inspectable.
+    if not task_id:
+        declared = study_task_ids(tasks_root)
+        if declared is not None:
+            tasks = [task for task in tasks if task.task_id in declared]
     if task_id:
         wanted = {t.strip() for t in task_id.split(",") if t.strip()}
         tasks = [task for task in tasks if task.task_id in wanted]
@@ -352,6 +373,16 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description="Run the CI memory agents experiment")
     parser.add_argument("--mode", choices=("prompts", "score"), default="prompts")
+    parser.add_argument(
+        "--conditions",
+        default="",
+        help=(
+            "comma-separated arms to lay out instead of the design's. The only "
+            "supported use is the placebo arm, foreign_memory; narrowing the design "
+            "arms here lays out a task in some arms and not others, which breaks "
+            "every paired comparison downstream."
+        ),
+    )
     parser.add_argument("--tasks-root", default=str(repo_root / "tasks"))
     parser.add_argument("--runs-root", default=str(repo_root / "runs"))
     parser.add_argument(

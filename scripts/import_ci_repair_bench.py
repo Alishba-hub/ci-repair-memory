@@ -18,6 +18,7 @@ with two tasks and quietly break the balance the selection just established.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import urllib.request
 from collections import Counter, defaultdict
@@ -107,6 +108,16 @@ def main() -> int:
     parser.add_argument("--memory-size", type=int, default=design.MEMORY_SIZE,
                         help="Prior failures stored per task; the K arms take prefixes of these")
     parser.add_argument("--max-files", type=int, default=design.MAX_FILES)
+    parser.add_argument(
+        "--repo-slack",
+        type=int,
+        default=4,
+        help=(
+            "Extra repositories to select beyond --n-repos, as substitutes for any "
+            "whose gold patches will not apply. They are consumed in the selector's "
+            "own preference order, so a substitute is never an arbitrary choice."
+        ),
+    )
     parser.add_argument("--log-budget", type=int, default=3000, help="Characters per compressed log")
     parser.add_argument(
         "--all-error-types",
@@ -138,50 +149,156 @@ def main() -> int:
         + ("" if args.all_error_types else ", and fail for a non-formatting reason")
     )
 
+    # The design population is selected first, at exactly --n-repos, and is never
+    # reshaped by the slack. Selecting n_repos + slack in one call looked equivalent and
+    # is not: the selector optimises group balance across whatever set it is given, so
+    # asking for four extra repositories changed which tasks the first ten received.
+    # The design would then have depended on the size of its own substitute bench.
     selections = select_study_tasks(
         rows, n_repos=args.n_repos, tasks_per_repo=args.tasks_per_repo, **filters
     )
     report_grid(selections, f"Study population: {len(selections)} tasks")
 
+    primary_repos = list(dict.fromkeys(s.target["repo_name"] for s in selections))
+
+    # Reserve repositories, appended after the design's own. Drawn from a wider call and
+    # filtered to repositories the design did not already take, so a substitute is still
+    # the next repository the selector would have chosen -- but nothing above it moves.
+    reserves: list = []
+    if args.repo_slack > 0:
+        try:
+            wider = select_study_tasks(
+                rows,
+                n_repos=args.n_repos + args.repo_slack,
+                tasks_per_repo=args.tasks_per_repo,
+                **filters,
+            )
+        except ValueError:
+            wider = []
+        reserves = [s for s in wider if s.target["repo_name"] not in primary_repos]
+        reserve_repos = list(dict.fromkeys(s.target["repo_name"] for s in reserves))
+        if reserve_repos:
+            print(f"  reserve repositories, used only if one above fails: "
+                  f"{', '.join(reserve_repos)}")
+        else:
+            print("  no reserve repositories available: a repository whose patches fail "
+                  "to apply will shrink the design.")
+
+    selections = list(selections) + reserves
+
     if args.dry_run:
         print("\n--dry-run: nothing written.")
         return 0
 
-    # Substitutes, per repository, in the order the selector would have taken them.
+    # Import repository by repository, and treat a repository that cannot fill its
+    # quota the same way a failed task is treated: replace it.
+    #
+    # A gold patch that will not apply to the fetched tree is common -- the diff is
+    # against the full repository and the focused scope holds only the files it touches
+    # -- and the old loop substituted a *task* from the same repository but never the
+    # repository itself. When camel's three targets all failed and its spares ran out,
+    # the design silently returned nine repositories instead of ten, which is not a
+    # smaller version of the study but a different population.
+    #
+    # Repositories are over-selected by `--repo-slack` and consumed in the selector's
+    # preference order until `--n-repos` of them are full, so the substitute is the
+    # next repository the selector would itself have chosen.
     chosen_ids = {str(s.target["id"]) for s in selections}
     spare: dict[str, list] = defaultdict(list)
     for selection in sorted(pool, key=lambda s: (s.target["commit_date"], s.target["id"])):
         if str(selection.target["id"]) not in chosen_ids:
             spare[selection.target["repo_name"]].append(selection)
 
+    by_repo: dict[str, list] = defaultdict(list)
+    for selection in selections:
+        by_repo[selection.target["repo_name"]].append(selection)
+
     tasks_root = Path(args.tasks_root)
     tasks_root.mkdir(parents=True, exist_ok=True)
     report = ImportReport()
     imported: list = []
+    complete: list[str] = []
+    abandoned: list[str] = []
 
-    queue = list(selections)
-    while queue:
-        selection = queue.pop(0)
-        target = selection.target
-        task_id = task_id_of(target)
-        error = build_task(target, selection.memory, tasks_root / task_id, log_budget=args.log_budget)
-        if not error:
-            report.imported.append(task_id)
-            imported.append(selection)
-            print(f"  ok   {task_id} ({', '.join(target['error_type'] or []) or 'unknown'})")
-            continue
+    for repo, repo_selections in by_repo.items():
+        if len(complete) >= args.n_repos:
+            break
 
-        report.skip(task_id, error)
-        repo = target["repo_name"]
-        if spare[repo]:
-            replacement = spare[repo].pop(0)
-            print(f"  skip {task_id}: {error}")
-            print(f"       substituting {task_id_of(replacement.target)} from the same repository")
-            queue.insert(0, replacement)
+        got: list = []
+        queue = list(repo_selections)
+        while queue and len(got) < args.tasks_per_repo:
+            selection = queue.pop(0)
+            target = selection.target
+            task_id = task_id_of(target)
+            error = build_task(
+                target, selection.memory, tasks_root / task_id, log_budget=args.log_budget
+            )
+            if not error:
+                got.append(selection)
+                print(f"  ok   {task_id} ({', '.join(target['error_type'] or []) or 'unknown'})")
+                continue
+
+            report.skip(task_id, error)
+            if spare[repo]:
+                replacement = spare[repo].pop(0)
+                print(f"  skip {task_id}: {error}")
+                print(f"       substituting {task_id_of(replacement.target)} from the same repository")
+                queue.append(replacement)
+            else:
+                print(f"  skip {task_id}: {error} (no substitute left in {repo})")
+
+        if len(got) >= args.tasks_per_repo:
+            complete.append(repo)
+            imported.extend(got)
+            report.imported.extend(task_id_of(s.target) for s in got)
         else:
-            print(f"  skip {task_id}: {error} (no substitute left in {repo})")
+            # Partial repositories are dropped from the design rather than shipped
+            # short. Their folders stay on disk -- they cost network to build and may
+            # be useful -- but they are not in the manifest, so nothing lays them out.
+            abandoned.append(repo)
+            print(
+                f"  --   {repo} filled only {len(got)}/{args.tasks_per_repo}; "
+                f"dropping it and taking the next repository instead"
+            )
+
+    if len(complete) < args.n_repos:
+        print(
+            f"{chr(10)}WARNING: only {len(complete)} of {args.n_repos} repositories could be "
+            f"filled to {args.tasks_per_repo} tasks. Raise --repo-slack so the selector "
+            f"offers more substitutes, or lower --n-repos."
+        )
+
+    # The manifest. `tasks/` accumulates: a task imported under an earlier design stays
+    # on disk, and nothing in the folder itself says whether it belongs to the current
+    # study. Without this file the only way to tell a design task from a leftover was to
+    # re-derive the selection from the parquet, so every consumer either re-read 240 MB
+    # or silently ran whatever `tasks/*` happened to contain.
+    manifest = {
+        "source": "ci-repair-bench",
+        "n_repos": args.n_repos,
+        "tasks_per_repo": args.tasks_per_repo,
+        "memory_size": args.memory_size,
+        "min_prior": args.min_prior,
+        "max_files": args.max_files,
+        "semantic_only": not args.all_error_types,
+        "k_values": list(design.K_VALUES),
+        "task_ids": sorted(report.imported),
+    }
+    manifest_path = tasks_root / "study_population.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2) + chr(10), encoding="utf-8")
 
     print(f"\nImported {len(report.imported)} tasks, skipped {len(report.skipped)}")
+    print(f"Wrote {manifest_path.name} -- the {len(report.imported)} tasks of this design")
+
+    leftovers = sorted(
+        d.name for d in tasks_root.glob("crb_*")
+        if d.is_dir() and d.name not in set(report.imported)
+    )
+    if leftovers:
+        shown = ", ".join(leftovers[:5]) + (" ..." if len(leftovers) > 5 else "")
+        print(f"{len(leftovers)} task folder(s) on disk are NOT in this design: {shown}")
+        print("They are kept -- runs collected against them are real data -- but the")
+        print("harness selects from the manifest, so they will not be laid out again.")
     if imported:
         report_grid(imported, "Imported population")
 

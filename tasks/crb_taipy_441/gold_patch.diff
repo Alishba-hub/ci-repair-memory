@@ -1,0 +1,260 @@
+diff --git a/frontend/taipy-gui/src/components/Taipy/Metric.spec.tsx b/frontend/taipy-gui/src/components/Taipy/Metric.spec.tsx
+index e4c057c97f..d53b701927 100644
+--- a/frontend/taipy-gui/src/components/Taipy/Metric.spec.tsx
++++ b/frontend/taipy-gui/src/components/Taipy/Metric.spec.tsx
+@@ -238,6 +238,17 @@ describe("Metric Component", () => {
+         });
+     });
+ 
++    it("uses defaultDisplay when value is not provided", async () => {
++        const { container } = render(<Metric defaultDisplay={42} />);
++        await waitFor(() => {
++            const valueElement = container.querySelector("text.number");
++            if (!valueElement) {
++                throw new Error("Metric value element not found");
++            }
++            expect(valueElement.textContent).toContain("42");
++        });
++    });
++
+     it("applies style correctly when deltaColor is set", async () => {
+         const { container } = render(<Metric delta={10} deltaColor="#FF4136" />);
+         await waitFor(() => {
+diff --git a/frontend/taipy-gui/src/components/Taipy/Metric.tsx b/frontend/taipy-gui/src/components/Taipy/Metric.tsx
+index f26cb6377b..e485a9da97 100644
+--- a/frontend/taipy-gui/src/components/Taipy/Metric.tsx
++++ b/frontend/taipy-gui/src/components/Taipy/Metric.tsx
+@@ -28,6 +28,8 @@ const Plot = lazy(() => import("react-plotly.js"));
+ interface MetricProps extends TaipyBaseProps, TaipyHoverProps {
+     value?: number;
+     defaultValue?: number;
++    display?: number;
++    defaultDisplay?: number;
+     delta?: number;
+     defaultDelta?: number;
+     type?: string;
+@@ -74,7 +76,8 @@ const normalizeSize = (val: string | number | undefined): string | undefined =>
+ 
+ const Metric = (props: MetricProps) => {
+     const { showValue = true } = props;
+-    const value = useDynamicProperty(props.value, props.defaultValue, 0);
++    const display = useDynamicProperty(props.display, props.defaultDisplay, undefined);
++    const value = useDynamicProperty(props.value, props.defaultValue, display ?? 0);
+     const threshold = useDynamicProperty(props.threshold, props.defaultThreshold, undefined);
+     const delta = useDynamicProperty(props.delta, props.defaultDelta, undefined);
+     const className = useClassNames(props.libClassName, props.dynamicClassName, props.className);
+diff --git a/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py b/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
+index d687b3e982..732316bdae 100644
+--- a/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
++++ b/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
+@@ -13,6 +13,7 @@
+ import time
+ import traceback
+ from abc import abstractmethod
++from datetime import datetime
+ from queue import Empty
+ from typing import Optional
+ 
+@@ -128,9 +129,22 @@ def _needs_to_run(task: Task) -> bool:
+         data_manager = _DataManagerFactory._build_manager()
+         if len(task.output) == 0:
+             return True
+-        are_outputs_in_cache = all(data_manager._get(dn.id).is_valid for dn in task.output.values())
++
++        def _is_output_valid(dn):
++            last_edit_date = dn._last_edit_date if dn._last_edit_date else dn.last_edit_date
++            if last_edit_date is None:
++                return False
++            if dn.validity_period is None:
++                return True
++            return (last_edit_date + dn.validity_period) > datetime.now()
++
++        output_data_nodes = list(task.output.values())
++        are_outputs_in_cache = all(data_manager._get(dn.id).is_valid for dn in output_data_nodes)
++        are_outputs_valid = all(_is_output_valid(dn) for dn in output_data_nodes)
+         if not are_outputs_in_cache:
+             return True
++        if not are_outputs_valid:
++            return True
+         if len(task.input) == 0:
+             return False
+         input_last_edit = max(data_manager._get(dn.id).last_edit_date for dn in task.input.values())
+diff --git a/tools/packages/pipfiles/Pipfile3.10.max b/tools/packages/pipfiles/Pipfile3.10.max
+index 635eaa8ae1..806366cb64 100644
+--- a/tools/packages/pipfiles/Pipfile3.10.max
++++ b/tools/packages/pipfiles/Pipfile3.10.max
+@@ -5,6 +5,7 @@ name = "pypi"
+ 
+ [dev-packages]
+ fastparquet = "*"
++fastjsonschema = "<2.21"
+ freezegun = "*"
+ ipython = "*"
+ ipykernel = "*"
+@@ -82,3 +83,4 @@ version = "==4.2.13"
+ "apispec-webframeworks" = {version="==1.2.0"}
+ "watchdog" = {version="==6.0.0"}
+ "charset-normalizer" = {version="==3.4.2"}
++"setuptools" = {version="<82"}
+diff --git a/tools/packages/pipfiles/Pipfile3.11.max b/tools/packages/pipfiles/Pipfile3.11.max
+index 1cfbfb5d81..b58fca3632 100644
+--- a/tools/packages/pipfiles/Pipfile3.11.max
++++ b/tools/packages/pipfiles/Pipfile3.11.max
+@@ -5,6 +5,7 @@ name = "pypi"
+ 
+ [dev-packages]
+ fastparquet = "*"
++fastjsonschema = "<2.21"
+ freezegun = "*"
+ ipython = "*"
+ ipykernel = "*"
+@@ -82,3 +83,4 @@ version = "==4.2.13"
+ "apispec-webframeworks" = {version="==1.2.0"}
+ "watchdog" = {version="==6.0.0"}
+ "charset-normalizer" = {version="==3.4.2"}
++"setuptools" = {version="<82"}
+diff --git a/tools/packages/pipfiles/Pipfile3.12.max b/tools/packages/pipfiles/Pipfile3.12.max
+index 1cfbfb5d81..b58fca3632 100644
+--- a/tools/packages/pipfiles/Pipfile3.12.max
++++ b/tools/packages/pipfiles/Pipfile3.12.max
+@@ -5,6 +5,7 @@ name = "pypi"
+ 
+ [dev-packages]
+ fastparquet = "*"
++fastjsonschema = "<2.21"
+ freezegun = "*"
+ ipython = "*"
+ ipykernel = "*"
+@@ -82,3 +83,4 @@ version = "==4.2.13"
+ "apispec-webframeworks" = {version="==1.2.0"}
+ "watchdog" = {version="==6.0.0"}
+ "charset-normalizer" = {version="==3.4.2"}
++"setuptools" = {version="<82"}
+diff --git a/tools/packages/pipfiles/Pipfile3.9.max b/tools/packages/pipfiles/Pipfile3.9.max
+index 37b6e82a74..1595adafdb 100644
+--- a/tools/packages/pipfiles/Pipfile3.9.max
++++ b/tools/packages/pipfiles/Pipfile3.9.max
+@@ -5,6 +5,7 @@ name = "pypi"
+ 
+ [dev-packages]
+ fastparquet = "*"
++fastjsonschema = "<2.21"
+ freezegun = "*"
+ ipython = "*"
+ ipykernel = "*"
+@@ -82,3 +83,4 @@ version = "==4.2.13"
+ "apispec-webframeworks" = {version="==1.2.0"}
+ "watchdog" = {version="==6.0.0"}
+ "charset-normalizer" = {version="==3.4.2"}
++"setuptools" = {version="<82"}
+diff --git a/Pipfile b/Pipfile
+index c080ab85da..d14346bf2e 100644
+--- a/Pipfile
++++ b/Pipfile
+@@ -20,12 +20,11 @@ markdown = "==3.6"
+ marshmallow = "==3.20.1"
+ networkx = "==2.6"
+ openpyxl = "==3.1.2"
+-pandas = "==1.3.5"
++pandas = "==2.2.2"
+ pyarrow = "==16.0.0"
+ pymongo = {extras = ["srv"], version = "==4.6.3"}
+ python-dotenv = "==1.0.0"
+ python-magic = {version = "==0.4.24", markers="sys_platform != 'win32'"}
+-python-magic-bin = {version = "==0.4.14", markers="sys_platform == 'win32'"}
+ pytz = "==2021.3"
+ simple-websocket = "==0.10.1"
+ sqlalchemy = "==2.0.16"
+diff --git a/tests/gui/builder/control/test_image.py b/tests/gui/builder/control/test_image.py
+index 2116a43652..be4124bf52 100644
+--- a/tests/gui/builder/control/test_image.py
++++ b/tests/gui/builder/control/test_image.py
+@@ -23,7 +23,7 @@ def test_image_url_builder(gui: Gui, test_client, helpers):
+         tgb.image(content="{content}")  # type: ignore[attr-defined]
+     expected_list = [
+         "<Image",
+-        '"content="{!_TpCi_tpec_TpExPr_content_TPMDL_0',
++        'content="{!_TpCi_tpec_TpExPr_content_TPMDL_0!}"',
+         'defaultContent="some_url"',
+     ]
+     helpers.test_control_builder(gui, page, expected_list)
+diff --git a/tests/gui/builder/control/test_indicator.py b/tests/gui/builder/control/test_indicator.py
+index d5308bec6d..f5364aa4cd 100644
+--- a/tests/gui/builder/control/test_indicator.py
++++ b/tests/gui/builder/control/test_indicator.py
+@@ -21,7 +21,7 @@ def test_indicator_builder(gui: Gui, test_client, helpers):
+         "<Indicator",
+         'libClassName="taipy-indicator"',
+         'defaultValue="{!15',
+-        '"display="{!12.0',
++        'display="{!12.0!}"',
+         'format="%.2f"',
+         'max="{!20.0',
+         'min="{!1.0',
+diff --git a/tests/gui/builder/control/test_metric.py b/tests/gui/builder/control/test_metric.py
+index cababd999a..5d4d1b4759 100644
+--- a/tests/gui/builder/control/test_metric.py
++++ b/tests/gui/builder/control/test_metric.py
+@@ -16,23 +16,23 @@
+ def test_metric_builder_none(gui: Gui, helpers):
+     with tgb.Page(frame=None) as page:
+         tgb.metric(type=None, value=42)
+-    expected_list = ["<Metric", 'type="None"', 'value="{!42.0']
++    expected_list = ["<Metric", 'type="None"', 'value="{!42.0!}"']
+     helpers.test_control_builder(gui, page, expected_list)
+ 
+ def test_metric_builder_none_lowercase(gui: Gui, helpers):
+     with tgb.Page(frame=None) as page:
+         tgb.metric(type="none", value=42)
+-    expected_list = ["<Metric", 'type="none"', 'value="{!42.0']
++    expected_list = ["<Metric", 'type="none"', 'value="{!42.0!}"']
+     helpers.test_control_builder(gui, page, expected_list)
+ 
+ def test_metric_builder_circular(gui: Gui, helpers):
+     with tgb.Page(frame=None) as page:
+         tgb.metric(type="circular", value=42)
+-    expected_list = ["<Metric", 'type="circular"', 'value="{!42.0']
++    expected_list = ["<Metric", 'type="circular"', 'value="{!42.0!}"']
+     helpers.test_control_builder(gui, page, expected_list)
+ 
+ def test_metric_builder_linear(gui: Gui, helpers):
+     with tgb.Page(frame=None) as page:
+         tgb.metric(type="linear", value=42)
+-    expected_list = ["<Metric", 'type="linear"', 'value="{!42.0}']
++    expected_list = ["<Metric", 'type="linear"', 'value="{!42.0!}"']
+     helpers.test_control_builder(gui, page, expected_list)
+diff --git a/tests/gui/control/test_image.py b/tests/gui/control/test_image.py
+index 16e95dc3a2..3b99e0028c 100644
+--- a/tests/gui/control/test_image.py
++++ b/tests/gui/control/test_image.py
+@@ -21,7 +21,7 @@ def test_image_url_md(gui: Gui, test_client, helpers):
+     md_string = "<|{content}|image|>"
+     expected_list = [
+         "<Image",
+-        'content="{!_TpCi_tpec_TpExPr_content_TPMDL_0}',
++        'content="{!_TpCi_tpec_TpExPr_content_TPMDL_0!}"',
+         'defaultContent="some_url"',
+     ]
+     helpers.test_control_md(gui, md_string, expected_list)
+diff --git a/tests/gui/control/test_menu.py b/tests/gui/control/test_menu.py
+index 7e492ddc6b..210e89d5ec 100644
+--- a/tests/gui/control/test_menu.py
++++ b/tests/gui/control/test_menu.py
+@@ -19,7 +19,7 @@ def test_menu_md(gui: Gui, test_client, helpers):
+         "<MenuCtl",
+         'libClassName="taipy-menu"',
+         'defaultLov="[&quot;Item 1&quot;, &quot;Item 2&quot;, &quot;Item 3&quot;, &quot;Item 4&quot;]"',
+-        'lov="{!_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0'
++        'lov="{!_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0!}"',
+         'onAction="on_menu_action"',
+         'updateVars="lov=_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0"',
+     ]
+@@ -33,7 +33,7 @@ def test_menu_html(gui: Gui, test_client, helpers):
+         "<MenuCtl",
+         'libClassName="taipy-menu"',
+         'defaultLov="[&quot;Item 1&quot;, &quot;Item 2&quot;, &quot;Item 3&quot;, &quot;Item 4&quot;]"',
+-        'lov="{!_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0'
++        'lov="{!_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0!}"',
+         'updateVars="lov=_TpL_tp_TpExPr_gui_get_adapted_lov_lov_str_TPMDL_0_0"',
+     ]
+     helpers.test_control_html(gui, html_string, expected_list)

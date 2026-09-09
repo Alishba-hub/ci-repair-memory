@@ -22,14 +22,22 @@ def build_submission(task, baseline: str, destination: Path) -> None:
     if baseline != "half":
         return
 
+    def _text(path: Path) -> str | None:
+        try:
+            return path.read_text(encoding="utf-8", errors="replace")
+        except (FileNotFoundError, IsADirectoryError, OSError):
+            return None
+
+    # A file the gold patch *creates* has no counterpart in repo_before, and reading one
+    # unconditionally raised FileNotFoundError and took the whole calibration down --
+    # crb_taipy_437's fix adds taipy.sqlite3.db. A created file is a changed file: it is
+    # absent on one side and present on the other, which is exactly the comparison being
+    # made, so it belongs in `gold_changed` rather than being an error.
     gold_changed = [
         path
         for path in sorted(task.repo_after.rglob("*"))
         if path.is_file()
-        and (task.repo_before / path.relative_to(task.repo_after)).read_text(
-            encoding="utf-8", errors="replace"
-        )
-        != path.read_text(encoding="utf-8", errors="replace")
+        and _text(task.repo_before / path.relative_to(task.repo_after)) != _text(path)
     ]
     for path in gold_changed[: max(1, len(gold_changed) // 2)]:
         relative = path.relative_to(task.repo_after)

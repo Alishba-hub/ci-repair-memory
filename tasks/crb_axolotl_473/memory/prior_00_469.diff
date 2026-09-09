@@ -1,0 +1,12 @@
+diff --git a/tests/e2e/test_preprocess.py b/tests/e2e/test_preprocess.py
+index 6ab931fd21..25f42e8329 100644
+--- a/tests/e2e/test_preprocess.py
++++ b/tests/e2e/test_preprocess.py
+@@ -15,6 +15,7 @@ class TestPreprocess:
+ 
+     def test_w_deepspeed(self, temp_dir):
+         """make sure preproces doesn't choke when using deepspeed in the config"""
++        # pylint: disable=duplicate-code
+         cfg = DictDefault(
+             {
+                 "base_model": "Qwen/Qwen2.5-0.5B",

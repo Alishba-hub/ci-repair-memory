@@ -1,0 +1,127 @@
+diff --git a/browser_use/controller/service.py b/browser_use/controller/service.py
+index c3ebeb2d4a..094cf28c55 100644
+--- a/browser_use/controller/service.py
++++ b/browser_use/controller/service.py
+@@ -458,7 +458,7 @@ async def extract_structured_data(
+ 			'Get the accessibility tree of the page in the format "role name" with the number_of_elements to return',
+ 		)
+ 		async def get_ax_tree(number_of_elements: int, page: Page):
+-			node = await page.accessibility.snapshot(interesting_only=True)
++			node = await cast(Any, page).accessibility.snapshot(interesting_only=True)
+ 
+ 			def flatten_ax_tree(node, lines):
+ 				if not node:
+diff --git a/browser_use/dom/tests/test_accessibility_playground.py b/browser_use/dom/tests/test_accessibility_playground.py
+index 7db47fa7d1..9e44069b8e 100644
+--- a/browser_use/dom/tests/test_accessibility_playground.py
++++ b/browser_use/dom/tests/test_accessibility_playground.py
+@@ -13,6 +13,7 @@
+ """
+ 
+ import asyncio
++from typing import Any, cast
+ 
+ from browser_use.browser.types import async_playwright
+ 
+@@ -74,7 +75,7 @@ async def get_ax_tree(TARGET_URL):
+ 		print(f'Navigating to {TARGET_URL}')
+ 		await page.goto(TARGET_URL, wait_until='domcontentloaded')
+ 
+-		ax_tree_interesting = await page.accessibility.snapshot(interesting_only=True)
++		ax_tree_interesting = await cast(Any, page).accessibility.snapshot(interesting_only=True)
+ 		lines = []
+ 		flatten_ax_tree(ax_tree_interesting, lines)
+ 		print(lines)
+diff --git a/browser_use/telemetry/service.py b/browser_use/telemetry/service.py
+index 2342174647..cd4091befe 100644
+--- a/browser_use/telemetry/service.py
++++ b/browser_use/telemetry/service.py
+@@ -82,9 +82,9 @@ def _direct_capture(self, event: BaseTelemetryEvent) -> None:
+ 
+ 		try:
+ 			self._posthog_client.capture(
+-				self.user_id,
+-				event.name,
+-				{**event.properties, **POSTHOG_EVENT_SETTINGS},
++				distinct_id=self.user_id,
++				event=event.name,
++				properties={**event.properties, **POSTHOG_EVENT_SETTINGS},
+ 			)
+ 		except Exception as e:
+ 			logger.error(f'Failed to send telemetry event {event.name}: {e}')
+diff --git a/pyproject.toml b/pyproject.toml
+index 46b7f1d67b..66ac1855e6 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -4,7 +4,7 @@ description = "Make websites accessible for AI agents"
+ authors = [{ name = "Gregor Zunic" }]
+ version = "0.3.2"
+ readme = "README.md"
+-requires-python = ">=3.11,<4.0"
++requires-python = ">=3.11,<3.13"
+ classifiers = [
+     "Programming Language :: Python :: 3",
+     "License :: OSI Approved :: MIT License",
+@@ -155,17 +155,8 @@ log_level = "DEBUG"
+ [tool.hatch.metadata]
+ allow-direct-references = true
+ 
+-[tool.uv]
+-required-environments = [
+-    "sys_platform == 'darwin' and platform_machine == 'arm64'",
+-    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+-    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+-    "sys_platform == 'linux' and platform_machine == 'aarch64'",
+-    # "sys_platform == 'linux' and platform_machine == 'arm64'",  # no pytorch wheels available yet
+-    "sys_platform == 'win32' and platform_machine == 'x86_64'",
+-    # "sys_platform == 'win32' and platform_machine == 'arm64'",  # no pytorch wheels available yet
+-]
+-dev-dependencies = [
++[dependency-groups]
++dev = [
+     "ruff>=0.11.2",
+     "tokencost>=0.1.16",
+     "build>=1.2.2",
+@@ -184,3 +175,19 @@ dev-dependencies = [
+     "pytest-xdist>=3.7.0",
+     # "pytest-playwright-asyncio>=0.7.0",  # not actually needed I think
+ ]
++
++[tool.uv]
++environments = [
++    "sys_platform == 'darwin' and platform_machine == 'arm64'",
++    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
++    "sys_platform == 'linux' and platform_machine == 'x86_64'",
++    "sys_platform == 'linux' and platform_machine == 'aarch64'",
++]
++required-environments = [
++    "sys_platform == 'darwin' and platform_machine == 'arm64'",
++    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
++    "sys_platform == 'linux' and platform_machine == 'x86_64'",
++    "sys_platform == 'linux' and platform_machine == 'aarch64'",
++    # "sys_platform == 'linux' and platform_machine == 'arm64'",  # no pytorch wheels available yet
++    # "sys_platform == 'win32' and platform_machine == 'arm64'",  # no pytorch wheels available yet
++]
+diff --git a/tests/ci/test_controller.py b/tests/ci/test_controller.py
+index 276f800120..f236ca6c39 100644
+--- a/tests/ci/test_controller.py
++++ b/tests/ci/test_controller.py
+@@ -1459,7 +1459,7 @@ async def test_input_span_placeholder(self, controller, browser_session, base_ur
+ 			</html>
+ 			""",
+ 			content_type='text/html',
+-		)		# Navigate to the clickable elements test page
++		)  # Navigate to the clickable elements test page
+ 		goto_action = {'go_to_url': GoToUrlAction(url=f'{base_url}/span-placeholder')}
+ 
+ 		class GoToUrlActionModel(ActionModel):
+@@ -1476,6 +1476,6 @@ class GoToUrlActionModel(ActionModel):
+ 
+ 		# Get the selector map
+ 		selector_map = await browser_session.get_selector_map()
+-		
+-  		# Verify that the input[type=text] is detected correctly
+-		assert any(s for s in selector_map.values() if s.tag_name == "input"), 'No input field detected'
++
++		# Verify that the input[type=text] is detected correctly
++		assert any(s for s in selector_map.values() if s.tag_name == 'input'), 'No input field detected'

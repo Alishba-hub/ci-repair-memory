@@ -1,0 +1,114 @@
+{
+  "task_id": "crb_aider_92",
+  "name": "CI failure in aider (Assertion Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "92",
+  "repo_name": "aider",
+  "repo_owner": "aider-ai",
+  "sha_fail": "48376e59c2d51260b1c6d2a14dcf58ab5066f88e",
+  "sha_success": "e331a967a6c55c2d6e9a930e79920b75844fffe2",
+  "commit_date": "2025-05-30T22:07:32Z",
+  "error_type": [
+    "Assertion Error"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/ubuntu-tests.yml",
+  "target_files": [
+    "tests/basic/test_openrouter.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "96",
+      "commit_date": "2025-05-25T19:52:47Z",
+      "error_type": [
+        "Assertion Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/basic/test_models.py"
+      ],
+      "log_file": "memory/prior_00_96.log",
+      "diff_file": "memory/prior_00_96.diff"
+    },
+    {
+      "instance_id": "97",
+      "commit_date": "2025-05-08T19:14:41Z",
+      "error_type": [
+        "Assertion Error",
+        "Package Installation Error",
+        "Syntax Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/help/test_help.py"
+      ],
+      "log_file": "memory/prior_01_97.log",
+      "diff_file": "memory/prior_01_97.diff"
+    },
+    {
+      "instance_id": "93",
+      "commit_date": "2025-05-08T01:27:35Z",
+      "error_type": [
+        "Assertion Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "aider/help.py",
+        "aider/models.py",
+        "aider/repomap.py",
+        "aider/resources/model-metadata.json"
+      ],
+      "log_file": "memory/prior_02_93.log",
+      "diff_file": "memory/prior_02_93.diff"
+    },
+    {
+      "instance_id": "98",
+      "commit_date": "2025-05-06T16:24:17Z",
+      "error_type": [
+        "Runtime Error",
+        "Assertion Error",
+        "Package Installation Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "aider/io.py",
+        "aider/models.py",
+        "tests/basic/test_repomap.py",
+        "aider/commands.py",
+        "aider/repomap.py",
+        "aider/help.py",
+        "requirements.txt",
+        "requirements/common-constraints.txt",
+        "requirements/tree-sitter.in",
+        "tests/help/test_help.py"
+      ],
+      "log_file": "memory/prior_03_98.log",
+      "diff_file": "memory/prior_03_98.diff"
+    },
+    {
+      "instance_id": "99",
+      "commit_date": "2025-05-05T16:06:52Z",
+      "error_type": [
+        "Runtime Error",
+        "Dependency Issues",
+        "Assertion Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "aider/commands.py",
+        "aider/help.py",
+        "aider/io.py",
+        "aider/models.py",
+        "aider/repomap.py",
+        "requirements.txt",
+        "requirements/common-constraints.txt",
+        "requirements/tree-sitter.in",
+        "tests/help/test_help.py"
+      ],
+      "log_file": "memory/prior_04_99.log",
+      "diff_file": "memory/prior_04_99.diff"
+    }
+  ]
+}

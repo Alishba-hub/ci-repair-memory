@@ -1,0 +1,108 @@
+{
+  "task_id": "crb_conan_543",
+  "name": "CI failure in conan (Dependency Issues)",
+  "source": "ci-repair-bench",
+  "instance_id": "543",
+  "repo_name": "conan",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "c55db1c25856c6c854c8557c45670aaaee4251a0",
+  "sha_success": "2a78503f6a6eb685670919a09524ba2a9d17535e",
+  "commit_date": "2025-06-06T14:45:51Z",
+  "error_type": [
+    "Dependency Issues"
+  ],
+  "error_group": "dependency_env",
+  "workflow_path": ".github/workflows/main.yml",
+  "target_files": [
+    "conan/tools/google/bazeldeps.py",
+    "test/conftest.py",
+    "test/functional/toolchains/meson/_base.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "549",
+      "commit_date": "2025-06-01T18:24:57Z",
+      "error_type": [
+        "Test Failure",
+        "Runtime Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/functional/toolchains/meson/_base.py",
+        "conans/server/rest/controller/v2/search.py",
+        "test/conftest.py"
+      ],
+      "log_file": "memory/prior_00_549.log",
+      "diff_file": "memory/prior_00_549.diff"
+    },
+    {
+      "instance_id": "542",
+      "commit_date": "2025-05-28T17:57:23Z",
+      "error_type": [
+        "Syntax Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/integration/remote/test_local_recipes_index.py"
+      ],
+      "log_file": "memory/prior_01_542.log",
+      "diff_file": "memory/prior_01_542.diff"
+    },
+    {
+      "instance_id": "546",
+      "commit_date": "2025-05-22T08:21:25Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/meson/test_meson.py",
+        "test/functional/toolchains/meson/test_pkg_config_reuse.py",
+        "test/functional/toolchains/meson/test_preprocessor_definitions.py",
+        "test/functional/toolchains/meson/test_test.py"
+      ],
+      "log_file": "memory/prior_02_546.log",
+      "diff_file": "memory/prior_02_546.diff"
+    },
+    {
+      "instance_id": "530",
+      "commit_date": "2025-05-20T07:56:22Z",
+      "error_type": [
+        "Environment Error",
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "conan/tools/scm/git.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/tools/scm/test_git.py"
+      ],
+      "log_file": "memory/prior_03_530.log",
+      "diff_file": "memory/prior_03_530.diff"
+    },
+    {
+      "instance_id": "550",
+      "commit_date": "2025-05-13T08:03:43Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/meson/test_test.py"
+      ],
+      "log_file": "memory/prior_04_550.log",
+      "diff_file": "memory/prior_04_550.diff"
+    }
+  ]
+}

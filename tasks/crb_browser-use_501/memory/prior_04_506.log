@@ -1,0 +1,36 @@
+--- step: code-style ---
+index 2050deb..0142414 100644
+--- a/browser_use/agent/service.py
++++ b/browser_use/agent/service.py
+@@ -607,7 +607,7 @@ class Agent(Generic[Context]):
+ 						result['error'] = e
+ 					finally:
+ 						new_loop.close()
+-
++
+ 				t = Thread(target=run_in_thread)
+ 				t.start()
+ 				t.join()
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader
+
+--- step: type-checker ---
+    at tR (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:10072:26)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:8746:36
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:8809:5
+    at aJ (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:22175:28)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:1296:30
+    at eN (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:1482:5)
+    at as (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:17249:35)
+... (40 lines omitted)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:4930:39
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:5061:5
+    at eN (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:1482:5)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:5690:32
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:5798:5
+    at eN (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:1482:5)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:8796:25
+    at Array.forEach (<anonymous>)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:8790:25
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/

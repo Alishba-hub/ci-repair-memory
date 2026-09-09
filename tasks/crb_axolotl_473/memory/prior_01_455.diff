@@ -1,0 +1,27 @@
+diff --git a/src/axolotl/core/builders/base.py b/src/axolotl/core/builders/base.py
+index d36610416e..8ded23661a 100644
+--- a/src/axolotl/core/builders/base.py
++++ b/src/axolotl/core/builders/base.py
+@@ -431,9 +431,7 @@ def _configure_torch_compile(self, training_args_kwargs: dict):
+ 
+     def _configure_accelerator_config(self, training_args_kwargs: dict):
+         if self.cfg.accelerator_config:
+-            training_args_kwargs["accelerator_config"] = (
+-                self.cfg.accelerator_config
+-            )
++            training_args_kwargs["accelerator_config"] = self.cfg.accelerator_config
+ 
+     def _configure_gradient_checkpointing(self, training_args_kwargs: dict):
+         if self.cfg.gradient_checkpointing:
+diff --git a/src/axolotl/core/trainers/base.py b/src/axolotl/core/trainers/base.py
+index 7045e46ed6..6b2d30709a 100644
+--- a/src/axolotl/core/trainers/base.py
++++ b/src/axolotl/core/trainers/base.py
+@@ -75,7 +75,6 @@ def __init__(
+         if self.args.orpo_alpha:
+             self.loss_fct = torch.nn.CrossEntropyLoss(reduction="none")
+ 
+-
+     def _create_multipack_sampler(
+         self, base_sampler: Sampler, dataset: Dataset
+     ) -> MultipackBatchSampler:

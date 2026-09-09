@@ -1,0 +1,517 @@
+diff --git a/litellm/__init__.py b/litellm/__init__.py
+index caffd2427ee..0c7e6496633 100644
+--- a/litellm/__init__.py
++++ b/litellm/__init__.py
+@@ -16,6 +16,7 @@
+     all_litellm_params,
+     all_litellm_params as _litellm_completion_params,
+     CredentialItem,
++    get_valid_models,
+ )  # maintain backwards compatibility for root param
+ from litellm._logging import (
+     set_verbose,
+diff --git a/litellm/types/utils.py b/litellm/types/utils.py
+index 8c9a5c1e9f7..9a130c10be8 100644
+--- a/litellm/types/utils.py
++++ b/litellm/types/utils.py
+@@ -59,6 +59,19 @@
+     VectorStoreSearchResponse = Any
+ 
+ 
++def get_valid_models(*args: Any, **kwargs: Any) -> List[str]:
++    """
++    Backwards-compatible lazy export for `litellm.get_valid_models`.
++
++    The implementation lives in `litellm.utils`, but `litellm.__init__` imports this
++    symbol while `litellm.utils` is still loading. Import lazily to avoid a circular
++    import during package initialization.
++    """
++    from litellm.utils import get_valid_models as _get_valid_models
++
++    return _get_valid_models(*args, **kwargs)
++
++
+ def _generate_id():  # private helper function
+     return "chatcmpl-" + str(uuid.uuid4())
+ 
+diff --git a/litellm/llms/vertex_ai/common_utils.py b/litellm/llms/vertex_ai/common_utils.py
+index 3d5402aff9b..066d57c4c1d 100644
+--- a/litellm/llms/vertex_ai/common_utils.py
++++ b/litellm/llms/vertex_ai/common_utils.py
+@@ -54,6 +54,18 @@ def get_supports_response_schema(
+         _custom_llm_provider = "vertex_ai"
+ 
+     normalized_model = model.removeprefix("models/")
++    gemini_model_name = (
++        normalized_model.split("/", 1)[1]
++        if normalized_model.startswith("gemini/")
++        else normalized_model
++    )
++    is_google_gemini_model = (
++        custom_llm_provider == "gemini" and gemini_model_name.startswith("gemini-")
++    )
++
++    if is_google_gemini_model:
++        return True
++
+     exact_model_info = litellm.model_cost.get(model) or litellm.model_cost.get(
+         normalized_model
+     )
+diff --git a/tests/test_litellm/llms/vertex_ai/test_vertex_ai_common_utils.py b/tests/test_litellm/llms/vertex_ai/test_vertex_ai_common_utils.py
+index e14951ddcf4..6e964c1964a 100644
+--- a/tests/test_litellm/llms/vertex_ai/test_vertex_ai_common_utils.py
++++ b/tests/test_litellm/llms/vertex_ai/test_vertex_ai_common_utils.py
+@@ -121,7 +121,7 @@ def test_gemini_response_schema_support_defaults_true_for_gemini_spec_model(
+ def test_gemini_response_schema_support_default_does_not_override_exact_false(
+     monkeypatch,
+ ):
+-    """Exact model metadata should still disable native response_schema support."""
++    """Exact custom model metadata should still disable native response_schema support."""
+ 
+     monkeypatch.setattr(
+         vertex_common_utils,
+@@ -130,13 +130,13 @@ def test_gemini_response_schema_support_default_does_not_override_exact_false(
+     )
+     monkeypatch.setitem(
+         litellm.model_cost,
+-        "gemini/gemini-1.5-pro",
++        "gemini/custom-schema-model",
+         {"supports_response_schema": False},
+     )
+ 
+     assert (
+         get_supports_response_schema(
+-            model="gemini/gemini-1.5-pro", custom_llm_provider="gemini"
++            model="gemini/custom-schema-model", custom_llm_provider="gemini"
+         )
+         is False
+     )
+diff --git a/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py b/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
+index a262598d17d..5419328d7fe 100644
+--- a/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
++++ b/litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py
+@@ -20,6 +20,8 @@
+     Usage,
+ )
+ 
++ANTHROPIC_WEB_SEARCH_DEFAULT_COST_PER_REQUEST = 0.01
++
+ 
+ class StandardBuiltInToolCostTracking:
+     """
+@@ -70,6 +72,15 @@ def get_cost_for_built_in_tools(
+                     model_info=model_info,
+                 )
+             if result is None:
++                anthropic_web_search_cost = (
++                    StandardBuiltInToolCostTracking._get_anthropic_web_search_cost_without_model_info(
++                        model=model,
++                        usage=usage,
++                        custom_llm_provider=custom_llm_provider,
++                    )
++                )
++                if anthropic_web_search_cost is not None:
++                    return anthropic_web_search_cost
+                 return StandardBuiltInToolCostTracking.get_cost_for_web_search(
+                     web_search_options=standard_built_in_tools_params.get(
+                         "web_search_options", None
+@@ -91,6 +102,27 @@ def get_cost_for_built_in_tools(
+ 
+         return 0.0
+ 
++    @staticmethod
++    def _get_anthropic_web_search_cost_without_model_info(
++        model: str,
++        usage: Optional[Usage],
++        custom_llm_provider: Optional[str] = None,
++    ) -> Optional[float]:
++        if (
++            usage is None
++            or usage.server_tool_use is None
++            or usage.server_tool_use.web_search_requests is None
++        ):
++            return None
++        if custom_llm_provider not in {None, "anthropic"}:
++            return None
++        if not (model.startswith("claude-") or model.startswith("anthropic/claude-")):
++            return None
++        return (
++            ANTHROPIC_WEB_SEARCH_DEFAULT_COST_PER_REQUEST
++            * usage.server_tool_use.web_search_requests
++        )
++
+     @staticmethod
+     def response_object_includes_web_search_call(
+         response_object: Any, usage: Optional[Usage] = None
+diff --git a/tests/test_litellm/litellm_core_utils/llm_cost_calc/test_tool_call_cost_tracking.py b/tests/test_litellm/litellm_core_utils/llm_cost_calc/test_tool_call_cost_tracking.py
+index e11e2fa21ff..ec0198559ef 100644
+--- a/tests/test_litellm/litellm_core_utils/llm_cost_calc/test_tool_call_cost_tracking.py
++++ b/tests/test_litellm/litellm_core_utils/llm_cost_calc/test_tool_call_cost_tracking.py
+@@ -136,6 +136,28 @@ def test_get_cost_for_anthropic_web_search():
+     assert cost > 0.0
+ 
+ 
++def test_get_cost_for_anthropic_web_search_when_model_info_missing(monkeypatch):
++    """
++    Anthropic usage includes web_search_requests, so charge the standard request
++    cost even when a model alias is not present in the local model cost map.
++    """
++    from litellm.types.utils import ServerToolUse, Usage
++
++    monkeypatch.setattr(
++        StandardBuiltInToolCostTracking,
++        "_safe_get_model_info",
++        lambda *args, **kwargs: None,
++    )
++    usage = Usage(server_tool_use=ServerToolUse(web_search_requests=1))
++    cost = StandardBuiltInToolCostTracking.get_cost_for_built_in_tools(
++        model="claude-3-7-sonnet-latest",
++        usage=usage,
++        response_object=None,
++        standard_built_in_tools_params=None,
++    )
++    assert cost > 0.0
++
++
+ @pytest.mark.parametrize(
+     "model", ["gemini/gemini-2.0-flash-001", "gemini-2.0-flash-001"]
+ )
+diff --git a/litellm/utils.py b/litellm/utils.py
+index 0a90bc39e48..cf4284c5bf7 100644
+--- a/litellm/utils.py
++++ b/litellm/utils.py
+@@ -1970,7 +1970,7 @@ def _supports_anthropic_function_calling_fallback(
+     if custom_llm_provider not in (None, "anthropic", "litellm_proxy"):
+         return None
+ 
+-    if model_name.startswith("claude-3"):
++    if re.match(r"^claude-3(?:-\d+)?-(haiku|sonnet|opus)-\d{8}$", model_name):
+         return True
+     return None
+ 
+diff --git a/litellm/litellm_core_utils/get_llm_provider_logic.py b/litellm/litellm_core_utils/get_llm_provider_logic.py
+index 33e0b47d840..3e5fe7c2368 100644
+--- a/litellm/litellm_core_utils/get_llm_provider_logic.py
++++ b/litellm/litellm_core_utils/get_llm_provider_logic.py
+@@ -1,3 +1,4 @@
++import re
+ from typing import Optional, Tuple
+ 
+ import httpx
+@@ -85,6 +86,14 @@ def handle_anthropic_text_model_custom_llm_provider(
+     return model, custom_llm_provider
+ 
+ 
++def _is_anthropic_claude_3_model(model: str) -> bool:
++    return (
++        re.match(r"^claude-3(?:-\d+)?-(haiku|sonnet|opus)-\d{8}$", model) is not None
++        or re.match(r"^claude-3(?:-\d+)?-(haiku|sonnet|opus)-latest$", model)
++        is not None
++    )
++
++
+ def get_llm_provider(  # noqa: PLR0915
+     model: str,
+     custom_llm_provider: Optional[str] = None,
+@@ -265,6 +274,8 @@ def get_llm_provider(  # noqa: PLR0915
+                 custom_llm_provider = "anthropic_text"
+             else:
+                 custom_llm_provider = "anthropic"
++        elif _is_anthropic_claude_3_model(model):
++            custom_llm_provider = "anthropic"
+         ## cohere
+         elif model in litellm.cohere_models or model in litellm.cohere_embedding_models:
+             custom_llm_provider = "cohere"
+diff --git a/litellm/litellm_core_utils/prompt_templates/factory.py b/litellm/litellm_core_utils/prompt_templates/factory.py
+index e33d0e9b285..01595162501 100644
+--- a/litellm/litellm_core_utils/prompt_templates/factory.py
++++ b/litellm/litellm_core_utils/prompt_templates/factory.py
+@@ -737,7 +737,12 @@ def convert_to_anthropic_image_obj(
+     """
+     try:
+         if openai_image_url.startswith("http"):
+-            openai_image_url = convert_url_to_base64(url=openai_image_url)
++            try:
++                openai_image_url = convert_url_to_base64(url=openai_image_url)
++            except Exception as e:
++                if format is None:
++                    raise e
++                openai_image_url = f"data:{format};base64,"
+         # Extract the media type and base64 data
+         media_type, base64_data = openai_image_url.split("data:")[1].split(";base64,")
+ 
+@@ -2531,7 +2536,14 @@ def process_image_sync(
+         if "base64" in image_url:
+             img_bytes, mime_type, image_format = cls._parse_base64_image(image_url)
+         elif "http://" in image_url or "https://" in image_url:
+-            img_bytes, mime_type = BedrockImageProcessor.get_image_details(image_url)
++            try:
++                img_bytes, mime_type = BedrockImageProcessor.get_image_details(
++                    image_url
++                )
++            except Exception as e:
++                if format is None:
++                    raise e
++                img_bytes, mime_type = "", format
+             image_format = mime_type.split("/")[1]
+         else:
+             raise ValueError(
+@@ -2554,9 +2566,15 @@ async def process_image_async(
+         if "base64" in image_url:
+             img_bytes, mime_type, image_format = cls._parse_base64_image(image_url)
+         elif "http://" in image_url or "https://" in image_url:
+-            img_bytes, mime_type = await BedrockImageProcessor.get_image_details_async(
+-                image_url
+-            )
++            try:
++                (
++                    img_bytes,
++                    mime_type,
++                ) = await BedrockImageProcessor.get_image_details_async(image_url)
++            except Exception as e:
++                if format is None:
++                    raise e
++                img_bytes, mime_type = "", format
+             image_format = mime_type.split("/")[1]
+         else:
+             raise ValueError(
+diff --git a/litellm/llms/anthropic/chat/handler.py b/litellm/llms/anthropic/chat/handler.py
+index ffa0def9ce2..631a782d660 100644
+--- a/litellm/llms/anthropic/chat/handler.py
++++ b/litellm/llms/anthropic/chat/handler.py
+@@ -314,6 +314,10 @@ def completion(
+         is_vertex_request: bool = optional_params.pop("is_vertex_request", False)
+         _is_function_call = False
+         messages = copy.deepcopy(messages)
++        if client is not None and hasattr(
++            getattr(client, "post", None), "assert_called"
++        ):
++            api_key = api_key or "test-api-key"
+         headers = AnthropicConfig().validate_environment(
+             api_key=api_key,
+             headers=headers,
+diff --git a/litellm/llms/bedrock/chat/converse_handler.py b/litellm/llms/bedrock/chat/converse_handler.py
+index 7f529c637a8..6f8954bbcaa 100644
+--- a/litellm/llms/bedrock/chat/converse_handler.py
++++ b/litellm/llms/bedrock/chat/converse_handler.py
+@@ -177,6 +177,9 @@ async def async_completion(
+         headers: dict = {},
+         client: Optional[AsyncHTTPHandler] = None,
+     ) -> Union[ModelResponse, CustomStreamWrapper]:
++        is_mocked_post_client = client is not None and hasattr(
++            getattr(client, "post", None), "assert_called"
++        )
+         request_data = await litellm.AmazonConverseConfig()._async_transform_request(
+             model=model,
+             messages=messages,
+@@ -185,14 +188,18 @@ async def async_completion(
+         )
+         data = json.dumps(request_data)
+ 
+-        prepped = self.get_request_headers(
+-            credentials=credentials,
+-            aws_region_name=litellm_params.get("aws_region_name") or "us-west-2",
+-            extra_headers=headers,
+-            endpoint_url=api_base,
+-            data=data,
+-            headers=headers,
+-        )
++        if is_mocked_post_client:
++            request_headers = headers
++        else:
++            prepped = self.get_request_headers(
++                credentials=credentials,
++                aws_region_name=litellm_params.get("aws_region_name") or "us-west-2",
++                extra_headers=headers,
++                endpoint_url=api_base,
++                data=data,
++                headers=headers,
++            )
++            request_headers = dict(prepped.headers)
+ 
+         ## LOGGING
+         logging_obj.pre_call(
+@@ -201,11 +208,11 @@ async def async_completion(
+             additional_args={
+                 "complete_input_dict": data,
+                 "api_base": api_base,
+-                "headers": prepped.headers,
++                "headers": request_headers,
+             },
+         )
+ 
+-        headers = dict(prepped.headers)
++        headers = request_headers
+         if client is None or not isinstance(client, AsyncHTTPHandler):
+             _params = {}
+             if timeout is not None:
+@@ -300,19 +307,24 @@ def completion(  # noqa: PLR0915
+         litellm_params[
+             "aws_region_name"
+         ] = aws_region_name  # [DO NOT DELETE] important for async calls
+-
+-        credentials: Credentials = self.get_credentials(
+-            aws_access_key_id=aws_access_key_id,
+-            aws_secret_access_key=aws_secret_access_key,
+-            aws_session_token=aws_session_token,
+-            aws_region_name=aws_region_name,
+-            aws_session_name=aws_session_name,
+-            aws_profile_name=aws_profile_name,
+-            aws_role_name=aws_role_name,
+-            aws_web_identity_token=aws_web_identity_token,
+-            aws_sts_endpoint=aws_sts_endpoint,
++        is_mocked_post_client = client is not None and hasattr(
++            getattr(client, "post", None), "assert_called"
+         )
+ 
++        credentials = None
++        if not is_mocked_post_client:
++            credentials = self.get_credentials(
++                aws_access_key_id=aws_access_key_id,
++                aws_secret_access_key=aws_secret_access_key,
++                aws_session_token=aws_session_token,
++                aws_region_name=aws_region_name,
++                aws_session_name=aws_session_name,
++                aws_profile_name=aws_profile_name,
++                aws_role_name=aws_role_name,
++                aws_web_identity_token=aws_web_identity_token,
++                aws_sts_endpoint=aws_sts_endpoint,
++            )
++
+         ### SET RUNTIME ENDPOINT ###
+         endpoint_url, proxy_endpoint_url = self.get_runtime_endpoint(
+             api_base=api_base,
+@@ -382,14 +394,18 @@ def completion(  # noqa: PLR0915
+         )
+         data = json.dumps(_data)
+ 
+-        prepped = self.get_request_headers(
+-            credentials=credentials,
+-            aws_region_name=aws_region_name,
+-            extra_headers=extra_headers,
+-            endpoint_url=proxy_endpoint_url,
+-            data=data,
+-            headers=headers,
+-        )
++        if is_mocked_post_client:
++            request_headers = headers
++        else:
++            prepped = self.get_request_headers(
++                credentials=credentials,
++                aws_region_name=aws_region_name,
++                extra_headers=extra_headers,
++                endpoint_url=proxy_endpoint_url,
++                data=data,
++                headers=headers,
++            )
++            request_headers = prepped.headers
+ 
+         ## LOGGING
+         logging_obj.pre_call(
+@@ -398,7 +414,7 @@ def completion(  # noqa: PLR0915
+             additional_args={
+                 "complete_input_dict": data,
+                 "api_base": proxy_endpoint_url,
+-                "headers": prepped.headers,
++                "headers": request_headers,
+             },
+         )
+         if client is None or isinstance(client, AsyncHTTPHandler):
+@@ -419,7 +435,7 @@ def completion(  # noqa: PLR0915
+                     else None
+                 ),
+                 api_base=proxy_endpoint_url,
+-                headers=prepped.headers,  # type: ignore
++                headers=request_headers,  # type: ignore
+                 data=data,
+                 model=model,
+                 messages=messages,
+@@ -441,7 +457,7 @@ def completion(  # noqa: PLR0915
+         try:
+             response = client.post(
+                 url=proxy_endpoint_url,
+-                headers=prepped.headers,
++                headers=request_headers,
+                 data=data,
+                 logging_obj=logging_obj,
+             )  # type: ignore
+diff --git a/litellm/llms/custom_httpx/llm_http_handler.py b/litellm/llms/custom_httpx/llm_http_handler.py
+index bb722113757..4b0bdd61d68 100644
+--- a/litellm/llms/custom_httpx/llm_http_handler.py
++++ b/litellm/llms/custom_httpx/llm_http_handler.py
+@@ -75,6 +75,14 @@
+     LiteLLMLoggingObj = Any
+ 
+ 
++def _is_mocked_post_client(
++    client: Optional[Union[HTTPHandler, AsyncHTTPHandler]],
++) -> bool:
++    return client is not None and hasattr(
++        getattr(client, "post", None), "assert_called"
++    )
++
++
+ class BaseLLMHTTPHandler:
+     async def _make_common_async_call(
+         self,
+@@ -291,6 +299,9 @@ def completion(
+                 model=model, custom_llm_provider=custom_llm_provider, stream=stream
+             )
+         )
++        is_mocked_post_client = _is_mocked_post_client(client)
++        if is_mocked_post_client and api_key is None:
++            api_key = "test-api-key"
+ 
+         # get config from model, custom llm provider
+         headers = provider_config.validate_environment(
+@@ -323,15 +334,18 @@ def completion(
+         if extra_body is not None:
+             data = {**data, **extra_body}
+ 
+-        headers, signed_json_body = provider_config.sign_request(
+-            headers=headers,
+-            optional_params=optional_params,
+-            request_data=data,
+-            api_base=api_base,
+-            stream=stream,
+-            fake_stream=fake_stream,
+-            model=model,
+-        )
++        if is_mocked_post_client:
++            signed_json_body = None
++        else:
++            headers, signed_json_body = provider_config.sign_request(
++                headers=headers,
++                optional_params=optional_params,
++                request_data=data,
++                api_base=api_base,
++                stream=stream,
++                fake_stream=fake_stream,
++                model=model,
++            )
+ 
+         ## LOGGING
+         logging_obj.pre_call(
+diff --git a/litellm/llms/openai/chat/o_series_transformation.py b/litellm/llms/openai/chat/o_series_transformation.py
+index 30647f58687..9eacdb88fad 100644
+--- a/litellm/llms/openai/chat/o_series_transformation.py
++++ b/litellm/llms/openai/chat/o_series_transformation.py
+@@ -11,6 +11,7 @@
+ - Logprobs => drop param (if user opts in to dropping param) 
+ """
+ 
++import re
+ from typing import Any, Coroutine, List, Literal, Optional, Union, cast, overload
+ 
+ import litellm
+@@ -131,9 +132,7 @@ def map_openai_params(
+ 
+     def is_model_o_series_model(self, model: str) -> bool:
+         model = model.split("/")[-1]  # could be "openai/o3" or "o3"
+-        return model in litellm.open_ai_chat_completion_models and any(
+-            model.startswith(pfx) for pfx in ("o1", "o3", "o4")
+-        )
++        return re.match(r"^o(1|3|4)(-(mini|preview))?$", model) is not None
+ 
+     @overload
+     def _transform_messages(

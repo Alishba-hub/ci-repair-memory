@@ -1,0 +1,32 @@
+--- step: Run tests and count coverage (3.12) ---
+_______________ coverage: platform linux, python 3.12.13-final-0 _______________
+Name                                                      Stmts   Miss  Cover   Missing
+---------------------------------------------------------------------------------------
+application/__init__.py                                       0      0   100%
+application/agents/__init__.py                                0      0   100%
+application/agents/agent_creator.py                          10      0   100%
+application/agents/base.py                                  205     22    89%   76, 154-166, 216, 227, 245-248, 358-359, 401-402, 413-414, 417-421
+application/agents/classic_agent.py                          17      0   100%
+application/agents/react_agent.py                           136      5    96%   101-102, 117, 143, 189
+application/agents/tools/api_tool.py                         41     27    34%   21, 26-63, 69, 72
+application/agents/tools/base.py                             11      3    73%   7, 14, 21
+... (138 lines omitted)
+application/vectorstore/milvus.py                            21     11    48%   11-23, 26-27, 30-32, 35, 38
+application/vectorstore/mongodb.py                           89     76    15%   18-36, 39-64, 67-77, 110-124, 127, 130-151, 154-166, 169-177
+application/vectorstore/pgvector.py                         156    139    11%   19-52, 56-60, 64-108, 112-143, 153-186, 190-203, 207, 211-237, 241-278, 282-298, 302-303
+application/vectorstore/qdrant.py                            66     53    20%   9-66, 69, 72, 75, 78, 83-108, 111-125, 128-136
+application/vectorstore/vector_creator.py                    14      4    71%   21-24
+application/worker.py                                       541    489    10%   52, 59, 77-95, 99-106, 110-144, 148-212, 237-353, 377-677, 692-744, 764-780, 784-801, 812-884, 899-924, 957-1128, 1134-1244, 1249-1255
+application/wsgi.py                                           4      4     0%   1-5
+---------------------------------------------------------------------------------------
+TOTAL                                                      9430   5457    42%
+Coverage HTML written to dir htmlcov
+Coverage XML written to file coverage.xml
+=========================== short test summary info ============================
+FAILED tests/test_todo_tool.py::test_create_and_get - TypeError: string indices must be integers, not 'str'
+FAILED tests/test_todo_tool.py::test_get_all_todos - TypeError: string indices must be integers, not 'str'
+FAILED tests/test_todo_tool.py::test_update_todo - TypeError: string indices must be integers, not 'str'
+FAILED tests/test_todo_tool.py::test_delete_todo - TypeError: string indices must be integers, not 'str'
+FAILED tests/test_todo_tool.py::test_isolation_and_default_tool_id - TypeError: string indices must be integers, not 'str'
+======================== 5 failed, 455 passed in 55.09s ========================
+##[error]Process completed with ex

@@ -1,0 +1,19 @@
+--- step: lint ---
+cd litellm
+poetry run mypy . --ignore-missing-imports
+cd ..
+shell: /usr/bin/bash -e {0}
+env:
+  pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+  VENV: .venv/bin/activate
+proxy/_experimental/mcp_server/server.py:306: error: Item "None" of "MCPServer | None" has no attribute "alias"  [union-attr]
+proxy/_experimental/mcp_server/server.py:307: error: Item "None" of "MCPServer | None" has no attribute "server_name"  [union-attr]
+Found 2 errors in 1 file (checked 1017 source files)
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

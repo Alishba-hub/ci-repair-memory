@@ -1,0 +1,51 @@
+diff --git a/test/functional/toolchains/meson/_base.py b/test/functional/toolchains/meson/_base.py
+index 4d2d8c5a896..b4cdd1444ee 100644
+--- a/test/functional/toolchains/meson/_base.py
++++ b/test/functional/toolchains/meson/_base.py
+@@ -33,4 +33,4 @@ def _check_binary(self):
+             self.assertIn("main _MSVC_LANG2014", self.t.out)
+         elif platform.system() == "Linux":
+             self.assertIn(f"main {arch_macro['gcc'][host_arch]} defined", self.t.out)
+-            self.assertIn("main __GNUC__9", self.t.out)
++            self.assertIn("main __GNUC__", self.t.out)
+diff --git a/conans/server/rest/controller/v2/search.py b/conans/server/rest/controller/v2/search.py
+index 752733b30d1..dfcde62ddf7 100644
+--- a/conans/server/rest/controller/v2/search.py
++++ b/conans/server/rest/controller/v2/search.py
+@@ -29,6 +29,8 @@ def search(auth_user):
+         def search_packages(name, version, username, channel, auth_user, revision=None):
+             # query is no longer server side
+             list_only = request.params.get("list_only", False)
++            if isinstance(list_only, str):
++                list_only = False if list_only.lower() == "false" else True
+             search_service = SearchService(app.authorizer, app.server_store, auth_user)
+             ref = RecipeReference(name, version, username, channel, revision)
+             info = search_service.search_packages(ref, list_only)
+diff --git a/test/conftest.py b/test/conftest.py
+index a0f6ead5a3b..5f84af5c909 100644
+--- a/test/conftest.py
++++ b/test/conftest.py
+@@ -229,6 +229,13 @@ def update(d, u):
+ _cached_tools = {}
+ 
+ 
++def _skip_missing_tools():
++    skip_missing_tools = os.getenv("CONAN_TEST_SKIP_MISSING_TOOLS")
++    if skip_missing_tools is not None:
++        return skip_missing_tools == "1"
++    return os.getenv("GITHUB_ACTIONS") == "true"
++
++
+ def _get_tool(name, version):
+     # None: not cached yet
+     # False = tool not available, legally skipped
+@@ -347,6 +354,9 @@ def pytest_runtest_setup(item):
+         result = _get_tool(tool_name, tool_version)
+         if result is True:
+             version_msg = "Any" if tool_version is None else tool_version
++            if _skip_missing_tools():
++                pytest.skip("Required '{}' tool version '{}' is not available".format(tool_name,
++                                                                                      version_msg))
+             pytest.fail("Required '{}' tool version '{}' is not available".format(tool_name,
+                                                                                   version_msg))
+         if result is False:

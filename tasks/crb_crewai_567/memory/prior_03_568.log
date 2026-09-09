@@ -1,0 +1,16 @@
+--- step: lint ---
+1 | from datetime import date, datetime
+2 | from typing import List
+3 | from unittest.mock import Mock
+  |                           ^^^^ F401
+4 |
+5 | import pytest
+  |
+  = help: Remove unused import: `unittest.mock.Mock`
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+All checks passed!
+All checks passed!
+##[error]Process completed with exit code 123.
+Post job cleanup.
+http.https://github.com/.extraheader

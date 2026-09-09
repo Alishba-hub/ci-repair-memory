@@ -1,0 +1,10 @@
+diff --git a/src/axolotl/prompt_strategies/dpo/chat_template.py b/src/axolotl/prompt_strategies/dpo/chat_template.py
+index 08710c68b6..f3427022f2 100644
+--- a/src/axolotl/prompt_strategies/dpo/chat_template.py
++++ b/src/axolotl/prompt_strategies/dpo/chat_template.py
+@@ -91,4 +91,4 @@ def transform_fn(sample, tokenizer=None):
+ 
+         return result
+ 
+-    return transform_fn, {"remove_columns":[field_messages]}
++    return transform_fn, {"remove_columns": [field_messages]}

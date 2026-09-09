@@ -1,0 +1,23 @@
+--- step: lint ---
+cd litellm
+poetry run mypy . --ignore-missing-imports
+cd ..
+shell: /usr/bin/bash -e {0}
+env:
+  pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+  VENV: .venv/bin/activate
+llms/vertex_ai/batches/handler.py:120: error: Signature of "create_vertex_url" incompatible with supertype "VertexBase"  [override]
+llms/vertex_ai/batches/handler.py:120: note:      Superclass:
+llms/vertex_ai/batches/handler.py:120: note:          @staticmethod
+llms/vertex_ai/batches/handler.py:120: note:          def create_vertex_url(vertex_location: str, vertex_project: str, partner: VertexPartnerProvider, stream: bool | None, model: str, api_base: str | None = ...) -> str
+llms/vertex_ai/batches/handler.py:120: note:      Subclass:
+llms/vertex_ai/batches/handler.py:120: note:          def create_vertex_url(self, vertex_location: str, vertex_project: str) -> str
+Found 1 error in 1 file (checked 844 source files)
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

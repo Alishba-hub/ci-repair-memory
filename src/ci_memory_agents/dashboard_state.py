@@ -6,6 +6,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import design
 from .evaluator import evaluate_submission, pass_at_k
 from .agreement import by_condition, judge_vs_execution
 from .ci_outcome import outcome_path, read_outcome
@@ -1024,18 +1025,25 @@ def reset_run(workspace: Path, repo_before: Path) -> str:
 
 
 def list_agents(runs_root: Path) -> list[str]:
-    """Agent folders under runs/, so the UI can switch between them.
+    """Every agent the UI can be switched to: the design's, plus any found on disk.
 
     An agent folder holds task folders holding condition folders; the execution oracle's
     clone cache (`_repos`) sits in the same directory and is not one. Matched on shape
     rather than by name, so any future sibling is excluded for the same reason.
+
+    Design agents are listed even with no runs yet. Deriving the picker purely from disk
+    meant a newly configured model was invisible until its first run finished, which is
+    exactly when someone wants to look at the dashboard and confirm the cells were laid
+    out for it. Agents on disk that are not in the design -- earlier or exploratory runs
+    -- are kept and listed after them, because those results are real.
     """
-    if not runs_root.exists():
-        return []
-    agents = []
-    for path in sorted(runs_root.iterdir()):
-        if not path.is_dir() or path.name.startswith("_"):
-            continue
-        if any(task.is_dir() and any(c.is_dir() for c in task.iterdir()) for task in path.iterdir()):
-            agents.append(path.name)
-    return agents
+    on_disk = []
+    if runs_root.exists():
+        for path in sorted(runs_root.iterdir()):
+            if not path.is_dir() or path.name.startswith("_"):
+                continue
+            if any(t.is_dir() and any(c.is_dir() for c in t.iterdir()) for t in path.iterdir()):
+                on_disk.append(path.name)
+
+    declared = list(design.AGENT_NAMES)
+    return declared + [name for name in on_disk if name not in declared]

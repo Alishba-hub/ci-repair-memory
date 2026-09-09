@@ -1,0 +1,96 @@
+{
+  "task_id": "crb_aider_94",
+  "name": "CI failure in aider (Assertion Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "94",
+  "repo_name": "aider",
+  "repo_owner": "aider-ai",
+  "sha_fail": "5548acee0b31576cae313185aa3c859f88818939",
+  "sha_success": "0567e51a52104575a20a32cd8d3063c1e770f423",
+  "commit_date": "2025-06-19T10:51:27Z",
+  "error_type": [
+    "Assertion Error"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/ubuntu-tests.yml",
+  "target_files": [
+    "tests/basic/test_repo.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "95",
+      "commit_date": "2025-06-13T12:44:12Z",
+      "error_type": [
+        "Assertion Error",
+        "Runtime Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "aider/models.py",
+        "tests/basic/test_models.py",
+        "tests/basic/test_sendchat.py"
+      ],
+      "log_file": "memory/prior_00_95.log",
+      "diff_file": "memory/prior_00_95.diff"
+    },
+    {
+      "instance_id": "92",
+      "commit_date": "2025-05-30T22:07:32Z",
+      "error_type": [
+        "Assertion Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/basic/test_openrouter.py"
+      ],
+      "log_file": "memory/prior_01_92.log",
+      "diff_file": "memory/prior_01_92.diff"
+    },
+    {
+      "instance_id": "96",
+      "commit_date": "2025-05-25T19:52:47Z",
+      "error_type": [
+        "Assertion Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/basic/test_models.py"
+      ],
+      "log_file": "memory/prior_02_96.log",
+      "diff_file": "memory/prior_02_96.diff"
+    },
+    {
+      "instance_id": "97",
+      "commit_date": "2025-05-08T19:14:41Z",
+      "error_type": [
+        "Assertion Error",
+        "Package Installation Error",
+        "Syntax Error"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "tests/help/test_help.py"
+      ],
+      "log_file": "memory/prior_03_97.log",
+      "diff_file": "memory/prior_03_97.diff"
+    },
+    {
+      "instance_id": "93",
+      "commit_date": "2025-05-08T01:27:35Z",
+      "error_type": [
+        "Assertion Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "ubuntu-tests.yml",
+      "changed_files": [
+        "aider/help.py",
+        "aider/models.py",
+        "aider/repomap.py",
+        "aider/resources/model-metadata.json"
+      ],
+      "log_file": "memory/prior_04_93.log",
+      "diff_file": "memory/prior_04_93.diff"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "task_id": "crb_agno_129",
+  "name": "CI failure in agno (Dependency Issues, Syntax Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "129",
+  "repo_name": "agno",
+  "repo_owner": "agno-agi",
+  "sha_fail": "0309bd9e095b3da3cb01d220541674d3b8e0a803",
+  "sha_success": "15110f9cca55d1ae6c8317608162fff5eb50685e",
+  "commit_date": "2025-05-12T10:50:49Z",
+  "error_type": [
+    "Dependency Issues",
+    "Syntax Error"
+  ],
+  "error_group": "code_runtime",
+  "workflow_path": ".github/workflows/test.yml",
+  "target_files": [
+    "libs/agno/agno/cli/auth_server.py",
+    "libs/agno/agno/workspace/helpers.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "200",
+      "commit_date": "2025-05-09T18:43:34Z",
+      "error_type": [
+        "Syntax Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/workspace/helpers.py",
+        "libs/agno/tests/unit/vectordb/test_pineconedb.py"
+      ],
+      "log_file": "memory/prior_00_200.log",
+      "diff_file": "memory/prior_00_200.diff"
+    },
+    {
+      "instance_id": "209",
+      "commit_date": "2025-05-08T15:45:53Z",
+      "error_type": [
+        "Dependency Issues",
+        "Syntax Error"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/tests/unit/reader/test_csv_reader.py"
+      ],
+      "log_file": "memory/prior_01_209.log",
+      "diff_file": "memory/prior_01_209.diff"
+    },
+    {
+      "instance_id": "161",
+      "commit_date": "2025-05-08T15:36:04Z",
+      "error_type": [
+        "Dependency Issues",
+        "Syntax Error"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/document/reader/csv_reader.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_02_161.log",
+      "diff_file": "memory/prior_02_161.diff"
+    },
+    {
+      "instance_id": "169",
+      "commit_date": "2025-05-08T13:46:02Z",
+      "error_type": [
+        "Syntax Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/eval/utils.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_03_169.log",
+      "diff_file": "memory/prior_03_169.diff"
+    },
+    {
+      "instance_id": "196",
+      "commit_date": "2025-05-05T21:12:20Z",
+      "error_type": [
+        "Code Linting",
+        "Syntax Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/tests/unit/tools/models/test_gemini.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_04_196.log",
+      "diff_file": "memory/prior_04_196.diff"
+    }
+  ]
+}

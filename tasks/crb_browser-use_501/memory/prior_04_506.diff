@@ -1,0 +1,13 @@
+diff --git a/browser_use/agent/service.py b/browser_use/agent/service.py
+index 2050debf1b..01424147d7 100644
+--- a/browser_use/agent/service.py
++++ b/browser_use/agent/service.py
+@@ -607,7 +607,7 @@ def run_in_thread():
+ 						result['error'] = e
+ 					finally:
+ 						new_loop.close()
+-	
++
+ 				t = Thread(target=run_in_thread)
+ 				t.start()
+ 				t.join()

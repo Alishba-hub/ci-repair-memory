@@ -1,0 +1,82 @@
+diff --git a/libs/agno/agno/app/agui/utils.py b/libs/agno/agno/app/agui/utils.py
+index 0f4435a4bfd..c186827cec8 100644
+--- a/libs/agno/agno/app/agui/utils.py
++++ b/libs/agno/agno/app/agui/utils.py
+@@ -145,8 +145,9 @@ def _create_events_from_chunk(
+ 
+     # Handle starting a new tool call
+     elif chunk.event == RunEvent.tool_call_started:
+-        if chunk.tools is not None and len(chunk.tools) != 0:
+-            tool_call = chunk.tools[0]
++        tools = getattr(chunk, "tools", None)
++        if tools is not None and len(tools) != 0:
++            tool_call = tools[0]
+             start_event = ToolCallStartEvent(
+                 type=EventType.TOOL_CALL_START,
+                 tool_call_id=tool_call.tool_call_id,  # type: ignore
+@@ -164,8 +165,9 @@ def _create_events_from_chunk(
+ 
+     # Handle tool call completion
+     elif chunk.event == RunEvent.tool_call_completed:
+-        if chunk.tools is not None and len(chunk.tools) != 0:
+-            tool_call = chunk.tools[0]
++        tools = getattr(chunk, "tools", None)
++        if tools is not None and len(tools) != 0:
++            tool_call = tools[0]
+             if tool_call.tool_call_id not in event_buffer.ended_tool_call_ids:
+                 end_event = ToolCallEndEvent(
+                     type=EventType.TOOL_CALL_END,
+diff --git a/libs/agno/agno/media.py b/libs/agno/agno/media.py
+index 394bf50ca00..ad4ace92e42 100644
+--- a/libs/agno/agno/media.py
++++ b/libs/agno/agno/media.py
+@@ -222,11 +222,10 @@ class AudioResponse(BaseModel):
+     def to_dict(self) -> Dict[str, Any]:
+         import base64
+ 
++        content: Any = self.content
+         response_dict = {
+             "id": self.id,
+-            "content": base64.b64encode(self.content).decode("utf-8")
+-            if isinstance(self.content, bytes)
+-            else self.content,
++            "content": base64.b64encode(content).decode("utf-8") if isinstance(content, bytes) else content,
+             "expires_at": self.expires_at,
+             "transcript": self.transcript,
+             "mime_type": self.mime_type,
+diff --git a/libs/agno/agno/tools/firecrawl.py b/libs/agno/agno/tools/firecrawl.py
+index aec7b2f0331..ae3a5b6283d 100644
+--- a/libs/agno/agno/tools/firecrawl.py
++++ b/libs/agno/agno/tools/firecrawl.py
+@@ -6,7 +6,15 @@
+ from agno.utils.log import logger
+ 
+ try:
+-    from firecrawl import FirecrawlApp, ScrapeOptions  # type: ignore[attr-defined]
++    try:
++        from firecrawl import V1FirecrawlApp as FirecrawlApp  # type: ignore[attr-defined]
++    except ImportError:
++        from firecrawl import FirecrawlApp  # type: ignore[attr-defined]
++
++    try:
++        from firecrawl import ScrapeOptions  # type: ignore[attr-defined]
++    except ImportError:
++        from firecrawl import V1ScrapeOptions as ScrapeOptions  # type: ignore[attr-defined]
+ except ImportError:
+     raise ImportError("`firecrawl-py` not installed. Please install using `pip install firecrawl-py`")
+ 
+diff --git a/libs/agno/tests/unit/tools/test_firecrawl.py b/libs/agno/tests/unit/tools/test_firecrawl.py
+index 43e60985c1c..465758d82f3 100644
+--- a/libs/agno/tests/unit/tools/test_firecrawl.py
++++ b/libs/agno/tests/unit/tools/test_firecrawl.py
+@@ -5,9 +5,8 @@
+ from unittest.mock import Mock, patch
+ 
+ import pytest
+-from firecrawl import FirecrawlApp
+ 
+-from agno.tools.firecrawl import FirecrawlTools
++from agno.tools.firecrawl import FirecrawlApp, FirecrawlTools
+ 
+ TEST_API_KEY = os.environ.get("FIRECRAWL_API_KEY", "test_api_key")
+ TEST_API_URL = "https://api.firecrawl.dev"

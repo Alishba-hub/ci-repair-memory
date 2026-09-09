@@ -118,13 +118,21 @@ def find_claude() -> str | None:
 def survey(agent: str) -> dict:
     """Count what is on disk, using the same definitions the scorer uses."""
     runs_root = REPO_ROOT / "runs" / agent
+    from ci_memory_agents.loader import study_task_ids  # noqa: PLC0415
+
     tasks = sorted(p for p in (REPO_ROOT / "tasks").glob("crb_*") if p.is_dir())
+    declared = study_task_ids(REPO_ROOT / "tasks")
+    if declared is not None:
+        tasks = [t for t in tasks if t.name in declared]
     cells = list(runs_root.glob("*/*/run_*")) if runs_root.exists() else []
     cells = [c for c in cells if c.is_dir()]
     attempted = [c for c in cells if (c / "agent_meta.json").exists()]
     judged = [c for c in attempted if (c / "judgement.json").exists()]
     timed_out = [c for c in attempted if (c / "agent_timeout.txt").exists()]
     executed = [c for c in attempted if (c / "ci_outcome.json").exists()]
+    # Validation is a property of the study's tasks, so it is counted over those. A
+    # leftover from an earlier design carrying a baseline is not evidence about this
+    # population, and counting it made a single validated folder speak for all of them.
     validated = [t for t in tasks if (t / "ci_baseline.json").exists()]
     return {
         "agent": agent,
@@ -345,7 +353,7 @@ def command_pick(args) -> int:
 
     every = select_tasks(REPO_ROOT / "tasks", source=TASK_SOURCE)
     if not every:
-        print(bad("\n  No tasks built. Run:  python scripts/import_ci_repair_bench.py --limit 24 --max-per-project 2"))
+        print(bad("\n  No tasks built. Run:  python scripts/import_ci_repair_bench.py"))
         return 1
 
     # 1. agent
@@ -409,7 +417,10 @@ def command_pick(args) -> int:
     chosen = selected_tasks(args)
     arms = len(CONDITIONS)
     planned = len(chosen) * arms * args.runs
-    conditions = ("no_memory", "with_memory")
+    # The design's arms, not the pre-sweep pair. Hardcoding ("no_memory",
+    # "with_memory") here counted only two of the four arms as done, so a task whose
+    # K=1/K=5 cells had all been run still reported them as outstanding.
+    conditions = CONDITIONS
     already = sum(
         1
         for task_id in chosen
@@ -487,14 +498,44 @@ def command_doctor(args) -> int:
     problems: list[str] = []
     notes: list[str] = []
 
+    # Credentials live in the gitignored .secrets.json and are exported into the
+    # environment by load_secrets(). Reading os.environ without this call reported the
+    # oracle as unavailable on a machine where it was configured, which sent people off
+    # to re-enter a token they had already stored.
+    load_secrets()
+
     print(f"  {ok('OK'):<6} Python {sys.version.split()[0]}")
 
+    # The declared design population, not every folder ever imported. Counting all of
+    # them reported "47 tasks built" for a 27-task study, which reads as the design
+    # being satisfied when it is not.
+    from ci_memory_agents.loader import study_task_ids  # noqa: PLC0415
+
     tasks = list((REPO_ROOT / "tasks").glob("crb_*"))
+    declared = study_task_ids(REPO_ROOT / "tasks")
     if tasks:
-        print(f"  {ok('OK'):<6} {len(tasks)} tasks built under tasks/")
+        if declared is None:
+            print(f"  {ok('OK'):<6} {len(tasks)} tasks built under tasks/")
+            notes.append(
+                "No tasks/study_population.json, so every folder under tasks/ is in play. "
+                "Build the design population: python scripts/import_ci_repair_bench.py"
+                "     Build the design population:  python scripts/import_ci_repair_bench.py"
+            )
+        else:
+            target = design.N_TASKS
+            mark = ok("OK") if len(declared) >= target else warn("--")
+            extra = len(tasks) - len(declared)
+            print(f"  {mark:<6} {len(declared)} of {target} design tasks built"
+                  + (f"  {dim(f'({extra} older folders kept, not in the study)')}" if extra else ""))
+            if len(declared) < target:
+                notes.append(
+                    f"The design asks for {target} tasks over {design.N_REPOS} repositories "
+                    f"and {len(declared)} were importable. "
+                    "See the note on N_REPOS in src/ci_memory_agents/design.py."
+                )
     else:
         print(f"  {bad('NO'):<6} no tasks built")
-        problems.append("Build the tasks:  python scripts/import_ci_repair_bench.py --limit 24 --max-per-project 2")
+        problems.append("Build the tasks:  python scripts/import_ci_repair_bench.py")
 
     exe = args.exe or find_claude()
     if exe:
@@ -515,11 +556,18 @@ def command_doctor(args) -> int:
     if code != 0:
         problems.append("Inspect it:  python scripts/validate_pipeline.py")
 
-    have_gh = all(os.environ.get(v) for v in ("GITHUB_TOKEN", "GITHUB_USERNAME", "BENCHMARK_OWNER"))
-    if have_gh:
+    # BENCHMARK_OWNER names the account holding the forks. It falls back to the login
+    # itself, which is the common case and is exactly what oracle_github does when it
+    # resolves the owner; requiring it separately declared the oracle unavailable for a
+    # setup it would in fact have run.
+    required = ("GITHUB_TOKEN", "GITHUB_USERNAME")
+    missing = [v for v in required if not os.environ.get(v)]
+    if not missing:
+        owner = os.environ.get("BENCHMARK_OWNER") or os.environ.get("GITHUB_USERNAME", "")
+        source = "BENCHMARK_OWNER" if os.environ.get("BENCHMARK_OWNER") else "GITHUB_USERNAME"
         print(f"  {ok('OK'):<6} GitHub credentials set -- the execution oracle can run")
+        print(f"  {'':<6} {dim(f'forks read from {owner!r} (via {source})')}")
     else:
-        missing = [v for v in ("GITHUB_TOKEN", "GITHUB_USERNAME", "BENCHMARK_OWNER") if not os.environ.get(v)]
         print(f"  {warn('--'):<6} execution oracle unavailable, missing {', '.join(missing)}")
         notes.append(
             "The execution oracle is the only thing that can turn these results from\n"
@@ -562,7 +610,10 @@ def command_status(args) -> int:
     checks = [
         (s["attempted"] > 0, "runs exist", "python run.py"),
         (s["needs_judging"] == 0 and s["judged"] > 0, "everything judged", "python run.py judge"),
-        (s["validated"] > 0, "instances proven red-before / green-after", "python run.py verify"),
+        # Every task, not at least one. `> 0` let a single validated instance report the
+        # whole population as proven, which is the opposite of what this table is for.
+        (s["tasks"] > 0 and s["validated"] == s["tasks"],
+         "instances proven red-before / green-after", "python run.py verify"),
         (s["executed"] > 0, "success decided by executing CI, not inferred", "python run.py verify"),
     ]
     for passed, label, fix in checks:
@@ -608,7 +659,10 @@ def command_run(args) -> int:
     arms = len(CONDITIONS)
     planned = len(chosen) * arms * args.runs
 
-    conditions = ("no_memory", "with_memory")
+    # The design's arms, not the pre-sweep pair. Hardcoding ("no_memory",
+    # "with_memory") here counted only two of the four arms as done, so a task whose
+    # K=1/K=5 cells had all been run still reported them as outstanding.
+    conditions = CONDITIONS
 
     def _done(task_id: str) -> int:
         """Attempted cells among the ones this command would lay out.
@@ -760,6 +814,27 @@ def _judge_and_report(args, exe: str | None) -> int:
 
     print()
     call("scripts/score_runs.py", "--agent", args.agent, "--mode", "report", quiet=False)
+
+    # The CSVs are written from the verdicts the line above just refreshed. Exporting
+    # here rather than leaving it to be remembered is what keeps `results/` a snapshot
+    # of the current verdicts instead of whenever someone last ran the exporter by hand.
+    call("scripts/export_results.py", "--agent", args.agent, quiet=True)
+    print(f"  {ok('OK')}  results/*.csv refreshed for {args.agent}")
+
+    # Execution verification, when asked for. It is opt-in because it force-pushes a
+    # branch to a fork under the user's account and spends Actions minutes: real,
+    # outward-facing side effects that should not fire as a side effect of `run.py`.
+    if getattr(args, "verify", False):
+        heading("Deciding these runs by executing CI")
+        code = command_verify(args)
+        if code != 0:
+            return code
+        # The report is regenerated because the execution oracle outranks the judge:
+        # rows decided by a model a moment ago may now be decided by a real build, and
+        # the table printed above is the pre-execution one.
+        call("scripts/score_runs.py", "--agent", args.agent, "--mode", "report", quiet=False)
+        call("scripts/export_results.py", "--agent", args.agent, quiet=True)
+
     _closing_advice(args)
     return 0
 
@@ -774,8 +849,12 @@ def _closing_advice(args) -> None:
         print(f"\n  Next:  {bold('python run.py verify')}   {dim('(needs a GitHub token; costs Actions minutes, not tokens)')}")
     elif s["control_attempted"] == 0:
         print("  Memory prompts are 2.25x longer than no-memory ones, so an effect could be")
-        print("  the extra context rather than the memory itself.")
-        print(f"\n  Next:  {bold('python run.py control')}")
+        print("  the extra context rather than the memory itself. The placebo arm shows")
+        print("  the same number of failures drawn from a different project, which")
+        print("  separates the two. Lay it out and run it like any other arm:")
+        cmd = ("python scripts/run_experiment.py --mode prompts "
+               f"--agent {args.agent} --conditions foreign_memory")
+        print(f"{chr(10)}  Next:  {bold(cmd)}")
     else:
         print(f"  {ok('Execution-backed.')} Check per-condition agreement:")
         print(f"  {bold('python run.py verify --agreement-only')}")
@@ -1175,6 +1254,15 @@ def main() -> int:
     parser.add_argument("--backend", default="github", help="execution backend: github or local")
     parser.add_argument("--agreement-only", action="store_true", help="skip execution, just report judge agreement")
     parser.add_argument("--yes", action="store_true", help="do not ask for confirmation")
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        help=(
+            "after judging, decide the runs by really executing CI. Force-pushes a "
+            "branch to a fork under your account and spends Actions minutes, which "
+            "is why it is opt-in rather than part of every run."
+        ),
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",

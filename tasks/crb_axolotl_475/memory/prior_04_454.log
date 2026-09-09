@@ -1,0 +1,25 @@
+--- step: pre-commit ---
+tests/conftest.py:449: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/datasets.py:113: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/prompt_strategies/orpo/chat_template.py:155: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/prompt_strategies/orpo/chat_template.py:177: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/utils/schemas/config.py:1296: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/integrations/base.py:304: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/loaders/tokenizer.py:212: error: Incompatible types in assignment (expression has type "str", variable has type "list[str]")  [assignment]
+src/axolotl/utils/data/rl.py:59: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+tests/test_datasets.py:166: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+tests/test_datasets.py:204: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+tests/test_datasets.py:240: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+tests/test_datasets.py:272: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/integrations/config.py:41: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/integrations/config.py:52: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/axolotl/cli/inference.py:173: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 1 error in 1 file (checked 414 source files)
+bandit...................................................................Passed
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=103794]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__46489381-a4f0-4a28-af6e-d311dc77d6ea.__actions_cache]
+##[end-action id=__46489381-a4f0-4a28-af6e-d311dc77d6ea.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github

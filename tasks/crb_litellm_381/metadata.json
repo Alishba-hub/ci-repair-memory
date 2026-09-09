@@ -1,0 +1,127 @@
+{
+  "task_id": "crb_litellm_381",
+  "name": "CI failure in litellm (Runtime Error, Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "381",
+  "repo_name": "litellm",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "ba48f0fe90578d842327c4ee49980fc212524cf6",
+  "sha_success": "2839b93f8ccb8dd1df1c0f025fe2babf9e296363",
+  "commit_date": "2025-07-11T17:38:54Z",
+  "error_type": [
+    "Runtime Error",
+    "Test Failure"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/test-litellm.yml",
+  "target_files": [
+    "litellm/llms/github_copilot/chat/transformation.py",
+    "litellm/llms/bedrock/common_utils.py",
+    "litellm/router_strategy/base_routing_strategy.py",
+    "tests/test_litellm/test_main.py",
+    "tests/test_litellm/llms/github_copilot/test_github_copilot_transformation.py",
+    "litellm/utils.py",
+    "tests/test_litellm/test_utils.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "378",
+      "commit_date": "2025-07-05T15:54:02Z",
+      "error_type": [
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "test-litellm.yml",
+      "changed_files": [
+        "tests/test_litellm/enterprise/enterprise_callbacks/send_emails/test_resend_email.py",
+        "tests/test_litellm/llms/azure/response/test_azure_transformation.py",
+        "tests/test_litellm/llms/custom_httpx/test_http_handler.py",
+        "tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py",
+        "tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py",
+        "tests/test_litellm/proxy/auth/test_auth_checks.py",
+        "tests/test_litellm/proxy/client/cli/test_auth_commands.py",
+        "tests/test_litellm/proxy/client/cli/test_users_commands.py",
+        "tests/test_litellm/proxy/hooks/test_parallel_request_limiter_v3.py",
+        "tests/test_litellm/proxy/management_endpoints/scim/test_scim_patch_user.py",
+        "tests/test_litellm/proxy/management_endpoints/scim/test_scim_v2_endpoints.py",
+        "tests/test_litellm/proxy/management_endpoints/test_budget_endpoints.py",
+        "tests/test_litellm/proxy/management_endpoints/test_tag_management_endpoints.py",
+        "tests/test_litellm/proxy/pass_through_endpoints/test_llm_pass_through_endpoints.py",
+        "litellm/proxy/guardrails/guardrail_endpoints.py",
+        "litellm/types/guardrails.py",
+        "litellm/constants.py",
+        "tests/test_litellm/test_constants.py",
+        "tests/test_litellm/router_utils/pre_call_checks/test_responses_api_deployment_check.py",
+        "tests/test_litellm/proxy/guardrails/guardrail_hooks/test_pangea.py",
+        "litellm/proxy/guardrails/guardrail_hooks/pangea.py",
+        "litellm/litellm_core_utils/core_helpers.py",
+        "tests/test_litellm/litellm_core_utils/test_core_helpers.py",
+        "tests/test_litellm/integrations/test_prometheus.py",
+        "tests/test_litellm/litellm_core_utils/test_json_logs_initialization.py",
+        "tests/test_litellm/test_main.py"
+      ],
+      "log_file": "memory/prior_00_378.log",
+      "diff_file": "memory/prior_00_378.diff"
+    },
+    {
+      "instance_id": "398",
+      "commit_date": "2025-07-02T16:08:12Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/llms/mistral/mistral_chat_transformation.py"
+      ],
+      "log_file": "memory/prior_01_398.log",
+      "diff_file": "memory/prior_01_398.diff"
+    },
+    {
+      "instance_id": "386",
+      "commit_date": "2025-07-01T05:09:35Z",
+      "error_type": [
+        "Runtime Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "test-litellm.yml",
+      "changed_files": [
+        "litellm/llms/anthropic/experimental_pass_through/adapters/streaming_iterator.py",
+        "litellm/llms/anthropic/experimental_pass_through/adapters/transformation.py",
+        "litellm/litellm_core_utils/prompt_templates/factory.py",
+        "litellm/litellm_core_utils/prompt_templates/image_handling.py",
+        "tests/test_litellm/test_main.py"
+      ],
+      "log_file": "memory/prior_02_386.log",
+      "diff_file": "memory/prior_02_386.diff"
+    },
+    {
+      "instance_id": "396",
+      "commit_date": "2025-06-25T04:14:39Z",
+      "error_type": [
+        "Assertion Error",
+        "Runtime Error"
+      ],
+      "workflow_filename": "test-litellm.yml",
+      "changed_files": [
+        "litellm/llms/volcengine.py",
+        "tests/test_litellm/test_main.py"
+      ],
+      "log_file": "memory/prior_03_396.log",
+      "diff_file": "memory/prior_03_396.diff"
+    },
+    {
+      "instance_id": "390",
+      "commit_date": "2025-06-15T16:41:11Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/llms/ollama/completion/handler.py"
+      ],
+      "log_file": "memory/prior_04_390.log",
+      "diff_file": "memory/prior_04_390.diff"
+    }
+  ]
+}

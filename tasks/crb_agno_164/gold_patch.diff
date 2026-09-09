@@ -1,0 +1,202 @@
+diff --git a/libs/agno/agno/agent/agent.py b/libs/agno/agno/agent/agent.py
+index 6ac9e0752..0cafff3ff 100644
+--- a/libs/agno/agno/agent/agent.py
++++ b/libs/agno/agno/agent/agent.py
+@@ -291,7 +291,7 @@ class Agent:
+         session_id: Optional[str] = None,
+         session_name: Optional[str] = None,
+         session_state: Optional[Dict[str, Any]] = None,
+-        search_previous_sessions_history: Optional[bool] = False,
++        search_previous_sessions_history: bool = False,
+         number_of_sessions: Optional[int] = None,
+         context: Optional[Dict[str, Any]] = None,
+         add_context: bool = False,
+@@ -611,7 +611,7 @@ class Agent:
+             tools=self._tools_for_model,
+             functions=self._functions_for_model,
+             tool_choice=self.tool_choice,
+-            tool_call_limit=self.tool_call_limit,
++            tool_call_limit=(self.tool_call_limit if self.tool_call_limit is not None else 0),
+         )
+ 
+         self._update_run_response(model_response=model_response, run_response=run_response, run_messages=run_messages)
+@@ -807,6 +807,8 @@ class Agent:
+         # If no retries are set, use the agent's default retries
+         if retries is None:
+             retries = self.retries
++        # Ensure retries is an int for subsequent arithmetic
++        retries = int(retries)
+ 
+         # Use stream override value when necessary
+         if stream is None:
+@@ -821,8 +823,10 @@ class Agent:
+         if stream is False:
+             stream_intermediate_steps = False
+ 
+-        self.stream = self.stream or (stream and self.is_streamable)
+-        self.stream_intermediate_steps = self.stream_intermediate_steps or (stream_intermediate_steps and self.stream)
++        self.stream = bool(self.stream or (stream and self.is_streamable))
++        self.stream_intermediate_steps = bool(
++            self.stream_intermediate_steps or (stream_intermediate_steps and self.stream)
++        )
+ 
+         # Use the default user_id and session_id when necessary
+         if user_id is None:
+@@ -1005,7 +1009,7 @@ class Agent:
+             tools=self._tools_for_model,
+             functions=self._functions_for_model,
+             tool_choice=self.tool_choice,
+-            tool_call_limit=self.tool_call_limit,
++            tool_call_limit=(self.tool_call_limit if self.tool_call_limit is not None else 0),
+         )
+ 
+         self._update_run_response(model_response=model_response, run_response=run_response, run_messages=run_messages)
+@@ -1175,6 +1179,8 @@ class Agent:
+         # If no retries are set, use the agent's default retries
+         if retries is None:
+             retries = self.retries
++        # Ensure retries is an int for subsequent arithmetic
++        retries = int(retries)
+ 
+         # Use stream override value when necessary
+         if stream is None:
+@@ -1189,8 +1195,10 @@ class Agent:
+         if stream is False:
+             stream_intermediate_steps = False
+ 
+-        self.stream = self.stream or (stream and self.is_streamable)
+-        self.stream_intermediate_steps = self.stream_intermediate_steps or (stream_intermediate_steps and self.stream)
++        self.stream = bool(self.stream or (stream and self.is_streamable))
++        self.stream_intermediate_steps = bool(
++            self.stream_intermediate_steps or (stream_intermediate_steps and self.stream)
++        )
+ 
+         # Use the default user_id and session_id when necessary
+         if user_id is None:
+@@ -2080,7 +2088,7 @@ class Agent:
+         if self.search_previous_sessions_history:
+             agent_tools.append(
+                 self.get_previous_sessions_messages_function(
+-                    number_of_sessions=self.number_of_sessions,
++                    number_of_sessions=(self.number_of_sessions or 0),
+                 )
+             )
+ 
+@@ -3504,7 +3512,10 @@ class Agent:
+                     retriever_kwargs = {"agent": self}
+                 if "filters" in sig.parameters:
+                     retriever_kwargs["filters"] = filters
+-                retriever_kwargs.update({"query": query, "num_documents": num_documents, **kwargs})
++                # Always include query; only include num_documents when it is not None
++                retriever_kwargs.update({"query": query, **kwargs})
++                if num_documents is not None:
++                    retriever_kwargs["num_documents"] = num_documents
+                 return self.retriever(**retriever_kwargs)
+             except Exception as e:
+                 log_warning(f"Retriever failed: {e}")
+@@ -3565,7 +3576,10 @@ class Agent:
+                     retriever_kwargs = {"agent": self}
+                 if "filters" in sig.parameters:
+                     retriever_kwargs["filters"] = filters
+-                retriever_kwargs.update({"query": query, "num_documents": num_documents, **kwargs})
++                # Always include query; only include num_documents when it is not None
++                retriever_kwargs.update({"query": query, **kwargs})
++                if num_documents is not None:
++                    retriever_kwargs["num_documents"] = num_documents
+                 result = self.retriever(**retriever_kwargs)
+ 
+                 if isawaitable(result):
+@@ -4098,7 +4112,7 @@ class Agent:
+             reasoning_messages: List[Message] = []
+             all_reasoning_steps: List[ReasoningStep] = []
+             log_debug("Starting Reasoning", center=True, symbol="=")
+-            while next_action == NextAction.CONTINUE and step_count < self.reasoning_max_steps:
++            while next_action == NextAction.CONTINUE and step_count < (self.reasoning_max_steps or 0):
+                 log_debug(f"Step {step_count}", center=True, symbol="=")
+                 try:
+                     # Run the reasoning agent
+@@ -4308,7 +4322,7 @@ class Agent:
+             reasoning_messages: List[Message] = []
+             all_reasoning_steps: List[ReasoningStep] = []
+             log_debug("Starting Reasoning", center=True, symbol="=")
+-            while next_action == NextAction.CONTINUE and step_count < self.reasoning_max_steps:
++            while next_action == NextAction.CONTINUE and step_count < (self.reasoning_max_steps or 0):
+                 log_debug(f"Step {step_count}", center=True, symbol="=")
+                 step_count += 1
+                 try:
+diff --git a/libs/agno/agno/utils/whatsapp.py b/libs/agno/agno/utils/whatsapp.py
+index 2657b24c0..d2c8a900f 100644
+--- a/libs/agno/agno/utils/whatsapp.py
++++ b/libs/agno/agno/utils/whatsapp.py
+@@ -21,7 +21,7 @@ def get_phone_number_id() -> str:
+     return phone_number_id
+ 
+ 
+-def get_media(media_id: str) -> dict:
++def get_media(media_id: str) -> bytes:
+     """
+     Sends a GET request to the Facebook Graph API to retrieve media information.
+ 
+@@ -40,7 +40,7 @@ def get_media(media_id: str) -> dict:
+ 
+         media_url = data.get("url")
+     except requests.exceptions.RequestException as e:
+-        return {"error": str(e)}
++        raise e
+ 
+     try:
+         response = requests.get(media_url, headers=headers)
+@@ -48,10 +48,10 @@ def get_media(media_id: str) -> dict:
+         data = response.content
+         return data
+     except requests.exceptions.RequestException as e:
+-        return {"error": str(e)}
++        raise e
+ 
+ 
+-async def get_media_async(media_id: str) -> dict:
++async def get_media_async(media_id: str) -> bytes:
+     """
+     Sends a GET request to the Facebook Graph API to retrieve media information.
+ 
+@@ -71,7 +71,7 @@ async def get_media_async(media_id: str) -> dict:
+ 
+         media_url = data.get("url")
+     except httpx.HTTPStatusError as e:
+-        return {"error": str(e)}
++        raise e
+ 
+     try:
+         async with httpx.AsyncClient() as client:
+@@ -80,7 +80,7 @@ async def get_media_async(media_id: str) -> dict:
+             data = response.content
+         return data
+     except httpx.HTTPStatusError as e:
+-        return {"error": str(e)}
++        raise e
+ 
+ 
+ def upload_media(media_data: bytes, mime_type: str, filename: str = "file"):
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b7212..5e1b90aff 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,10 +39,14 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            # Ensure we don't pass None to Path.joinpath (mypy complains about Optional)
++            if agno_conf_workspace_dir_str is not None:
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
++            else:
++                logger.debug("No 'workspace' key found in pyproject agno config")
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)

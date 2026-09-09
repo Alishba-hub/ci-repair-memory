@@ -1,0 +1,24 @@
+--- step: type-checker ---
+    at t.matchFileSpecs (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/common/configOptions.ts:941:22)
+    at e._resolveImportStrict (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/importResolver.ts:878:30)
+    at e.resolveImportInternal (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/importResolver.ts:524:35)
+    at e.resolveImport (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/importResolver.ts:161:21)
+    at O._lookUpImport (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/program.ts:1925:55)
+    at n.timeOperation (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/common/timing.ts:40:20)
+    at e2 (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:3435:30)
+... (40 lines omitted)
+    at Array.forEach (<anonymous>)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:23370:15
+    at na (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:23486:5)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:4930:39
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:5061:5
+    at eN (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:1482:5)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:5690:32
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:5798:5
+    at eN (/home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:1482:5)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:8796:25
+    at Array.forEach (<anonymous>)
+    at /home/runner/work/browser-use/browser-use/.venv/lib/python3.11/site-packages/pyright/dist/dist/pyright-internal/src/analyzer/typeEvaluator.ts:8790:25
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://github.com/.ex

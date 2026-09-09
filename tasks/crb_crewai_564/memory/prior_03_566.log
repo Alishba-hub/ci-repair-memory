@@ -1,0 +1,38 @@
+--- step: tests (3.12) ---
+tests/test_pydantic_compatibility.py:11: in <module>
+    class TestFlowTrackable(BaseModel, FlowTrackable):
+.venv/lib/python3.12/site-packages/pydantic/_internal/_model_construction.py:137: in __new__
+    cls: type[BaseModel] = super().__new__(mcs, cls_name, bases, namespace, **kwargs)  # type: ignore
+<frozen abc>:106: in __new__
+    ???
+E   TypeError: Cannot create a consistent method resolution
+E   order (MRO) for bases BaseModel, FlowTrackable
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/pydantic/_internal/_config.py:291
+  /home/runner/work/crewAI/crewAI/.venv/lib/python3.12/site-packages/pydantic/_internal/_config.py:291: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.9/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+.venv/lib/python3.12/site-packages/click/core.py:1159
+  /home/runner/work/crewAI/crewAI/.venv/lib/python3.12/site-packages/click/core.py:1159: PytestCollectionWarning: cannot collect 'test' because it is not a function.
+    def __call__(self, *args: t.Any, **kwargs: t.Any) -> t.Any:
+tests/llm_test.py:419
+  /home/runner/work/crewAI/crewAI/tests/llm_test.py:419: PytestRemovedIn9Warning: Marks applied to fixtures have no effect
+  See docs: https://docs.pytest.org/en/stable/deprecations.html#applying-a-mark-to-a-fixture-function
+    @pytest.mark.vcr(filter_headers=["authorization"])
+tests/test_flow_persistence.py:14
+  /home/runner/work/crewAI/crewAI/tests/test_flow_persistence.py:14: PytestCollectionWarning: cannot collect test class 'TestState' because it has a __init__ constructor (from: tests/test_flow_persistence.py)
+    class TestState(FlowState):
+tests/test_lite_agent.py:263
+  /home/runner/work/crewAI/crewAI/tests/test_lite_agent.py:263: PytestCollectionWarning: cannot collect test class 'TestFlow' because it has a __init__ constructor (from: tests/test_lite_agent.py)
+    class TestFlow(Flow):
+tests/utilities/events/test_crewai_event_bus.py:7
+  /home/runner/work/crewAI/crewAI/tests/utilities/events/test_crewai_event_bus.py:7: PytestCollectionWarning: cannot collect test class 'TestEvent' because it has a __init__ constructor (from: tests/utilities/events/test_crewai_event_bus.py)
+    class TestEvent(BaseEvent):
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_pydantic_compatibility.py - TypeError: Cannot create a consistent method resolution
+order (MRO) for bases BaseModel, FlowTrackable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+======================== 6 warnings, 1 error in 18.56s =========================
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://githu

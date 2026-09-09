@@ -1,0 +1,114 @@
+{
+  "task_id": "crb_agno_153",
+  "name": "CI failure in agno (Dependency Issues, Syntax Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "153",
+  "repo_name": "agno",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "16c6139ab089f3cd774175cc7a5bc2e0cbd52699",
+  "sha_success": "644b7b35bd609233854f6e30a10f7d9751d8f05d",
+  "commit_date": "2025-06-09T12:44:28Z",
+  "error_type": [
+    "Dependency Issues",
+    "Syntax Error"
+  ],
+  "error_group": "code_runtime",
+  "workflow_path": ".github/workflows/test.yml",
+  "target_files": [
+    "libs/agno/agno/app/agui/utils.py",
+    "libs/agno/agno/media.py",
+    "libs/agno/agno/tools/firecrawl.py",
+    "libs/agno/tests/unit/tools/test_firecrawl.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "80",
+      "commit_date": "2025-06-05T16:23:47Z",
+      "error_type": [
+        "Syntax Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/app/playground/async_router.py",
+        "libs/agno/agno/app/playground/sync_router.py",
+        "libs/agno/agno/reranker/infinity.py",
+        "libs/agno/agno/tools/firecrawl.py",
+        "libs/agno/tests/unit/tools/test_firecrawl.py"
+      ],
+      "log_file": "memory/prior_00_80.log",
+      "diff_file": "memory/prior_00_80.diff"
+    },
+    {
+      "instance_id": "74",
+      "commit_date": "2025-06-02T10:44:33Z",
+      "error_type": [
+        "Dependency Issues",
+        "Syntax Error"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/app/base.py",
+        "libs/agno/agno/tools/firecrawl.py",
+        "libs/agno/tests/unit/tools/test_firecrawl.py"
+      ],
+      "log_file": "memory/prior_01_74.log",
+      "diff_file": "memory/prior_01_74.diff"
+    },
+    {
+      "instance_id": "201",
+      "commit_date": "2025-05-26T15:28:20Z",
+      "error_type": [
+        "Dependency Issues",
+        "Syntax Error"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/utils/whatsapp.py",
+        "libs/agno/agno/workspace/helpers.py",
+        "libs/agno/agno/tools/firecrawl.py",
+        "libs/agno/agno/vectordb/qdrant/qdrant.py",
+        "libs/agno/tests/unit/tools/test_firecrawl.py",
+        "libs/agno/agno/app/whatsapp/async_router.py",
+        "libs/agno/agno/app/whatsapp/sync_router.py"
+      ],
+      "log_file": "memory/prior_02_201.log",
+      "diff_file": "memory/prior_02_201.diff"
+    },
+    {
+      "instance_id": "83",
+      "commit_date": "2025-05-26T14:59:25Z",
+      "error_type": [
+        "Dependency Issues",
+        "Syntax Error"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/agno/tools/firecrawl.py",
+        "libs/agno/agno/utils/whatsapp.py",
+        "libs/agno/agno/workspace/helpers.py",
+        "libs/agno/pyproject.toml",
+        "libs/agno/tests/unit/tools/test_firecrawl.py"
+      ],
+      "log_file": "memory/prior_03_83.log",
+      "diff_file": "memory/prior_03_83.diff"
+    },
+    {
+      "instance_id": "158",
+      "commit_date": "2025-05-23T07:03:07Z",
+      "error_type": [
+        "Dependency Issues",
+        "Code Linting"
+      ],
+      "workflow_filename": "test.yml",
+      "changed_files": [
+        "libs/agno/tests/unit/tools/models/test_gemini.py",
+        "libs/agno/agno/utils/whatsapp.py",
+        "libs/agno/agno/workspace/helpers.py"
+      ],
+      "log_file": "memory/prior_04_158.log",
+      "diff_file": "memory/prior_04_158.diff"
+    }
+  ]
+}

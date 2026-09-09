@@ -1,0 +1,111 @@
+{
+  "task_id": "crb_conan_528",
+  "name": "CI failure in conan (Environment Error, Test Failure, Syntax Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "528",
+  "repo_name": "conan",
+  "repo_owner": "conan-io",
+  "sha_fail": "4cb814c27dd37bbf6ccd194f9d6b2c0a2ac0119d",
+  "sha_success": "705236317d8ff84d91838a236c1f7491eb360910",
+  "commit_date": "2025-07-29T11:43:22Z",
+  "error_type": [
+    "Environment Error",
+    "Test Failure",
+    "Syntax Error"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/main.yml",
+  "target_files": [
+    "test/conftest.py",
+    "test/functional/toolchains/meson/_base.py",
+    "test/functional/toolchains/meson/test_pkg_config_reuse.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "541",
+      "commit_date": "2025-07-29T10:42:28Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure",
+        "Syntax Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py"
+      ],
+      "log_file": "memory/prior_00_541.log",
+      "diff_file": "memory/prior_00_541.diff"
+    },
+    {
+      "instance_id": "523",
+      "commit_date": "2025-07-16T06:36:46Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure",
+        "Runtime Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "conan/tools/sbom/cyclonedx.py",
+        "test/functional/sbom/test_cyclonedx.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/conftest.py",
+        "test/functional/tools/system/package_manager_test.py"
+      ],
+      "log_file": "memory/prior_01_523.log",
+      "diff_file": "memory/prior_01_523.diff"
+    },
+    {
+      "instance_id": "527",
+      "commit_date": "2025-07-15T09:51:03Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/tools/system/package_manager_test.py",
+        "test/conftest.py"
+      ],
+      "log_file": "memory/prior_02_527.log",
+      "diff_file": "memory/prior_02_527.diff"
+    },
+    {
+      "instance_id": "538",
+      "commit_date": "2025-07-14T15:15:27Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure",
+        "Syntax Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py"
+      ],
+      "log_file": "memory/prior_03_538.log",
+      "diff_file": "memory/prior_03_538.diff"
+    },
+    {
+      "instance_id": "548",
+      "commit_date": "2025-07-11T10:54:21Z",
+      "error_type": [
+        "Environment Error",
+        "Assertion Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "conan/internal/api/detect/detect_api.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/conftest.py",
+        "test/unittests/test_conftest_tools.py"
+      ],
+      "log_file": "memory/prior_04_548.log",
+      "diff_file": "memory/prior_04_548.diff"
+    }
+  ]
+}

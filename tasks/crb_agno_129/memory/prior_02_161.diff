@@ -1,0 +1,33 @@
+diff --git a/libs/agno/agno/document/reader/csv_reader.py b/libs/agno/agno/document/reader/csv_reader.py
+index 61fe4714262..0cfbfdd58e1 100644
+--- a/libs/agno/agno/document/reader/csv_reader.py
++++ b/libs/agno/agno/document/reader/csv_reader.py
+@@ -114,7 +114,7 @@ async def _process_page(page_number: int, page_rows: List[List[str]]) -> Documen
+ 
+                     return Document(
+                         name=csv_name,
+-                        id=str(uuid4()),
++                        id=f"{csv_name}_page{page_number}",
+                         meta_data={"page": page_number, "start_row": start_row, "rows": len(page_rows)},
+                         content=page_content,
+                     )
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b72123a..900fa57e004 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,10 +39,11 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            if isinstance(agno_conf_workspace_dir_str, str):
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)

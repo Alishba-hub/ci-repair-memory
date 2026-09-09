@@ -1,0 +1,33 @@
+--- step: test ---
+=============================== warnings summary ===============================
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+  /home/runner/work/litellm/litellm/tests/test_litellm/integrations/test_custom_prompt_management.py:27: PytestCollectionWarning: cannot collect test class 'TestCustomPromptManagement' because it has a __init__ constructor (from: tests/test_litellm/integrations/test_custom_prompt_management.py)
+    class TestCustomPromptManagement(CustomPromptManagement):
+tests/test_litellm/integrations/arize/test_arize_utils.py:184
+tests/test_litellm/integrations/arize/test_arize_utils.py:184
+tests/test_litellm/integrations/arize/test_arize_utils.py:184
+tests/test_litellm/integrations/arize/test_arize_utils.py:184
+  /home/runner/work/litellm/litellm/tests/test_litellm/integrations/arize/test_arize_utils.py:184: PytestCollectionWarning: cannot collect test class 'TestArizeLogger' because it has a __init__ constructor (from: tests/test_litellm/integrations/arize/test_arize_utils.py)
+... (39 lines omitted)
+tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py:151
+tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py:151
+  /home/runner/work/litellm/litellm/tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py:151: PytestUnknownMarkWarning: Unknown pytest.mark.serial - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.serial
+tests/test_litellm/llms/pg_vector/vector_stores/test_pg_vector_transformation.py:144
+tests/test_litellm/llms/pg_vector/vector_stores/test_pg_vector_transformation.py:144
+tests/test_litellm/llms/pg_vector/vector_stores/test_pg_vector_transformation.py:144
+tests/test_litellm/llms/pg_vector/vector_stores/test_pg_vector_transformation.py:144
+  /home/runner/work/litellm/litellm/tests/test_litellm/llms/pg_vector/vector_stores/test_pg_vector_transformation.py:144: PytestUnknownMarkWarning: Unknown pytest.mark.serial - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.serial
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_litellm/proxy/test_proxy_cli.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+======================== 40 warnings, 1 error in 15.20s ========================
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://github.com/.extr

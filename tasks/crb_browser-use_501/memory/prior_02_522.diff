@@ -1,0 +1,13 @@
+diff --git a/browser_use/agent/capabilities.py b/browser_use/agent/capabilities.py
+index 79d11889c0..42da5312cb 100644
+--- a/browser_use/agent/capabilities.py
++++ b/browser_use/agent/capabilities.py
+@@ -97,7 +97,7 @@ def get_llm_capabilities(
+ 		capabilities.error = error
+ 	except Exception as e:
+ 		error = str(e)
+-		logger.error(f'💥 Unexpected Error Ruring Capability Assesment: {error}')
++		logger.error(f'💥 Unexpected Error Ruring Capability Assessment: {error}')
+ 		capabilities.error = error
+ 
+ 	return _cache_and_return(llm, capabilities)

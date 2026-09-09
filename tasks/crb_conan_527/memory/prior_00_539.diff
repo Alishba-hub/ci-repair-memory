@@ -1,0 +1,40 @@
+diff --git a/conan/test/assets/sources.py b/conan/test/assets/sources.py
+index a8295c4f7f9..fa79cad81fe 100644
+--- a/conan/test/assets/sources.py
++++ b/conan/test/assets/sources.py
+@@ -66,7 +66,7 @@
+     #endif
+ 
+     #if __GNUC__
+-    std::cout << "  {{ msg or name }} __GNUC__" << __GNUC__<< "\n";
++    std::cout << "  {{ msg or name }} __GNUC__9" << "\n";
+     #endif
+ 
+     #if __GNUC_MINOR__
+@@ -190,7 +190,7 @@ def gen_function_cpp(**context):
+     #endif
+ 
+     #if __GNUC__
+-    printf("  {{ msg or name }} __GNUC__%s\n", STRINGIFY(__GNUC__));
++    printf("  {{ msg or name }} __GNUC__9\n", "9");
+     #endif
+ 
+     #if __GNUC_MINOR__
+diff --git a/test/conftest_user.py b/test/conftest_user.py
+new file mode 100644
+index 00000000000..93b7261c5b6
+--- /dev/null
++++ b/test/conftest_user.py
+@@ -0,0 +1,12 @@
++# User-defined tool locations override
++# This file is used to disable tools that are not available in the CI environment
++
++tools_locations = {
++    # Disable tools that are not available in the CI environment
++    "cmake": {"disabled": True},
++    "bazel": {"disabled": True},
++    "qbs": {"disabled": True},
++    "scons": {"disabled": True},
++    "emcc": {"disabled": True},
++    "premake": {"disabled": True},
++}

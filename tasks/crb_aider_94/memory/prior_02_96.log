@@ -1,0 +1,54 @@
+--- step: build (3.10) ---
+E       KeyError: 'max_input_tokens'
+tests/basic/test_models.py:47: KeyError
+________________________ TestModels.test_model_aliases _________________________
+self = <tests.basic.test_models.TestModels testMethod=test_model_aliases>
+    def test_model_aliases(self):
+        # Test common aliases
+        model = Model("4")
+        self.assertEqual(model.name, "gpt-4-0613")
+        model = Model("4o")
+        self.assertEqual(model.name, "gpt-4o")
+        model = Model("35turbo")
+        self.assertEqual(model.name, "gpt-3.5-turbo")
+        model = Model("35-turbo")
+        self.assertEqual(model.name, "gpt-3.5-turbo")
+        model = Model("3")
+        self.assertEqual(model.name, "gpt-3.5-turbo")
+        model = Model("sonnet")
+>       self.assertEqual(model.name, "anthropic/claude-3-7-sonnet-20250219")
+E       AssertionError: 'anthropic/claude-sonnet-4-20250514' != 'anthropic/claude-3-7-sonnet-20250219'
+E       - anthropic/claude-sonnet-4-20250514
+E       ?                         --     ^ ^
+E       + anthropic/claude-3-7-sonnet-20250219
+E       ?                  ++++            ^ ^
+tests/basic/test_models.py:141: AssertionError
+_________________ TestRepoMapAllLanguages.test_language_csharp _________________
+self = <tests.basic.test_repomap.TestRepoMapAllLanguages testMethod=test_language_csharp>
+    def test_language_csharp(self):
+>       self._test_language_repo_map("csharp", "cs", "IGreeter")
+tests/basic/test_repomap.py:338:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/basic/test_repomap.py:415: in _test_language_repo_map
+    self.assertGreater(len(result.strip().splitlines()), 1)
+E   AssertionError: 1 not greater than 1
+----------------------------- Captured stdout call -----------------------------
+Skipping file /tmp/tmpv9hyfug2/test.cs: Incompatible Language version 15. Must be between 13 and 14
+lang: csharp
+result:
+test.cs
+test.cs
+=========================== short test summary info ============================
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_read_only_with_image_file - AssertionError: 0 != 1
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_tokens_output - AssertionError: False is not true
+FAILED tests/basic/test_models.py::TestModels::test_max_context_tokens - KeyError: 'max_input_tokens'
+FAILED tests/basic/test_models.py::TestModels::test_model_aliases - AssertionError: 'anthropic/claude-sonnet-4-20250514' != 'anthropic/claude-3-7-sonnet-20250219'
+- anthropic/claude-sonnet-4-20250514
+?                         --     ^ ^
++ anthropic/claude-3-7-sonnet-20250219
+?                  ++++            ^ ^
+FAILED tests/basic/test_repomap.py::TestRepoMapAllLanguages::test_language_csharp - AssertionError: 1 not greater than 1
+============= 5 failed, 473 passed, 1 skipped in 250.30s (0:04:10) =============
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

@@ -1,0 +1,13 @@
+diff --git a/litellm/llms/bedrock/image/amazon_nova_canvas_transformation.py b/litellm/llms/bedrock/image/amazon_nova_canvas_transformation.py
+index 8fe9f3760472..3ef7a40e9a92 100644
+--- a/litellm/llms/bedrock/image/amazon_nova_canvas_transformation.py
++++ b/litellm/llms/bedrock/image/amazon_nova_canvas_transformation.py
+@@ -134,7 +134,7 @@ def transform_request_body(
+             inpainting_params = {"text": text, **inpainting_params}
+             try:
+                 inpainting_params_typed = AmazonNovaCanvasInpaintingParams(
+-                    **inpainting_params
++                    **inpainting_params  # type: ignore
+                 )
+             except Exception as e:
+                 raise ValueError(

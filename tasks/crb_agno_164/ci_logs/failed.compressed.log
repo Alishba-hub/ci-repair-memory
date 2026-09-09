@@ -1,0 +1,73 @@
+--- step: style-check (3.9) ---
+    |                          ^^^^^^^^
+117 |         self.fts_index_exists = False
+118 |         self.use_tantivy = use_tantivy
+    |
+help: Add `from __future__ import annotations`
+RUF100 [*] Unused `noqa` directive (non-enabled: `E501`)
+   --> agno/vectordb/lancedb/lance_db.py:125:109
+    |
+123 |             except ImportError:
+124 |                 raise ImportError(
+125 |                     "Please install tantivy-py `pip install tantivy` to use the full text search feature."  # noqa: E501
+    |                                                                                                             ^^^^^^^^^^^^
+126 |                 )
+    |
+help: Remove unused `noqa` directive
+    |
+124 |                 raise ImportError(
+    -                     "Please install tantivy-py `pip install tantivy` to use the full text search feature."  # noqa: E501
+125 +                     "Please install tantivy-py `pip install tantivy` to use the full text search feature."
+126 |                 )
+    |
+BLE001 Do not catch blind exception: `Exception`
+   --> agno/vectordb/lancedb/lance_db.py:187:16
+    |
+185 |                 result = self.table.search().where(f"{self._id}='{doc_id}'").to_arrow()
+186 |                 return len(result) > 0
+187 |         except Exception:
+    |                ^^^^^^^^^
+188 |             # Search sometimes fails with stale cache data, it means the doc doesn't exist
+... (2817 lines omitted)
+2 | from typing import Any, Dict, List, Optional
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 |
+4 | try:
+  |
+RUF100 [*] Unused `noqa` directive (unused: `F401`)
+ --> agno/vectordb/qdrant/qdrant.py:5:64
+  |
+4 | try:
+5 |     from qdrant_client import AsyncQdrantClient, QdrantClient  # noqa: F401
+  |                                                                ^^^^^^^^^^^^
+6 |     from qdrant_client.http import models
+7 | except ImportError:
+  |
+help: Remove unused `noqa` directive
+  |
+4 | try:
+  -     from qdrant_client import AsyncQdrantClient, QdrantClient  # noqa: F401
+5 +     from qdrant_client import AsyncQdrantClient, QdrantClient
+6 |     from qdrant_client.http import models
+  |
+FA100 Add `from __future__ import annotations` to simplify `typing.Optional`
+  --> agno/vectordb/qdrant/qdrant.py:24:19
+   |
+22 |         self,
+... (8593 lines omitted)
+UP006 Use `list` instead of `List` for type annotation
+  --> tests/unit/vectordb/test_weaviatedb.py:48:27
+   |
+47 | @pytest.fixture
+48 | def sample_documents() -> List[Document]:
+   |                           ^^^^
+49 |     """Fixture to create sample documents"""
+50 |     return [
+   |
+help: Replace with `list`
+Found 8725 errors.
+[*] 454 fixable with the `--fix` option (6860 hidden fixes can be enabled with the `--unsafe-fixes` option).
+##[error]Process completed with exit code 1.
+Post job cleanup.
+(node:2335) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ..

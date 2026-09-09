@@ -1,0 +1,29 @@
+--- step: test ---
+=============================== warnings summary ===============================
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+../../../.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+... (52 lines omitted)
+tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py:151
+tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py:151
+tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py:151
+  /home/runner/work/litellm/litellm/tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py:151: PytestUnknownMarkWarning: Unknown pytest.mark.serial - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.serial
+tests/test_litellm/google_genai/test_google_genai_adapter.py::test_api_base_and_api_key_passthrough[generate_content-False-False]
+  /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/json/decoder.py:354: RuntimeWarning: coroutine 'test_api_base_and_api_key_passthrough.<locals>.mock_async_return' was never awaited
+    obj, end = self.scan_once(s, idx)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_litellm/llms/github_copilot/test_github_copilot_transformation.py::test_completion_github_copilot_mock_response - litellm.exceptions.APIConnectionError: litellm.APIConnectionError: APIConnectionError: Github_copilotException - type object 'LlmProviders' has no attribute 'DIGITALOCEAN'
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+====== 1 failed, 685 passed, 4 skipped, 46 warnings in 304.81s (0:05:04) =======
+##[error]Process completed with exit code 2.
+Post job cleanup

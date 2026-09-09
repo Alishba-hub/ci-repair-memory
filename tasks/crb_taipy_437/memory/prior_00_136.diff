@@ -1,0 +1,389 @@
+diff --git a/taipy/gui/gui.py b/taipy/gui/gui.py
+index b3ec7843d5..5fcb270012 100644
+--- a/taipy/gui/gui.py
++++ b/taipy/gui/gui.py
+@@ -22,6 +22,7 @@
+ import time
+ import typing as t
+ import warnings
++import zoneinfo
+ from importlib import metadata, util
+ from inspect import currentframe, getabsfile, iscoroutinefunction, ismethod, ismodule
+ from pathlib import Path
+@@ -31,7 +32,6 @@
+ 
+ import markdown as md_lib
+ import tzlocal
+-import zoneinfo
+ from werkzeug.utils import secure_filename
+ 
+ import __main__  # noqa: F401
+@@ -109,7 +109,6 @@
+ from .utils.table_col_builder import _enhance_columns
+ from .utils.threads import _invoke_async_callback
+ 
+-
+ TIMEZONE_FALLBACKS = {
+     "Asia/Beijing": "Asia/Shanghai",
+ }
+diff --git a/taipy/core/job/_job_converter.py b/taipy/core/job/_job_converter.py
+index 5d5a50b3c7..ef62940517 100644
+--- a/taipy/core/job/_job_converter.py
++++ b/taipy/core/job/_job_converter.py
+@@ -14,10 +14,15 @@
+ 
+ from .._repository._abstract_converter import _AbstractConverter
+ from ..common._utils import _fcts_to_dict, _load_fct
+-from ..exceptions import InvalidSubscriber
++from ..exceptions import InvalidSubscriber, ModelNotFound
+ from ..job._job_model import _JobModel
+ from ..job.job import Job
+ from ..task._task_manager_factory import _TaskManagerFactory
++from ..task.task import Task, TaskId
++
++
++def _missing_task_function():
++    return None
+ 
+ 
+ class _JobConverter(_AbstractConverter):
+@@ -41,10 +46,15 @@ def _entity_to_model(cls, job: Job) -> _JobModel:
+     def _model_to_entity(cls, model: _JobModel) -> Job:
+         task_manager = _TaskManagerFactory._build_manager()
+         task_repository = task_manager._repository
++        try:
++            task = task_repository._load(model.task_id)
++        except ModelNotFound:
++            task_config_id = model.task_id.removeprefix("TASK_").rsplit("_", 1)[0]
++            task = Task(task_config_id, {}, _missing_task_function, id=TaskId(model.task_id), version=model.version)
+ 
+         job = Job(
+             id=model.id,
+-            task=task_repository._load(model.task_id),
++            task=task,
+             submit_id=model.submit_id,
+             submit_entity_id=model.submit_entity_id,
+             version=model.version,
+diff --git a/Pipfile b/Pipfile
+index 6fee7c7254..5384b4c227 100644
+--- a/Pipfile
++++ b/Pipfile
+@@ -23,6 +23,7 @@ openpyxl = "==3.1.2"
+ pandas = ">=1.5.3,<2.3.0"
+ pyarrow = "==16.0.0"
+ pymongo = {extras = ["srv"], version = "==4.6.3"}
++setuptools = "<81"
+ python-dotenv = "==1.0.0"
+ python-magic = {version = "==0.4.24", markers="platform_system != 'Windows'"}
+ pytz = "==2021.3"
+diff --git a/tools/packages/pipfiles/Pipfile3.10.max b/tools/packages/pipfiles/Pipfile3.10.max
+index 635eaa8ae1..b081f11d46 100644
+--- a/tools/packages/pipfiles/Pipfile3.10.max
++++ b/tools/packages/pipfiles/Pipfile3.10.max
+@@ -57,6 +57,7 @@ version = "==4.2.13"
+ "openpyxl" = {version="==3.1.5"}
+ "pandas" = {version="==2.2.3", markers="python_version>'3.8'"}
+ "pymongo" = {version="==4.13.0", extras=["srv"]}
++"setuptools" = {version="<81"}
+ "sqlalchemy" = {version="==2.0.41"}
+ "toml" = {version="==0.10.2"}
+ "boto3" = {version="==1.38.27"}
+diff --git a/tools/packages/pipfiles/Pipfile3.11.max b/tools/packages/pipfiles/Pipfile3.11.max
+index 1cfbfb5d81..f9428f759c 100644
+--- a/tools/packages/pipfiles/Pipfile3.11.max
++++ b/tools/packages/pipfiles/Pipfile3.11.max
+@@ -57,6 +57,7 @@ version = "==4.2.13"
+ "openpyxl" = {version="==3.1.5"}
+ "pandas" = {version="==2.2.3", markers="python_version>'3.8'"}
+ "pymongo" = {version="==4.13.0", extras=["srv"]}
++"setuptools" = {version="<81"}
+ "sqlalchemy" = {version="==2.0.41"}
+ "toml" = {version="==0.10.2"}
+ "boto3" = {version="==1.38.27"}
+diff --git a/tools/packages/pipfiles/Pipfile3.12.max b/tools/packages/pipfiles/Pipfile3.12.max
+index 1cfbfb5d81..f9428f759c 100644
+--- a/tools/packages/pipfiles/Pipfile3.12.max
++++ b/tools/packages/pipfiles/Pipfile3.12.max
+@@ -57,6 +57,7 @@ version = "==4.2.13"
+ "openpyxl" = {version="==3.1.5"}
+ "pandas" = {version="==2.2.3", markers="python_version>'3.8'"}
+ "pymongo" = {version="==4.13.0", extras=["srv"]}
++"setuptools" = {version="<81"}
+ "sqlalchemy" = {version="==2.0.41"}
+ "toml" = {version="==0.10.2"}
+ "boto3" = {version="==1.38.27"}
+diff --git a/tools/packages/pipfiles/Pipfile3.9.max b/tools/packages/pipfiles/Pipfile3.9.max
+index 37b6e82a74..9e76f81982 100644
+--- a/tools/packages/pipfiles/Pipfile3.9.max
++++ b/tools/packages/pipfiles/Pipfile3.9.max
+@@ -57,6 +57,7 @@ version = "==4.2.13"
+ "openpyxl" = {version="==3.1.5"}
+ "pandas" = {version="==2.2.3", markers="python_version>'3.8'"}
+ "pymongo" = {version="==4.13.0", extras=["srv"]}
++"setuptools" = {version="<81"}
+ "sqlalchemy" = {version="==2.0.41"}
+ "toml" = {version="==0.10.2"}
+ "boto3" = {version="==1.38.27"}
+diff --git a/taipy/core/job/job.py b/taipy/core/job/job.py
+index d4c49e52e7..188bbb4eee 100644
+--- a/taipy/core/job/job.py
++++ b/taipy/core/job/job.py
+@@ -33,7 +33,7 @@
+ def _run_callbacks(fn):
+     def __run_callbacks(job):
+         fn(job)
+-        _TaipyLogger._get_logger().debug(f"{job.id} status has changed to {job.status}.")
++        _TaipyLogger._get_logger().debug(f"{job.id} status has changed to {job._status}.")
+         for fct in job._subscribers:
+             fct(job)
+ 
+diff --git a/tests/core/conftest.py b/tests/core/conftest.py
+index de44d79adc..75d45debbc 100644
+--- a/tests/core/conftest.py
++++ b/tests/core/conftest.py
+@@ -13,7 +13,6 @@
+ import pickle
+ import shutil
+ from datetime import datetime
+-from queue import Queue
+ from unittest.mock import patch
+ 
+ import pandas as pd
+@@ -385,8 +384,7 @@ def _init_orchestrator():
+         if _OrchestratorFactory._orchestrator is None:
+             _OrchestratorFactory._build_orchestrator()
+         _OrchestratorFactory._build_dispatcher(force_restart=True)
+-        _OrchestratorFactory._orchestrator.jobs_to_run = Queue()
+-        _OrchestratorFactory._orchestrator.blocked_jobs = []
++        _OrchestratorFactory._orchestrator.initialize()
+ 
+     return _init_orchestrator
+ 
+diff --git a/tests/core/utils/__init__.py b/tests/core/utils/__init__.py
+index 22619f1c6a..a5ecaa4d9c 100644
+--- a/tests/core/utils/__init__.py
++++ b/tests/core/utils/__init__.py
+@@ -37,6 +37,7 @@ def assert_submission_status(submission: Submission, expected_status, timeout=12
+         time=timeout,
+         msg=submission_status_message,
+         submission=submission,
++        expected_status=expected_status,
+         timeout=timeout)
+ 
+ 
+diff --git a/taipy/core/sequence/_sequence_fs_repository.py b/taipy/core/sequence/_sequence_fs_repository.py
+new file mode 100644
+index 0000000000..b65301af7b
+--- /dev/null
++++ b/taipy/core/sequence/_sequence_fs_repository.py
+@@ -0,0 +1,19 @@
++# Copyright 2021-2025 Avaiga Private Limited
++#
++# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
++# the License. You may obtain a copy of the License at
++#
++#        http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
++# specific language governing permissions and limitations under the License.
++
++from .._repository._filesystem_repository import _FileSystemRepository
++from ._sequence_converter import _SequenceConverter
++from ._sequence_model import _SequenceModel
++
++
++class _SequenceFSRepository(_FileSystemRepository):
++    def __init__(self) -> None:
++        super().__init__(model_type=_SequenceModel, converter=_SequenceConverter, dir_name="sequences")
+diff --git a/taipy/core/sequence/_sequence_manager_factory.py b/taipy/core/sequence/_sequence_manager_factory.py
+index 5f1d786318..4583eca5d5 100644
+--- a/taipy/core/sequence/_sequence_manager_factory.py
++++ b/taipy/core/sequence/_sequence_manager_factory.py
+@@ -15,10 +15,13 @@
+ from ...common._modules import EnterpriseEdition
+ from .._manager._manager_factory import _ManagerFactory
+ from ..common._utils import _load_fct
++from ._sequence_fs_repository import _SequenceFSRepository
+ from ._sequence_manager import _SequenceManager
+ 
+ 
+ class _SequenceManagerFactory(_ManagerFactory):
++    __REPOSITORY_MAP = {"default": _SequenceFSRepository}
++
+     @classmethod
+     @lru_cache
+     def _build_manager(cls) -> Type[_SequenceManager]:  # type: ignore
+@@ -26,6 +29,17 @@ def _build_manager(cls) -> Type[_SequenceManager]:  # type: ignore
+             sequence_manager = _load_fct(
+                 EnterpriseEdition._CORE_MODULE_PATH + ".sequence._sequence_manager", "_SequenceManager"
+             )
++            build_repository = _load_fct(
++                EnterpriseEdition._CORE_MODULE_PATH + ".sequence._sequence_manager_factory",
++                "_SequenceManagerFactory",
++            )._build_repository  # type: ignore[reportFunctionMemberAccess]
+         else:
+             sequence_manager = _SequenceManager
++            build_repository = cls._build_repository
++        sequence_manager._repository = build_repository()  # type: ignore[reportFunctionMemberAccess]
+         return sequence_manager  # type: ignore
++
++    @classmethod
++    @lru_cache
++    def _build_repository(cls):  # type: ignore[reportIncompatibleMethodOverride]
++        return cls._get_repository_with_repo_map(cls.__REPOSITORY_MAP)()  # type: ignore[reportOptionalCall]
+diff --git a/taipy/core/sequence/_sequence_converter.py b/taipy/core/sequence/_sequence_converter.py
+index 2952b26310..b9f6405caa 100644
+--- a/taipy/core/sequence/_sequence_converter.py
++++ b/taipy/core/sequence/_sequence_converter.py
+@@ -13,8 +13,8 @@
+ from ..common import _utils
+ from ..task.task import Task, TaskId
+ from ._sequence_model import _SequenceModel
+-from .sequence_id import SequenceId
+ from .sequence import Sequence
++from .sequence_id import SequenceId
+ 
+ 
+ class _SequenceConverter(_AbstractConverter):
+diff --git a/taipy/core/_entity/_reload.py b/taipy/core/_entity/_reload.py
+index d28a5484d1..0b45aecd68 100644
+--- a/taipy/core/_entity/_reload.py
++++ b/taipy/core/_entity/_reload.py
+@@ -11,7 +11,7 @@
+ 
+ import functools
+ import threading
+-from typing import Any, Dict, Type
++from typing import Dict, Type
+ 
+ from ...common._modules import EnterpriseEdition
+ from .._manager._manager import _Manager
+@@ -26,7 +26,6 @@ class _Reloader:
+     _instance = None
+     _lock = threading.RLock()
+     _managers: Dict[str, Type[_Manager]] = {}
+-    _live_entities: Dict[str, Dict[str, Any]] = {}
+ 
+     def __new__(cls, *args, **kwargs):
+         with cls._lock:
+@@ -41,23 +40,17 @@ def _reload(self, manager: str, obj):
+         if self._no_reload_context:
+             return obj
+ 
+-        entity_id = getattr(obj, "id", None)
+-        live_entity = obj
+-        if entity_id is not None:
+-            live_entities = self._live_entities.setdefault(manager, {})
+-            live_entity = live_entities.setdefault(entity_id, obj)
+-
+         if manager == "job":
+-            task = getattr(live_entity, "_task", None)
++            task = getattr(obj, "_task", None)
+             if task is not None and not self._get_manager("task")._repository._exists(task.id):
+-                return live_entity
+-        if manager in {"scenario", "sequence"}:
+-            tasks = getattr(live_entity, "_tasks", [])
++                return obj
++        if manager == "sequence":
++            tasks = getattr(obj, "_tasks", [])
+             task_repository = self._get_manager("task")._repository
+             for task_or_id in tasks:
+                 task_id = task_or_id.id if hasattr(task_or_id, "id") else task_or_id
+                 if not task_repository._exists(task_id):
+-                    return live_entity
++                    return obj
+ 
+         entity = self._get_manager(manager)._get(obj, obj)
+         if obj._is_in_context and hasattr(entity, "_properties"):
+@@ -66,9 +59,6 @@ def _reload(self, manager: str, obj):
+             if obj._properties._pending_deletions:
+                 entity._properties._pending_deletions = obj._properties._pending_deletions
+             entity._properties._entity_owner = obj
+-
+-        if entity_id is not None:
+-            self._live_entities.setdefault(manager, {})[entity_id] = entity
+         return entity
+ 
+     def __enter__(self):
+diff --git a/taipy/core/sequence/_sequence_manager.py b/taipy/core/sequence/_sequence_manager.py
+index 3bd5478e8f..583bfbd541 100644
+--- a/taipy/core/sequence/_sequence_manager.py
++++ b/taipy/core/sequence/_sequence_manager.py
+@@ -147,6 +147,8 @@ def __get_sequence_tasks(tasks: Union[List[Task], List[TaskId]]) -> List[Task]:
+                 _tasks.append(task)
+             elif _task := task_manager._get(task):
+                 _tasks.append(_task)
++            elif _tasks_by_config := task_manager._get_by_config_id(str(task)):
++                _tasks.append(_tasks_by_config[0])
+             else:
+                 raise NonExistingTask(task)
+         return _tasks
+diff --git a/taipy/core/sequence/_sequence_model.py b/taipy/core/sequence/_sequence_model.py
+index a00c2a2acd..55dc2ee88f 100644
+--- a/taipy/core/sequence/_sequence_model.py
++++ b/taipy/core/sequence/_sequence_model.py
+@@ -25,6 +25,17 @@ class _SequenceModel(_BaseModel):
+     subscribers: List[Dict]
+     version: str
+ 
++    def __getitem__(self, key: str):
++        return getattr(self, key)
++
++    def __setitem__(self, key: str, value):
++        return setattr(self, key, value)
++
++    def __eq__(self, other):
++        if isinstance(other, dict):
++            return self.to_dict() == other
++        return super().__eq__(other)
++
+     @staticmethod
+     def from_dict(data: Dict[str, Any]):
+         return _SequenceModel(
+diff --git a/taipy/core/sequence/sequence.py b/taipy/core/sequence/sequence.py
+index 45e5423c2d..a22fe8b8e4 100644
+--- a/taipy/core/sequence/sequence.py
++++ b/taipy/core/sequence/sequence.py
+@@ -386,6 +386,9 @@ def _get_tasks(self) -> Dict[str, Task]:
+         task_manager = _TaskManagerFactory._build_manager()
+         for task_or_id in self._tasks:
+             t = task_manager._get(task_or_id, task_or_id)
++            if not isinstance(t, Task):
++                tasks_by_config = task_manager._get_by_config_id(str(task_or_id))
++                t = tasks_by_config[0] if tasks_by_config else t
+             if not isinstance(t, Task):
+                 raise NonExistingTask(task_or_id)
+             tasks[t.config_id] = t
+@@ -398,6 +401,9 @@ def _get_set_of_tasks(self) -> Set[Task]:
+         task_manager = _TaskManagerFactory._build_manager()
+         for task_or_id in self._tasks:
+             task = task_manager._get(task_or_id, task_or_id)
++            if not isinstance(task, Task):
++                tasks_by_config = task_manager._get_by_config_id(str(task_or_id))
++                task = tasks_by_config[0] if tasks_by_config else task
+             if not isinstance(task, Task):
+                 raise NonExistingTask(task_or_id)
+             tasks.add(task)
+diff --git a/taipy/core/_orchestrator/_orchestrator.py b/taipy/core/_orchestrator/_orchestrator.py
+index f68cbeb18a..bb8897d042 100644
+--- a/taipy/core/_orchestrator/_orchestrator.py
++++ b/taipy/core/_orchestrator/_orchestrator.py
+@@ -19,6 +19,7 @@
+ from taipy.common.config import Config
+ from taipy.common.logger._taipy_logger import _TaipyLogger
+ 
++from .._entity._reload import _Reloader
+ from .._entity.submittable import Submittable
+ from ..data._data_manager_factory import _DataManagerFactory
+ from ..job._job_manager_factory import _JobManagerFactory
+@@ -87,7 +88,8 @@ def submit(
+             **properties,
+         )
+         jobs: List[Job] = []
+-        tasks = submittable._get_sorted_tasks()
++        with _Reloader():
++            tasks = submittable._get_sorted_tasks()
+         with cls.lock:
+             cls.__logger.debug(f"Acquiring lock to submit {submission.entity_id}.")
+             for ts in tasks:

@@ -1,0 +1,23 @@
+--- step: build (3.11) ---
+FAILED tests/basic/test_wholefile.py::TestWholeFileCoder::test_update_files_live_diff - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/basic/test_wholefile.py::TestWholeFileCoder::test_update_files_no_filename_single_file_in_chat - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/basic/test_wholefile.py::TestWholeFileCoder::test_update_files_not_in_chat - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/basic/test_wholefile.py::TestWholeFileCoder::test_update_files_with_existing_fence - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/basic/test_wholefile.py::TestWholeFileCoder::test_update_hash_filename - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/basic/test_wholefile.py::TestWholeFileCoder::test_update_named_file_but_extra_unnamed_code_block - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/scrape/test_scrape.py::TestScrape::test_cmd_web_imports_playwright - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scrape_actual_url_with_playwright - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scrape_self_signed_ssl - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scrape_text_html - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scrape_text_plain - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scrape_with_playwright_error_handling - TypeError: expected str, bytes or os.PathLike object, not NoneType
+FAILED tests/scrape/test_scrape.py::TestScrape::test_scraper_print_error_not_called - TypeError: expected str, bytes or os.PathLike object, not NoneType
+ERROR tests/help/test_help.py::TestHelp::test_ask_without_mock - TypeError: expected str, bytes or os.PathLike object, not NoneType
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_edge_cases - TypeError: expected str, bytes or os.PathLike object, not NoneType
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_unix - TypeError: expected str, bytes or os.PathLike object, not NoneType
+ERROR tests/help/test_help.py::TestHelp::test_fname_to_url_windows - TypeError: expected str, bytes or os.PathLike object, not NoneType
+ERROR tests/help/test_help.py::TestHelp::test_init - TypeError: expected str, bytes or os.PathLike object, not NoneType
+======= 230 failed, 250 passed, 1 skipped, 5 errors in 130.03s (0:02:10) =======
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

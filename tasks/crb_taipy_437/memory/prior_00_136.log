@@ -1,0 +1,18 @@
+--- step: linter ---
+with:
+  version: 0.6.4
+  args: check
+  src: /home/runner/work/taipy/taipy
+  github-token: ***
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+[command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/f14278aa-ad26-4587-9566-77f9e8186c9c -f /home/runner/work/_temp/62ba529b-390c-44e7-af3c-97a4588070da
+Added /opt/hostedtoolcache/ruff/0.6.4/x86_64 to the path
+Set RUFF_OUTPUT_FORMAT to github
+Successfully installed ruff version 0.6.4
+[command]/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff check /home/runner/work/taipy/taipy
+##[error]taipy/gui/gui.py:12:1: I001 Import block is un-sorted or un-formatted
+##[error]taipy/gui/gui.py:44:1: I001 Import block is un-sorted or un-formatted
+##[error]The process '/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff' failed with exit code 1
+Post job cleanup.
+http.https://github.com/.extraheader

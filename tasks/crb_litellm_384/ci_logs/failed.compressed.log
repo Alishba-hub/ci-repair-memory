@@ -1,0 +1,28 @@
+--- step: test ---
+tests/test_litellm/llms/datarobot/chat/test_datarobot_chat_transformation.py::TestDataRobotConfig::test_resolve_api_key_with_environment_variable
+[gw3] [ 72%] PASSED tests/test_litellm/test_utils.py::TestProxyFunctionCalling::test_proxy_custom_model_names_without_config[litellm_proxy/claude-dev-anthropic/claude-3-haiku-20240307-False]
+tests/test_litellm/test_utils.py::TestProxyFunctionCalling::test_proxy_custom_model_names_without_config[litellm_proxy/claude-prod-anthropic/claude-3-sonnet-20240229-False]
+[gw0] [ 72%] PASSED tests/test_litellm/proxy/db/db_transaction_queue/test_daily_spend_update_queue.py::test_queue_max_size_triggers_aggregation
+tests/test_litellm/proxy/db/db_transaction_queue/test_spend_update_queue.py::test_queue_max_size_triggers_aggregation
+[gw3] [ 73%] PASSED tests/test_litellm/test_utils.py::TestProxyFunctionCalling::test_proxy_custom_model_names_without_config[litellm_proxy/claude-prod-anthropic/claude-3-sonnet-20240229-False]
+tests/test_litellm/test_utils.py::TestProxyFunctionCalling::test_proxy_custom_model_names_without_config[litellm_proxy/cohere-command-cohere/command-r-False]
+... (415 lines omitted)
+tests/test_litellm/proxy/client/cli/test_auth_commands.py::TestTokenUtilities::test_get_token_file_path
+  /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/typing.py:1630: RuntimeWarning: coroutine 'CustomBatchLogger.periodic_flush' was never awaited
+    return ((p, type(p)) for p in parameters)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+tests/test_litellm/llms/nebius/test_nebius_embedding_transformation.py::test_nebius_embeddings
+  /home/runner/.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/main.py:426: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue: Expected 9 fields but got 5 for type `Message` with value `Message(content='```python\nprint("Hey from LiteLL...None, provider_specific_fields={'refusal': None})` - serialized value may not be as expected.
+    PydanticSerializationUnexpectedValue: Expected `StreamingChoices` but got `Choices` with value `Choices(finish_reason='st...ider_specific_fields={})` - serialized value may not be as expected
+    return self.__pydantic_serializer__.to_python(
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_litellm/proxy/hooks/test_parallel_request_limiter.py::test_pre_call_hook_rpm_limits - Failed: Expected call to fail
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+===== 1 failed, 1808 passed, 10 skipped, 42 warnings in 866.85s (0:14:26) ======
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://git

@@ -1,0 +1,13 @@
+diff --git a/litellm/llms/mistral/mistral_chat_transformation.py b/litellm/llms/mistral/mistral_chat_transformation.py
+index 3bff50a8fdca..0441e75beecc 100644
+--- a/litellm/llms/mistral/mistral_chat_transformation.py
++++ b/litellm/llms/mistral/mistral_chat_transformation.py
+@@ -174,7 +174,7 @@ def map_openai_params(
+ 
+     def _get_openai_compatible_provider_info(
+         self, api_base: Optional[str], api_key: Optional[str]
+-    ) -> Tuple[Optional[str], Optional[str]]:
++    ) -> Tuple[str, Optional[str]]:
+         # mistral is openai compatible, we just need to set this to custom_openai and have the api_base be https://api.mistral.ai
+         api_base = (
+             api_base

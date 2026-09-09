@@ -1,0 +1,31 @@
+diff --git a/libs/agno/agno/tools/toolkit.py b/libs/agno/agno/tools/toolkit.py
+index 06538f2d0d1..b3b52f8820b 100644
+--- a/libs/agno/agno/tools/toolkit.py
++++ b/libs/agno/agno/tools/toolkit.py
+@@ -1,5 +1,5 @@
+ from collections import OrderedDict
+-from typing import Any, Callable, Dict, List, Optional, Union
++from typing import Any, Callable, Dict, List, Optional
+ 
+ from agno.tools.function import Function
+ from agno.utils.log import log_debug, logger
+diff --git a/libs/agno/agno/workspace/helpers.py b/libs/agno/agno/workspace/helpers.py
+index 4c59b72123a..900fa57e004 100644
+--- a/libs/agno/agno/workspace/helpers.py
++++ b/libs/agno/agno/workspace/helpers.py
+@@ -39,10 +39,11 @@ def get_workspace_dir_path(ws_root_path: Path) -> Path:
+         agno_conf = read_pyproject_agno(ws_pyproject_toml)
+         if agno_conf is not None:
+             agno_conf_workspace_dir_str = agno_conf.get("workspace", None)
+-            agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
+-            logger.debug(f"Searching {agno_conf_workspace_dir_path}")
+-            if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
+-                return agno_conf_workspace_dir_path
++            if isinstance(agno_conf_workspace_dir_str, str):
++                agno_conf_workspace_dir_path = ws_root_path.joinpath(agno_conf_workspace_dir_str)
++                logger.debug(f"Searching {agno_conf_workspace_dir_path}")
++                if agno_conf_workspace_dir_path.exists() and agno_conf_workspace_dir_path.is_dir():
++                    return agno_conf_workspace_dir_path
+ 
+     logger.error(f"Could not find a workspace at: {ws_root_path}")
+     exit(0)

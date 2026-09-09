@@ -1,0 +1,244 @@
+diff --git a/aider/io.py b/aider/io.py
+index 3c3e8a4337b..e2b574a737c 100644
+--- a/aider/io.py
++++ b/aider/io.py
+@@ -76,6 +76,7 @@ def with_history_disabled(func):
+ 
+     @functools.wraps(func)
+     def wrapper(self, *args, **kwargs):
++        orig_buf_append = None
+         try:
+             orig_buf_append = self.prompt_session.default_buffer.append_to_history
+             self.prompt_session.default_buffer.append_to_history = (
+@@ -89,7 +90,7 @@ def wrapper(self, *args, **kwargs):
+         except Exception:
+             raise
+         finally:
+-            if orig_buf_append:
++            if orig_buf_append is not None:
+                 self.prompt_session.default_buffer.append_to_history = orig_buf_append
+ 
+     return wrapper
+diff --git a/aider/models.py b/aider/models.py
+index dd0abd452cd..20bf9646e49 100644
+--- a/aider/models.py
++++ b/aider/models.py
+@@ -148,6 +148,14 @@ def __init__(self):
+         self.local_model_metadata = {}
+         self.verify_ssl = True
+         self._cache_loaded = False
++        self._load_local_model_metadata()
++
++    def _load_local_model_metadata(self):
++        try:
++            with importlib.resources.open_text("aider.resources", "model-metadata.json") as f:
++                self.local_model_metadata = json5.loads(f.read())
++        except Exception:
++            self.local_model_metadata = {}
+ 
+     def set_verify_ssl(self, verify_ssl):
+         self.verify_ssl = verify_ssl
+@@ -196,6 +204,12 @@ def get_model_from_cached_json_db(self, model):
+         if data:
+             return data
+ 
++        # If the model is a plain name and there is a provider-prefixed local variant,
++        # use that as a fallback.
++        for key, value in self.local_model_metadata.items():
++            if "/" in key and key.endswith(f"/{model}"):
++                return value
++
+         # Ensure cache is loaded before checking content
+         self._load_cache()
+ 
+diff --git a/tests/basic/test_repomap.py b/tests/basic/test_repomap.py
+index 17a5753c360..e1b7e7d752d 100644
+--- a/tests/basic/test_repomap.py
++++ b/tests/basic/test_repomap.py
+@@ -4,6 +4,7 @@
+ import time
+ import unittest
+ from pathlib import Path
++from unittest.mock import patch
+ 
+ import git
+ 
+@@ -18,6 +19,22 @@ class TestRepoMap(unittest.TestCase):
+     def setUp(self):
+         self.GPT35 = Model("gpt-3.5-turbo")
+ 
++    def test_get_tags_handles_exceptions(self):
++        with IgnorantTemporaryDirectory() as temp_dir:
++            test_file = "test_file.py"
++            with open(os.path.join(temp_dir, test_file), "w") as f:
++                f.write("def test():\n    return 1\n")
++
++            io = InputOutput()
++            repo_map = RepoMap(main_model=self.GPT35, root=temp_dir, io=io)
++
++            with patch.object(repo_map, "get_tags_raw", side_effect=ValueError("boom")):
++                self.assertEqual(
++                    repo_map.get_tags(os.path.join(temp_dir, test_file), test_file), []
++                )
++
++            del repo_map
++
+     def test_get_repo_map(self):
+         # Create a temporary directory with sample files for testing
+         test_files = [
+diff --git a/aider/commands.py b/aider/commands.py
+index 81fc80093b4..fb1beb7461f 100644
+--- a/aider/commands.py
++++ b/aider/commands.py
+@@ -519,19 +519,24 @@ def fmt(v):
+         self.io.tool_output(f"${total_cost:7.4f} {fmt(total)} tokens total")  # noqa: E231
+ 
+         limit = self.coder.main_model.info.get("max_input_tokens") or 0
++        remaining = limit - total
+         if not limit:
++            remaining = 0
++            self.io.tool_output(
++                f"{cost_pad}{fmt(remaining)} tokens remaining, window exhausted (use /drop or"
++                " /clear to make space)"
++            )
++            self.io.tool_output(f"{cost_pad}{fmt(limit)} tokens max context window size")
+             return
+-
+-        remaining = limit - total
+         if remaining > 1024:
+             self.io.tool_output(f"{cost_pad}{fmt(remaining)} tokens remaining in context window")
+         elif remaining > 0:
+-            self.io.tool_error(
++            self.io.tool_output(
+                 f"{cost_pad}{fmt(remaining)} tokens remaining in context window (use /drop or"
+                 " /clear to make space)"
+             )
+         else:
+-            self.io.tool_error(
++            self.io.tool_output(
+                 f"{cost_pad}{fmt(remaining)} tokens remaining, window exhausted (use /drop or"
+                 " /clear to make space)"
+             )
+diff --git a/aider/repomap.py b/aider/repomap.py
+index 8be0211c5a4..ab8e93a7e57 100644
+--- a/aider/repomap.py
++++ b/aider/repomap.py
+@@ -300,10 +300,13 @@ def get_tags_raw(self, fname, rel_fname):
+ 
+             # Run the tags queries
+             query = language.query(query_scm)
+-            try:
+-                cursor = QueryCursor(query)
+-                captures = cursor.captures(tree.root_node)
+-            except AttributeError:
++            if QueryCursor is not None:
++                try:
++                    cursor = QueryCursor(query)
++                    captures = cursor.captures(tree.root_node)
++                except Exception:
++                    captures = query.captures(tree.root_node)
++            else:
+                 captures = query.captures(tree.root_node)
+ 
+             saw = set()
+diff --git a/aider/help.py b/aider/help.py
+index c76188d1283..8383548d2bc 100755
+--- a/aider/help.py
++++ b/aider/help.py
+@@ -15,9 +15,18 @@
+ warnings.simplefilter("ignore", category=FutureWarning)
+ 
+ 
++def get_help_extra_package():
++    """Return a help-extra requirement for this exact aider build."""
++    project_root = Path(__file__).resolve().parent.parent
++    if (project_root / "pyproject.toml").is_file():
++        return f"{project_root}[help]"
++
++    return f"aider-chat[help]=={__version__}"
++
++
+ def install_help_extra(io):
+     pip_install_cmd = [
+-        "aider-chat[help]",
++        get_help_extra_package(),
+         "--extra-index-url",
+         "https://download.pytorch.org/whl/cpu",
+     ]
+diff --git a/requirements.txt b/requirements.txt
+index d8efa792e6d..7c0166ef781 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -517,4 +517,4 @@ zipp==3.21.0
+     #   importlib-metadata
+     
+ tree-sitter==0.23.2; python_version < "3.10"
+-tree-sitter==0.24.0; python_version >= "3.10"
++tree-sitter==0.25.2; python_version >= "3.10"
+diff --git a/requirements/common-constraints.txt b/requirements/common-constraints.txt
+index dcaa773a36e..6ad37965159 100644
+--- a/requirements/common-constraints.txt
++++ b/requirements/common-constraints.txt
+@@ -542,7 +542,7 @@ tqdm==4.67.1
+     #   transformers
+ transformers==4.51.3
+     # via sentence-transformers
+-tree-sitter==0.24.0
++tree-sitter==0.25.2
+     # via tree-sitter-language-pack
+ tree-sitter-c-sharp==0.23.1
+     # via tree-sitter-language-pack
+diff --git a/requirements/tree-sitter.in b/requirements/tree-sitter.in
+index eba2e6770cf..64516344393 100644
+--- a/requirements/tree-sitter.in
++++ b/requirements/tree-sitter.in
+@@ -1,3 +1,3 @@
+     
+ tree-sitter==0.23.2; python_version < "3.10"
+-tree-sitter==0.24.0; python_version >= "3.10"
++tree-sitter==0.25.2; python_version >= "3.10"
+diff --git a/tests/help/test_help.py b/tests/help/test_help.py
+index a7222185e75..76fe46c117d 100644
+--- a/tests/help/test_help.py
++++ b/tests/help/test_help.py
+@@ -1,17 +1,38 @@
+ import time
+ import unittest
+-from unittest.mock import MagicMock
++from pathlib import Path
++from unittest.mock import MagicMock, patch
+ 
+ from requests.exceptions import ConnectionError, ReadTimeout
+ 
+ import aider
+ from aider.coders import Coder
+ from aider.commands import Commands
+-from aider.help import Help, fname_to_url
++from aider.help import Help, fname_to_url, get_help_extra_package, install_help_extra
+ from aider.io import InputOutput
+ from aider.models import Model
+ 
+ 
++class TestInstallHelpExtra(unittest.TestCase):
++    def test_get_help_extra_package_uses_local_checkout(self):
++        project_root = Path(__file__).resolve().parents[2]
++        self.assertEqual(get_help_extra_package(), f"{project_root}[help]")
++
++    @patch("aider.help.utils.check_pip_install_extra", return_value=True)
++    def test_install_help_extra_uses_local_checkout(self, check_pip_install_extra):
++        io = MagicMock()
++
++        self.assertTrue(install_help_extra(io))
++
++        pip_install_cmd = check_pip_install_extra.call_args.args[3]
++        self.assertEqual(pip_install_cmd[0], get_help_extra_package())
++
++    def test_get_help_extra_package_pins_installed_release(self):
++        with patch("aider.help.__file__", "/site-packages/aider/help.py"):
++            with patch("aider.help.__version__", "1.2.3"):
++                self.assertEqual(get_help_extra_package(), "aider-chat[help]==1.2.3")
++
++
+ class TestHelp(unittest.TestCase):
+     @staticmethod
+     def retry_with_backoff(func, max_time=60, initial_delay=1, backoff_factor=2):

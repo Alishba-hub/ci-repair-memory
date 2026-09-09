@@ -1,0 +1,31 @@
+diff --git a/litellm/llms/vertex_ai/batches/handler.py b/litellm/llms/vertex_ai/batches/handler.py
+index dc3f93857aa1..7932881f482c 100644
+--- a/litellm/llms/vertex_ai/batches/handler.py
++++ b/litellm/llms/vertex_ai/batches/handler.py
+@@ -43,7 +43,7 @@ def create_batch(
+             custom_llm_provider="vertex_ai",
+         )
+ 
+-        default_api_base = self.create_vertex_url(
++        default_api_base = self.create_vertex_batch_url(
+             vertex_location=vertex_location or "us-central1",
+             vertex_project=vertex_project or project_id,
+         )
+@@ -117,7 +117,7 @@ async def _async_create_batch(
+         )
+         return vertex_batch_response
+ 
+-    def create_vertex_url(
++    def create_vertex_batch_url(
+         self,
+         vertex_location: str,
+         vertex_project: str,
+@@ -145,7 +145,7 @@ def retrieve_batch(
+             custom_llm_provider="vertex_ai",
+         )
+ 
+-        default_api_base = self.create_vertex_url(
++        default_api_base = self.create_vertex_batch_url(
+             vertex_location=vertex_location or "us-central1",
+             vertex_project=vertex_project or project_id,
+         )

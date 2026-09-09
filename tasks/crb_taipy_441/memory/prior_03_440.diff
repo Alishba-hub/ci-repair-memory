@@ -1,0 +1,362 @@
+diff --git a/taipy/rest/commons/apispec.py b/taipy/rest/commons/apispec.py
+index f622d56592..2cd2ccd269 100644
+--- a/taipy/rest/commons/apispec.py
++++ b/taipy/rest/commons/apispec.py
+@@ -9,11 +9,51 @@
+ # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ # specific language governing permissions and limitations under the License.
+ 
+-from apispec import APISpec
++import re
++
++from apispec import APISpec, BasePlugin, yaml_utils
+ from apispec.exceptions import APISpecError
+ from apispec.ext.marshmallow import MarshmallowPlugin
+-from apispec_webframeworks.flask import FlaskPlugin
+-from flask import Blueprint, jsonify, render_template
++from flask import Blueprint, current_app, jsonify, render_template
++from flask.views import MethodView
++
++_RE_URL = re.compile(r"<(?:[^:<>]+:)?([^<>]+)>")
++
++
++class FlaskPlugin(BasePlugin):
++    """Small Flask apispec plugin that avoids importing apispec_webframeworks."""
++
++    @staticmethod
++    def flaskpath2openapi(path):
++        return _RE_URL.sub(r"{\1}", path)
++
++    @staticmethod
++    def _rule_for_view(view, app=None):
++        if app is None:
++            app = current_app
++
++        view_funcs = app.view_functions
++        endpoint = next((ept for ept, view_func in view_funcs.items() if view_func == view), None)
++
++        if not endpoint:
++            raise APISpecError("Could not find endpoint for view {0}".format(view))
++
++        # WARNING: Assume 1 rule per view function for now
++        return app.url_map._rules_by_endpoint[endpoint][0]
++
++    def path_helper(self, operations, *, view, app=None, **kwargs):
++        rule = self._rule_for_view(view, app=app)
++        operations.update(yaml_utils.load_operations_from_docstring(view.__doc__))
++
++        if hasattr(view, "view_class") and issubclass(view.view_class, MethodView):
++            for method in view.methods:
++                if method in rule.methods:
++                    method_name = method.lower()
++                    operations[method_name] = yaml_utils.load_yaml_from_docstring(
++                        getattr(view.view_class, method_name).__doc__
++                    )
++
++        return self.flaskpath2openapi(rule.rule)
+ 
+ 
+ class FlaskRestfulPlugin(FlaskPlugin):
+diff --git a/tests/gui/utils/test_patch.py b/tests/gui/utils/test_patch.py
+index cbedfc52ae..6b21baf68a 100644
+--- a/tests/gui/utils/test_patch.py
++++ b/tests/gui/utils/test_patch.py
+@@ -9,9 +9,6 @@
+ # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ # specific language governing permissions and limitations under the License.
+ 
+-
+-import pytest
+-
+ from taipy.gui.utils.patch import _patch_value
+ 
+ 
+diff --git a/Pipfile b/Pipfile
+index 099a12343f..ea7a801d75 100644
+--- a/Pipfile
++++ b/Pipfile
+@@ -20,7 +20,7 @@ markdown = "==3.6"
+ marshmallow = "==3.20.1"
+ networkx = "==2.6"
+ openpyxl = "==3.1.2"
+-pandas = "==1.3.5"
++pandas = "==2.2.3"
+ pyarrow = "==16.0.0"
+ pymongo = {extras = ["srv"], version = "==4.6.3"}
+ python-dotenv = "==1.0.0"
+diff --git a/taipy/core/data/_file_datanode_mixin.py b/taipy/core/data/_file_datanode_mixin.py
+index 5d4f6282d6..b05bb4a6b0 100644
+--- a/taipy/core/data/_file_datanode_mixin.py
++++ b/taipy/core/data/_file_datanode_mixin.py
+@@ -12,7 +12,8 @@
+ import os
+ import pathlib
+ import shutil
+-from datetime import datetime
++import time
++from datetime import datetime, timedelta
+ from os.path import isfile
+ from typing import Any, Callable, Dict, Optional, cast
+ 
+@@ -212,20 +213,28 @@ def _write_default_data(self, default_value: Any):
+ 
+     def _get_last_modified_datetime(self) -> Optional[datetime]:
+         if self._path and os.path.isfile(self._path):
+-            return datetime.fromtimestamp(os.path.getmtime(self._path))
++            return self.__datetime_from_file_timestamp(os.path.getmtime(self._path))
+ 
+         last_modified_datetime = None
+         if self._path and os.path.isdir(self._path):
+             for filename in os.listdir(self._path):
+                 filepath = os.path.join(self._path, filename)
+                 if os.path.isfile(filepath):
+-                    file_mtime = datetime.fromtimestamp(os.path.getmtime(filepath))
++                    file_mtime = self.__datetime_from_file_timestamp(os.path.getmtime(filepath))
+ 
+                     if last_modified_datetime is None or file_mtime > last_modified_datetime:
+                         last_modified_datetime = file_mtime
+ 
+         return last_modified_datetime
+ 
++    @staticmethod
++    def __datetime_from_file_timestamp(timestamp: float) -> datetime:
++        local_time = time.localtime(timestamp)
++        microsecond = round(timestamp % 1 * 1_000_000)
++        if microsecond == 1_000_000:
++            return datetime(*local_time[:6]) + timedelta(seconds=1)
++        return datetime(*local_time[:6], microsecond=microsecond)
++
+     def _build_path(self, storage_type) -> str:
+         folder = f"{storage_type}s"
+         dir_path = pathlib.Path(Config.core.storage_folder) / folder
+diff --git a/taipy/core/submission/_submission_manager.py b/taipy/core/submission/_submission_manager.py
+index 907e1ab541..ba63661c27 100644
+--- a/taipy/core/submission/_submission_manager.py
++++ b/taipy/core/submission/_submission_manager.py
+@@ -62,7 +62,7 @@ def _update_submission_status(cls, submission: Submission, job: Job) -> None:
+             if submission._submission_status == SubmissionStatus.FAILED:
+                 return
+ 
+-            job_status = job._status
++            job_status = job.status
+             if job_status == Status.FAILED:
+                 cls.__set_submission_status(submission, SubmissionStatus.FAILED, job)
+                 cls.__logger.debug(
+diff --git a/tests/core/_orchestrator/test_orchestrator.py b/tests/core/_orchestrator/test_orchestrator.py
+index 30e87a36f1..4d3cb1e63a 100644
+--- a/tests/core/_orchestrator/test_orchestrator.py
++++ b/tests/core/_orchestrator/test_orchestrator.py
+@@ -35,7 +35,7 @@
+ 
+ 
+ def multiply(nb1: float, nb2: float):
+-    sleep(0.1)
++    sleep(0.5)
+     return nb1 * nb2
+ 
+ 
+diff --git a/pytest.ini b/pytest.ini
+index 537743ad13..9130e0b949 100644
+--- a/pytest.ini
++++ b/pytest.ini
+@@ -9,6 +9,7 @@ filterwarnings =
+     ignore::FutureWarning:pyarrow
+ markers =
+     teste2e:End-to-end tests
++    extension:Extension tests
+     orchestrator_dispatcher:Orchestrator dispatcher tests
+     standalone:Tests starting a standalone dispatcher thread
+     skip_if_not_server:Skip test if not running in specific server mode
+diff --git a/tests/gui/e2e/test_metric_indicator.py b/tests/gui/e2e/test_metric_indicator.py
+index 9c7a1bce2b..3f8aafedf1 100644
+--- a/tests/gui/e2e/test_metric_indicator.py
++++ b/tests/gui/e2e/test_metric_indicator.py
+@@ -20,6 +20,7 @@
+ 
+ 
+ @pytest.mark.extension
++@pytest.mark.teste2e
+ def test_has_default_value(page: Page, gui: Gui, helpers):
+     page_md = """
+ <|100|metric|>
+@@ -35,6 +36,7 @@ def test_has_default_value(page: Page, gui: Gui, helpers):
+ 
+ 
+ @pytest.mark.extension
++@pytest.mark.teste2e
+ def test_show_increase_delta_value(page: Page, gui: Gui, helpers):
+     page_md = """
+ <|100|metric|delta=20|type=linear|>
+@@ -50,6 +52,7 @@ def test_show_increase_delta_value(page: Page, gui: Gui, helpers):
+ 
+ 
+ @pytest.mark.extension
++@pytest.mark.teste2e
+ def test_show_decrease_delta_value(page: Page, gui: Gui, helpers):
+     page_md = """
+ <|100|metric|delta=-20|type=linear|>
+diff --git a/tools/coverage_check.py b/tools/coverage_check.py
+index 2aa05320cf..83ce90c094 100644
+--- a/tools/coverage_check.py
++++ b/tools/coverage_check.py
+@@ -16,14 +16,19 @@
+ import xmltodict
+ 
+ 
++def _write(message):
++    stream = sys.stderr if message.startswith("Error:") else sys.stdout
++    stream.write(f"{message}\n")
++
++
+ def check_total_coverage(coverage_file, threshold=80):
+     """Check the total project coverage."""
+     with open(coverage_file) as f:
+         data = xmltodict.parse(f.read())
+     total_coverage = float(data["coverage"]["@line-rate"]) * 100
+-    print(f"Total Coverage: {total_coverage:.2f}%")  # noqa: T201
++    _write(f"Total Coverage: {total_coverage:.2f}%")
+     if total_coverage < threshold:
+-        print(f"Total project coverage is below {threshold}%: {total_coverage:.2f}%")  # noqa: T201
++        _write(f"Total project coverage is below {threshold}%: {total_coverage:.2f}%")
+         sys.exit(1)
+ 
+ 
+@@ -50,19 +55,19 @@ def check_changed_files_coverage(coverage_file, changed_files, threshold=80):
+     for file in changed_files:
+         if file in files:
+             coverage = files[file]
+-            print(f"Coverage for {file}: {coverage:.2f}%")  # noqa: T201
++            _write(f"Coverage for {file}: {coverage:.2f}%")
+             sum_coverage += coverage
+             qty += 1
+         else:
+-            print(f"No coverage data found for {file}")  # noqa: T201
++            _write(f"No coverage data found for {file}")
+ 
+     if qty:
+         if sum_coverage / qty < threshold:
+-            print(f"Coverage for changed files is below {threshold}%: {sum_coverage/qty:.2f}%")  # noqa: T201
++            _write(f"Coverage for changed files is below {threshold}%: {sum_coverage / qty:.2f}%")
+             sys.exit(1)
+-        print(f"Coverage for changed files: {sum_coverage/qty:.2f}%")  # noqa: T201
++        _write(f"Coverage for changed files: {sum_coverage / qty:.2f}%")
+     else:
+-        print("No file detected to run coverage for.")  # noqa: T201
++        _write("No file detected to run coverage for.")
+ 
+ 
+ def get_changed_files(base_branch):
+@@ -81,7 +86,7 @@ def get_changed_files(base_branch):
+         ]
+         return changed_files
+     except subprocess.CalledProcessError as e:
+-        print(f"Error fetching changed files: {e}") # noqa: T201
++        _write(f"Error: fetching changed files: {e}")
+         sys.exit(1)
+ 
+ 
+@@ -98,10 +103,10 @@ def get_changed_files(base_branch):
+         check_total_coverage(args.coverage_file, args.threshold)
+     elif args.command == "check-changed":
+         if not args.base_branch:
+-            print("Error: --base-branch is required for check-changed") # noqa: T201
++            _write("Error: --base-branch is required for check-changed")
+             sys.exit(1)
+         changed_files = get_changed_files(args.base_branch)
+         if not changed_files:
+-            print("No relevant Python files changed.") # noqa: T201
++            _write("No relevant Python files changed.")
+             sys.exit(0)
+         check_changed_files_coverage(args.coverage_file, changed_files, args.threshold)
+diff --git a/tests/core/utils/__init__.py b/tests/core/utils/__init__.py
+index a5ecaa4d9c..595c9544d3 100644
+--- a/tests/core/utils/__init__.py
++++ b/tests/core/utils/__init__.py
+@@ -14,7 +14,7 @@
+ from taipy import Submission
+ 
+ 
+-def assert_true_after_time(assertion, time=120, msg=None, **msg_params):
++def assert_true_after_time(assertion, time=300, msg=None, **msg_params):
+     loops = 0
+     start = datetime.now()
+     while (datetime.now() - start).seconds < time:
+diff --git a/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py b/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
+index 40cbfed0ef..09a2a86c71 100644
+--- a/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
++++ b/taipy/core/_orchestrator/_dispatcher/_job_dispatcher.py
+@@ -96,9 +96,7 @@ def _execute_job(self, job: Job):
+         if job.force or self._needs_to_run(job.task):
+             if job.force:
+                 self._logger.info(f"job {job.id} is forced to be executed.")
+-            job_manager = _JobManagerFactory._build_manager()
+-            if not job_manager._repository._exists(job.id):
+-                job_manager._repository._save(job)
++            _JobManagerFactory._build_manager()._repository._save(job)
+             job.running()
+             self._dispatch(job)
+         else:
+diff --git a/taipy/gui/_warnings.py b/taipy/gui/_warnings.py
+index 576f89144b..deda774c04 100644
+--- a/taipy/gui/_warnings.py
++++ b/taipy/gui/_warnings.py
+@@ -39,12 +39,18 @@ def _warn(
+     e: t.Optional[BaseException] = None,
+     always_show: t.Optional[bool] = False,
+ ):
++    def _format_exception(exc: BaseException, traceback_offset: bool = False) -> str:
++        tb = exc.__traceback__
++        if traceback_offset and tb:
++            tb = tb.tb_next
++        return "".join(traceback.format_exception(type(exc), exc, tb))
++
+     warnings.warn(
+         (
+-            f"{message}:\n{''.join(traceback.format_exception(e))}"
++            f"{message}:\n{_format_exception(e)}"
+             if e and TaipyGuiWarning._tp_debug_mode
+             else f"{message}:\n"
+-            + "".join(traceback.format_exception(None, e, e.__traceback__.tb_next if e.__traceback__ else None))
++            + _format_exception(e, True)
+             if e
+             else message
+         ),
+diff --git a/tests/gui/notebook/test_notebook_simple_gui.py b/tests/gui/notebook/test_notebook_simple_gui.py
+index 4015a88e59..039b721b65 100644
+--- a/tests/gui/notebook/test_notebook_simple_gui.py
++++ b/tests/gui/notebook/test_notebook_simple_gui.py
+@@ -21,7 +21,7 @@
+ from taipy.gui import Gui
+ 
+ 
+-def wait_for_content(url, expected_text, timeout=10):
++def wait_for_content(url, expected_text, timeout=30):
+     start = time.time()
+     while time.time() - start < timeout:
+         try:
+diff --git a/taipy/core/_orchestrator/_orchestrator.py b/taipy/core/_orchestrator/_orchestrator.py
+index da6fe60967..eabea84980 100644
+--- a/taipy/core/_orchestrator/_orchestrator.py
++++ b/taipy/core/_orchestrator/_orchestrator.py
+@@ -43,7 +43,8 @@ class _Orchestrator(_AbstractOrchestrator):
+ 
+     @classmethod
+     def initialize(cls):
+-        pass
++        cls.jobs_to_run = Queue()
++        cls.blocked_jobs = []
+ 
+     @classmethod
+     def submit(
+diff --git a/tests/core/conftest.py b/tests/core/conftest.py
+index 215b40db73..75d45debbc 100644
+--- a/tests/core/conftest.py
++++ b/tests/core/conftest.py
+@@ -13,7 +13,6 @@
+ import pickle
+ import shutil
+ from datetime import datetime
+-from queue import Queue
+ from unittest.mock import patch
+ 
+ import pandas as pd

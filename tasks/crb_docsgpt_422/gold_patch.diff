@@ -1,0 +1,1404 @@
+diff --git a/application/api/answer/services/conversation_service.py b/application/api/answer/services/conversation_service.py
+index 3ea7a136d..eca842d6c 100644
+--- a/application/api/answer/services/conversation_service.py
++++ b/application/api/answer/services/conversation_service.py
+@@ -133,10 +133,9 @@ def save_conversation(
+ 
+             messages_summary = [
+                 {
+-                    "role": "assistant",
+-                    "content": "Summarise following conversation in no more than 3 "
+-                    "words, respond ONLY with the summary, use the same "
+-                    "language as the user query",
++                    "role": "system",
++                    "content": "You are a helpful assistant that creates concise conversation titles. "
++                    "Summarize conversations in 3 words or less using the same language as the user.",
+                 },
+                 {
+                     "role": "user",
+diff --git a/application/api/answer/services/prompt_renderer.py b/application/api/answer/services/prompt_renderer.py
+index 20120c239..169f1cf6c 100644
+--- a/application/api/answer/services/prompt_renderer.py
++++ b/application/api/answer/services/prompt_renderer.py
+@@ -47,8 +47,12 @@ def render_prompt(
+         """
+         if not prompt_content:
+             return ""
+-        if not self._uses_template_syntax(prompt_content):
++
++        uses_template = self._uses_template_syntax(prompt_content)
++
++        if not uses_template:
+             return self._apply_legacy_substitutions(prompt_content, docs_together)
++
+         try:
+             context = self.namespace_manager.build_context(
+                 user_id=user_id,
+diff --git a/application/api/answer/services/stream_processor.py b/application/api/answer/services/stream_processor.py
+index d7b3869ef..bb39bffd5 100644
+--- a/application/api/answer/services/stream_processor.py
++++ b/application/api/answer/services/stream_processor.py
+@@ -3,7 +3,7 @@
+ import logging
+ import os
+ from pathlib import Path
+-from typing import Any, Dict, Optional
++from typing import Any, Dict, Optional, Set
+ 
+ from bson.dbref import DBRef
+ 
+@@ -86,6 +86,8 @@ def __init__(
+         self.gpt_model = get_gpt_model()
+         self.conversation_service = ConversationService()
+         self.prompt_renderer = PromptRenderer()
++        self._prompt_content: Optional[str] = None
++        self._required_tool_actions: Optional[Dict[str, Set[Optional[str]]]] = None
+ 
+     def initialize(self):
+         """Initialize all required components for processing"""
+@@ -388,7 +390,6 @@ def pre_fetch_tools(self) -> Optional[Dict[str, Any]]:
+         Can be controlled via:
+         1. Global setting: ENABLE_TOOL_PREFETCH in .env
+         2. Per-request: disable_tool_prefetch in request data
+-        3. Per-tool: pre_fetch_enabled in tool config
+         """
+         if not settings.ENABLE_TOOL_PREFETCH:
+             logger.info(
+@@ -400,6 +401,9 @@ def pre_fetch_tools(self) -> Optional[Dict[str, Any]]:
+             logger.info("Tool pre-fetching disabled for this request")
+             return None
+ 
++        required_tool_actions = self._get_required_tool_actions()
++        filtering_enabled = required_tool_actions is not None
++
+         try:
+             user_tools_collection = self.db["user_tools"]
+             user_id = self.initial_user_id or "local"
+@@ -415,24 +419,187 @@ def pre_fetch_tools(self) -> Optional[Dict[str, Any]]:
+ 
+             for tool_doc in user_tools:
+                 tool_name = tool_doc.get("name")
+-                tool_config = tool_doc.get("config", {})
++                tool_id = str(tool_doc.get("_id"))
+ 
+-                if not tool_config.get("pre_fetch_enabled", True):
+-                    logger.info(
+-                        f"Pre-fetch disabled for tool: {tool_name} (per-tool config)"
+-                    )
+-                    continue
++                if filtering_enabled:
++                    # Check if referenced by name or by ID
++                    required_actions_by_name = required_tool_actions.get(tool_name, set())
++                    required_actions_by_id = required_tool_actions.get(tool_id, set())
++
++                    # Combine both sets of required actions
++                    required_actions = required_actions_by_name | required_actions_by_id
++
++                    if not required_actions:
++                        continue
++                else:
++                    required_actions = None
+ 
+-                if tool_name == "memory":
+-                    memory_data = self._fetch_memory_tool_data(tool_doc)
+-                    if memory_data:
+-                        tools_data["memory"] = memory_data
++                # Try to pre-fetch data from this tool
++                tool_data = self._fetch_tool_data(tool_doc, required_actions)
++                if tool_data:
++                    # Store under tool name for backward compatibility
++                    tools_data[tool_name] = tool_data
++                    # Also store under tool_id to support {{ tools.TOOL_ID.action }}
++                    tools_data[tool_id] = tool_data
+ 
+             return tools_data if tools_data else None
+         except Exception as e:
+             logger.warning(f"Failed to pre-fetch tools: {str(e)}")
+             return None
+ 
++    def _fetch_tool_data(
++        self,
++        tool_doc: Dict[str, Any],
++        required_actions: Optional[Set[Optional[str]]],
++    ) -> Optional[Dict[str, Any]]:
++        """Generic method to fetch data from any tool for pre-injection into prompt
++
++        This method calls each action defined by the tool using:
++        1. Parameter values from the tool's config (if saved by user)
++        2. Default values from action metadata (if defined)
++        3. Skips the action if required parameters are missing
++
++        Example:
++            Tool config: {"symbol": "BTC", "currency": "USD"}
++            Action: cryptoprice_get(symbol, currency)
++            Result: Calls with symbol="BTC", currency="USD"
++
++        Args:
++            tool_doc: Tool document from database containing name, config, and parameter values
++
++        Returns:
++            Dictionary with action results, or None if pre-fetch failed/not supported
++        """
++        try:
++            from application.agents.tools.tool_manager import ToolManager
++
++            tool_name = tool_doc.get("name")
++            tool_config = tool_doc.get("config", {}).copy()
++            tool_config["tool_id"] = str(tool_doc["_id"])
++
++            # Initialize the tool manager with the tool's config and load the specific tool
++            tool_manager = ToolManager(config={tool_name: tool_config})
++            user_id = self.initial_user_id or "local"
++            tool = tool_manager.load_tool(tool_name, tool_config, user_id=user_id)
++
++            # Get actions metadata from the loaded tool
++            if not tool:
++                return None
++
++            tool_actions = tool.get_actions_metadata()
++            if not tool_actions:
++                return None
++
++            # Get saved action parameters from tool document
++            # Parameters are stored in: tool_doc["actions"][i]["parameters"]["properties"][param_name]["value"]
++            saved_actions = tool_doc.get("actions", [])
++
++            include_all_actions = (
++                required_actions is None or (required_actions and None in required_actions)
++            )
++            allowed_actions: Set[str] = (
++                {action for action in required_actions if isinstance(action, str)}
++                if required_actions
++                else set()
++            )
++
++            # Execute each action with parameters from saved values
++            action_results = {}
++            for action_meta in tool_actions:
++                action_name = action_meta.get("name")
++                if action_name is None:
++                    continue
++                if not include_all_actions and allowed_actions and action_name not in allowed_actions:
++                    continue
++
++                try:
++                    # Find the corresponding saved action in the tool document
++                    saved_action = None
++                    for sa in saved_actions:
++                        if sa.get("name") == action_name:
++                            saved_action = sa
++                            break
++
++                    # Get parameters from action metadata
++                    action_params = action_meta.get("parameters", {})
++                    properties = action_params.get("properties", {})
++
++                    # Build kwargs from saved parameter values
++                    kwargs = {}
++                    for param_name, param_spec in properties.items():
++                        # First priority: Check saved action parameters in MongoDB
++                        if saved_action:
++                            saved_props = saved_action.get("parameters", {}).get("properties", {})
++                            if param_name in saved_props:
++                                param_value = saved_props[param_name].get("value")
++                                if param_value is not None:
++                                    kwargs[param_name] = param_value
++                                    continue
++
++                        # Second priority: Check if value exists in tool_config
++                        if param_name in tool_config:
++                            kwargs[param_name] = tool_config[param_name]
++                        # Third priority: Use default if available
++                        elif "default" in param_spec:
++                            kwargs[param_name] = param_spec["default"]
++
++                    # Call action with parameters from config or defaults
++                    result = tool.execute_action(action_name, **kwargs)
++
++                    # Store result using the full action name
++                    action_results[action_name] = result
++                except Exception:
++                    # Continue with other actions even if one fails
++                    continue
++
++            return action_results if action_results else None
++
++        except Exception:
++            return None
++
++    def _get_prompt_content(self) -> Optional[str]:
++        """Retrieve and cache the raw prompt content for the current agent configuration."""
++        if self._prompt_content is not None:
++            return self._prompt_content
++        prompt_id = self.agent_config.get("prompt_id") if isinstance(self.agent_config, dict) else None
++        if not prompt_id:
++            return None
++        try:
++            self._prompt_content = get_prompt(prompt_id, self.prompts_collection)
++        except Exception:
++            self._prompt_content = None
++        return self._prompt_content
++
++    def _get_required_tool_actions(self) -> Optional[Dict[str, Set[Optional[str]]]]:
++        """Determine which tool actions are referenced in the prompt template.
++
++        Returns:
++            Dict mapping tool name to set of action names referenced.
++            An empty dict indicates no tool references.
++            None indicates filtering could not be determined (e.g., missing prompt).
++        """
++        if self._required_tool_actions is not None:
++            return self._required_tool_actions
++
++        prompt_content = self._get_prompt_content()
++        if prompt_content is None:
++            return None
++
++        if "{{" not in prompt_content or "}}" not in prompt_content:
++            self._required_tool_actions = {}
++            return self._required_tool_actions
++
++        try:
++            from application.templates.template_engine import TemplateEngine
++
++            template_engine = TemplateEngine()
++            usages = template_engine.extract_tool_usages(prompt_content)
++            self._required_tool_actions = usages
++            return self._required_tool_actions
++        except Exception:
++            self._required_tool_actions = {}
++            return self._required_tool_actions
++
+     def _fetch_memory_tool_data(
+         self, tool_doc: Dict[str, Any]
+     ) -> Optional[Dict[str, Any]]:
+@@ -462,7 +629,10 @@ def create_agent(
+         tools_data: Optional[Dict[str, Any]] = None,
+     ):
+         """Create and return the configured agent with rendered prompt"""
+-        raw_prompt = get_prompt(self.agent_config["prompt_id"], self.prompts_collection)
++        raw_prompt = self._get_prompt_content()
++        if raw_prompt is None:
++            raw_prompt = get_prompt(self.agent_config["prompt_id"], self.prompts_collection)
++            self._prompt_content = raw_prompt
+ 
+         rendered_prompt = self.prompt_renderer.render_prompt(
+             prompt_content=raw_prompt,
+diff --git a/application/templates/template_engine.py b/application/templates/template_engine.py
+index a616bf0b9..b0ba1bb7a 100644
+--- a/application/templates/template_engine.py
++++ b/application/templates/template_engine.py
+@@ -1,5 +1,5 @@
+ import logging
+-from typing import Any, Dict
++from typing import Any, Dict, List, Optional, Set
+ 
+ from jinja2 import (
+     Environment,
+@@ -8,6 +8,7 @@
+     TemplateSyntaxError,
+ )
+ from jinja2.exceptions import UndefinedError
++from jinja2 import nodes
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -79,7 +80,7 @@ def validate_template(self, template_content: str) -> bool:
+         except TemplateSyntaxError:
+             return False
+ 
+-    def extract_variables(self, template_content: str) -> set[str]:
++    def extract_variables(self, template_content: str) -> Set[str]:
+         """
+         Extract all variable names from template.
+ 
+@@ -96,3 +97,70 @@ def extract_variables(self, template_content: str) -> set[str]:
+             return set(self._env.get_template_module(ast).make_module().keys())
+         except Exception:
+             return set()
++
++    def extract_tool_usages(
++        self, template_content: str
++    ) -> Dict[str, Set[Optional[str]]]:
++        """
++        Extract tool and action references from a template.
++
++        Returns a mapping of tool names to a set of action names referenced.
++        If an action name is None, it indicates the template references the tool
++        without specifying a particular action (e.g. {{ tools.cryptoprice }}).
++        """
++        if not template_content:
++            return {}
++        try:
++            ast = self._env.parse(template_content)
++        except TemplateSyntaxError as e:
++            logger.warning(
++                f"extract_tool_usages: unable to parse template (line {e.lineno}): {e.message}"
++            )
++            return {}
++        except Exception as e:
++            logger.warning(
++                f"extract_tool_usages: unexpected error while parsing template: {str(e)}"
++            )
++            return {}
++
++        usages: Dict[str, Set[Optional[str]]] = {}
++
++        def record(path: List[str]) -> None:
++            if not path:
++                return
++            tool_name = path[0]
++            action_name = path[1] if len(path) > 1 else None
++            if not tool_name:
++                return
++            tool_entry = usages.setdefault(tool_name, set())
++            tool_entry.add(action_name)
++
++        # Handle dotted attribute access (e.g., tools.cryptoprice.cryptoprice_get.price)
++        for node in ast.find_all(nodes.Getattr):
++            path = []
++            current = node
++            while isinstance(current, nodes.Getattr):
++                path.append(current.attr)
++                current = current.node
++            if isinstance(current, nodes.Name) and current.name == "tools":
++                path.reverse()
++                record(path)
++
++        # Handle dictionary-style access (e.g., tools['cryptoprice']['cryptoprice_get'])
++        for node in ast.find_all(nodes.Getitem):
++            path = []
++            current = node
++            while isinstance(current, nodes.Getitem):
++                key = current.arg
++                if isinstance(key, nodes.Const) and isinstance(key.value, str):
++                    path.append(key.value)
++                else:
++                    # Non-constant keys can't be resolved statically
++                    path = []
++                    break
++                current = current.node
++            if path and isinstance(current, nodes.Name) and current.name == "tools":
++                path.reverse()
++                record(path)
++
++        return usages
+diff --git a/docs/pages/Guides/Customising-prompts.mdx b/docs/pages/Guides/Customising-prompts.mdx
+index a0032a00c..402b80365 100644
+--- a/docs/pages/Guides/Customising-prompts.mdx
++++ b/docs/pages/Guides/Customising-prompts.mdx
+@@ -1,49 +1,453 @@
+ ---
+-title: Customizing Prompts 
+-description: This guide will explain how to change prompts in DocsGPT and why it might be benefitial. Additionaly this article expains additional variables that can be used in prompts.
++title: Customizing Prompts
++description: This guide explains how to customize prompts in DocsGPT using the new template-based system with dynamic variable injection.
+ ---
+ 
+ import Image from 'next/image'
+ 
+-# Customizing the Main Prompt
++# Customizing Prompts in DocsGPT
+ 
+-Customizing the main prompt for DocsGPT gives you the ability to tailor the AI's responses to your specific requirements. By modifying the prompt text, you can achieve more accurate and relevant answers. Here's how you can do it:
++Customizing prompts for DocsGPT gives you powerful control over the AI's behavior and responses. With the new template-based system, you can inject dynamic context through organized namespaces, making prompts flexible and maintainable without hardcoding values.
++
++## Quick Start
+ 
+ 1. Navigate to `SideBar -> Settings`.
++2. In Settings, select the `Active Prompt` to see various prompt styles.
++3. Click on the `edit icon` on your chosen prompt to customize it.
+ 
++### Video Demo
++<Image src="/prompts.gif" alt="prompts" width={800} height={500} />
+ 
++---
+ 
++## Template-Based Prompt System
+ 
+-2.In Settings select the `Active Prompt` now you will be able to see various prompts style.x
++DocsGPT now uses **Jinja2 templating** with four organized namespaces for dynamic variable injection:
+ 
++### Available Namespaces
+ 
++#### 1. **`system`** - System Metadata
++Access system-level information:
+ 
++```jinja
++{{ system.date }}         # Current date (YYYY-MM-DD)
++{{ system.time }}         # Current time (HH:MM:SS)
++{{ system.timestamp }}    # ISO 8601 timestamp
++{{ system.request_id }}   # Unique request identifier
++{{ system.user_id }}      # Current user ID
++```
+ 
+-3.Click on the `edit icon`  on the prompt of your choice and you will be able to see the current prompt for it,you can now customise  the prompt as per your choice.
++#### 2. **`source`** - Retrieved Documents
++Access RAG (Retrieval-Augmented Generation) document context:
+ 
+-### Video Demo
+-<Image src="/prompts.gif" alt="prompts" width={800} height={500} />
++```jinja
++{{ source.content }}      # Concatenated document content
++{{ source.summaries }}    # Alias for content (backward compatible)
++{{ source.documents }}    # List of document objects
++{{ source.count }}        # Number of retrieved documents
++```
++
++#### 3. **`passthrough`** - Request Parameters
++Access custom parameters passed in the API request:
++
++```jinja
++{{ passthrough.company }}     # Custom field from request
++{{ passthrough.user_name }}   # User-provided data
++{{ passthrough.context }}     # Any custom parameter
++```
++
++To use passthrough data, send it in your API request:
++```json
++{
++  "question": "What is the pricing?",
++  "passthrough": {
++    "company": "Acme Corp",
++    "user_name": "Alice",
++    "plan_type": "enterprise"
++  }
++}
++```
++
++#### 4. **`tools`** - Pre-fetched Tool Data
++Access results from tools that run before the agent (like memory tool):
++
++```jinja
++{{ tools.memory.root }}       # Memory tool directory listing
++{{ tools.memory.available }}  # Boolean: is memory available
++```
++
++---
+ 
++## Example Prompts
+ 
++### Basic Prompt with Documents
++```jinja
++You are a helpful AI assistant for DocsGPT.
+ 
+-## Example Prompt Modification
++Current date: {{ system.date }}
++
++Use the following documents to answer the question:
++
++{{ source.content }}
++
++Provide accurate, helpful answers with code examples when relevant.
++```
++
++### Advanced Prompt with All Namespaces
++```jinja
++You are an AI assistant for {{ passthrough.company }}.
++
++**System Info:**
++- Date: {{ system.date }}
++- Request ID: {{ system.request_id }}
++
++**User Context:**
++- User: {{ passthrough.user_name }}
++- Role: {{ passthrough.role }}
++
++**Available Documents ({{ source.count }}):**
++{{ source.content }}
++
++**Memory Context:**
++{% if tools.memory.available %}
++{{ tools.memory.root }}
++{% else %}
++No saved context available.
++{% endif %}
++
++Please provide detailed, accurate answers based on the documents above.
++```
++
++### Conditional Logic Example
++```jinja
++You are a DocsGPT assistant.
++
++{% if source.count > 0 %}
++I found {{ source.count }} relevant document(s):
++
++{{ source.content }}
++
++Base your answer on these documents.
++{% else %}
++No documents were found. Please answer based on your general knowledge.
++{% endif %}
++```
++
++---
++
++## Migration Guide
++
++### Legacy Format (Still Supported)
++The old `{summaries}` format continues to work for backward compatibility:
+ 
+-**Original Prompt:**
+ ```markdown
+-You are a DocsGPT, friendly and helpful AI assistant by Arc53 that provides help with documents. You give thorough answers with code examples if possible.
+-Use the following pieces of context to help answer the users question. If it's not relevant to the question, provide friendly responses.
+-You have access to chat history, and can use it to help answer the question.
+-When using code examples, use the following format:
++You are a helpful assistant.
+ 
+-(code)
++Documents:
+ {summaries}
+ ```
+ 
+-Note that `{summaries}` allows model to see and respond to your upploaded documents. If you don't want this functionality you can safely remove it from the customized prompt.
++This will automatically substitute `{summaries}` with document content.
++
++### New Template Format (Recommended)
++Migrate to the new template syntax for more flexibility:
++
++```jinja
++You are a helpful assistant.
++
++Documents:
++{{ source.content }}
++```
++
++**Migration mapping:**
++- `{summaries}` → `{{ source.content }}` or `{{ source.summaries }}`
++
++---
++
++## Best Practices
++
++### 1. **Use Descriptive Context**
++```jinja
++**Retrieved Documents:**
++{{ source.content }}
++
++**User Query Context:**
++- Company: {{ passthrough.company }}
++- Department: {{ passthrough.department }}
++```
++
++### 2. **Handle Missing Data Gracefully**
++```jinja
++{% if passthrough.user_name %}
++Hello {{ passthrough.user_name }}!
++{% endif %}
++```
++
++### 3. **Leverage Memory for Continuity**
++```jinja
++{% if tools.memory.available %}
++**Previous Context:**
++{{ tools.memory.root }}
++{% endif %}
++
++**Current Question:**
++Please consider the above context when answering.
++```
++
++### 4. **Add Clear Instructions**
++```jinja
++You are a technical support assistant.
++
++**Guidelines:**
++1. Always reference the documents below
++2. Provide step-by-step instructions
++3. Include code examples when relevant
++
++**Reference Documents:**
++{{ source.content }}
++```
++
++---
++
++## Advanced Features
++
++### Looping Over Documents
++```jinja
++{% for doc in source.documents %}
++**Source {{ loop.index }}:** {{ doc.filename }}
++{{ doc.text }}
++
++{% endfor %}
++```
++
++### Date-Based Behavior
++```jinja
++{% if system.date > "2025-01-01" %}
++Note: This is information from 2025 or later.
++{% endif %}
++```
++
++### Custom Formatting
++```jinja
++**Request Information**
++━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
++• Request ID: {{ system.request_id }}
++• User: {{ passthrough.user_name | default("Guest") }}
++• Time: {{ system.time }}
++━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
++```
++
++---
++
++## Tool Pre-Fetching
++
++### Memory Tool Configuration
++Enable memory tool pre-fetching to inject saved context into prompts:
++
++```python
++# In your tool configuration
++{
++  "name": "memory",
++  "config": {
++    "pre_fetch_enabled": true  # Default: true
++  }
++}
++```
++
++Control pre-fetching globally:
++```bash
++# .env file
++ENABLE_TOOL_PREFETCH=true
++```
++
++Or per-request:
++```json
++{
++  "question": "What are the requirements?",
++  "disable_tool_prefetch": false
++}
++```
++
++---
++
++## Debugging Prompts
++
++### View Rendered Prompts in Logs
++Set log level to `INFO` to see the final rendered prompt sent to the LLM:
++
++```bash
++export LOG_LEVEL=INFO
++```
++
++You'll see output like:
++```
++INFO - Rendered system prompt for agent (length: 1234 chars):
++================================================================================
++You are a helpful assistant for Acme Corp.
++
++Current date: 2025-10-30
++Request ID: req_abc123
++
++Documents:
++Technical documentation about...
++================================================================================
++```
++
++### Template Validation
++Test your template syntax before saving:
++```python
++from application.api.answer.services.prompt_renderer import PromptRenderer
++
++renderer = PromptRenderer()
++is_valid = renderer.validate_template("Your prompt with {{ variables }}")
++```
++
++---
++
++## Common Use Cases
++
++### 1. Customer Support Bot
++```jinja
++You are a customer support assistant for {{ passthrough.company }}.
++
++**Customer:** {{ passthrough.customer_name }}
++**Ticket ID:** {{ system.request_id }}
++**Date:** {{ system.date }}
++
++**Knowledge Base:**
++{{ source.content }}
++
++**Previous Interactions:**
++{{ tools.memory.root }}
++
++Please provide helpful, friendly support based on the knowledge base above.
++```
++
++### 2. Technical Documentation Assistant
++```jinja
++You are a technical documentation expert.
++
++**Available Documentation ({{ source.count }} documents):**
++{{ source.content }}
++
++**Requirements:**
++- Provide code examples in {{ passthrough.language }}
++- Focus on {{ passthrough.framework }} best practices
++- Include relevant links when possible
++```
++
++### 3. Internal Knowledge Base
++```jinja
++You are an internal AI assistant for {{ passthrough.department }}.
++
++**Employee:** {{ passthrough.employee_name }}
++**Access Level:** {{ passthrough.access_level }}
+ 
+-Feel free to customize the prompt to align it with your specific use case or the kind of responses you want from the AI. For example, you can focus on specific document types, industries, or topics to get more targeted results.
++**Relevant Documents:**
++{{ source.content }}
++
++Provide detailed answers appropriate for {{ passthrough.access_level }} access level.
++```
++
++---
++
++## Template Syntax Reference
++
++### Variables
++```jinja
++{{ variable_name }}              # Output variable
++{{ namespace.field }}            # Access nested field
++{{ variable | default("N/A") }}  # Default value
++```
++
++### Conditionals
++```jinja
++{% if condition %}
++  Content
++{% elif other_condition %}
++  Other content
++{% else %}
++  Default content
++{% endif %}
++```
++
++### Loops
++```jinja
++{% for item in list %}
++  {{ item.field }}
++{% endfor %}
++```
++
++### Comments
++```jinja
++{# This is a comment and won't appear in output #}
++```
++
++---
++
++## Security Considerations
++
++1. **Input Sanitization**: Passthrough data is automatically sanitized to prevent injection attacks
++2. **Type Filtering**: Only primitive types (string, int, float, bool, None) are allowed in passthrough
++3. **Autoescaping**: Jinja2 autoescaping is enabled by default
++4. **Size Limits**: Consider the token budget when including large documents
++
++---
++
++## Troubleshooting
++
++### Problem: Variables Not Rendering
++**Solution:** Ensure you're using the correct namespace:
++```jinja
++❌ {{ company }}
++✅ {{ passthrough.company }}
++```
++
++### Problem: Empty Output for Tool Data
++**Solution:** Check that tool pre-fetching is enabled and the tool is configured correctly.
++
++### Problem: Syntax Errors
++**Solution:** Validate template syntax. Common issues:
++```jinja
++❌ {{ variable }     # Missing closing brace
++❌ {% if x %         # Missing closing %}
++✅ {{ variable }}
++✅ {% if x %}...{% endif %}
++```
++
++### Problem: Legacy Prompts Not Working
++**Solution:** The system auto-detects template syntax. If your prompt uses `{summaries}`, it will work in legacy mode. To use new features, add `{{ }}` syntax.
++
++---
++
++## API Reference
++
++### Render Prompt via API
++```python
++from application.api.answer.services.prompt_renderer import PromptRenderer
++
++renderer = PromptRenderer()
++rendered = renderer.render_prompt(
++    prompt_content="Your template with {{ passthrough.name }}",
++    user_id="user_123",
++    request_id="req_456",
++    passthrough_data={"name": "Alice"},
++    docs_together="Document content here",
++    tools_data={"memory": {"root": "Files: notes.txt"}}
++)
++```
++
++---
+ 
+ ## Conclusion
+ 
+-Customizing the main prompt for DocsGPT allows you to tailor the AI's responses to your unique requirements. Whether you need in-depth explanations, code examples, or specific insights, you can achieve it by modifying the main prompt. Remember to experiment and fine-tune your prompts to get the best results.
++The new template-based prompt system provides powerful flexibility while maintaining backward compatibility. By leveraging namespaces, you can create dynamic, context-aware prompts that adapt to your specific use case.
++
++**Key Benefits:**
++- ✅ Dynamic variable injection
++- ✅ Organized namespaces
++- ✅ Backward compatible
++- ✅ Security built-in
++- ✅ Easy to debug
+ 
++Start with simple templates and gradually add complexity as needed. Happy prompting! 🚀
+diff --git a/tests/api/answer/routes/test_base.py b/tests/api/answer/routes/test_base.py
+index 195a3beb7..20f139270 100644
+--- a/tests/api/answer/routes/test_base.py
++++ b/tests/api/answer/routes/test_base.py
+@@ -347,16 +347,12 @@ def test_streams_sources(self, mock_mongo_db, flask_app):
+                 ]
+             )
+ 
+-            mock_retriever = MagicMock()
+-            mock_retriever.get_params.return_value = {}
+-
+             decoded_token = {"sub": "user123"}
+ 
+             stream = list(
+                 resource.complete_stream(
+                     question="Test?",
+                     agent=mock_agent,
+-                    retriever=mock_retriever,
+                     conversation_id=None,
+                     user_api_key=None,
+                     decoded_token=decoded_token,
+@@ -377,16 +373,12 @@ def test_handles_error_during_streaming(self, mock_mongo_db, flask_app):
+             mock_agent = MagicMock()
+             mock_agent.gen.side_effect = Exception("Test error")
+ 
+-            mock_retriever = MagicMock()
+-            mock_retriever.get_params.return_value = {}
+-
+             decoded_token = {"sub": "user123"}
+ 
+             stream = list(
+                 resource.complete_stream(
+                     question="Test?",
+                     agent=mock_agent,
+-                    retriever=mock_retriever,
+                     conversation_id=None,
+                     user_api_key=None,
+                     decoded_token=decoded_token,
+@@ -409,9 +401,6 @@ def test_saves_conversation_when_enabled(self, mock_mongo_db, flask_app):
+                 ]
+             )
+ 
+-            mock_retriever = MagicMock()
+-            mock_retriever.get_params.return_value = {}
+-
+             decoded_token = {"sub": "user123"}
+ 
+             with patch.object(
+@@ -423,8 +412,7 @@ def test_saves_conversation_when_enabled(self, mock_mongo_db, flask_app):
+                     resource.complete_stream(
+                         question="Test?",
+                         agent=mock_agent,
+-                        retriever=mock_retriever,
+-                        conversation_id=None,
++                            conversation_id=None,
+                         user_api_key=None,
+                         decoded_token=decoded_token,
+                         should_save_conversation=True,
+@@ -457,7 +445,6 @@ def test_logs_to_user_logs_collection(self, mock_mongo_db, flask_app):
+                 resource.complete_stream(
+                     question="Test question?",
+                     agent=mock_agent,
+-                    retriever=mock_retriever,
+                     conversation_id=None,
+                     user_api_key="test_key",
+                     decoded_token=decoded_token,
+diff --git a/tests/api/answer/services/test_prompt_renderer.py b/tests/api/answer/services/test_prompt_renderer.py
+index 3badf1850..30fd70456 100644
+--- a/tests/api/answer/services/test_prompt_renderer.py
++++ b/tests/api/answer/services/test_prompt_renderer.py
+@@ -676,7 +676,9 @@ def test_pre_fetch_tools_disabled_per_request(self, mock_mongo_db):
+ 
+         assert result is None
+ 
+-    def test_pre_fetch_tools_disabled_per_tool_config(self, mock_mongo_db):
++    def test_pre_fetch_tools_skips_tool_with_no_actions(self, mock_mongo_db):
++        from unittest.mock import MagicMock, patch
++
+         from application.api.answer.services.stream_processor import StreamProcessor
+         from application.core.mongo_db import MongoDB
+         from bson import ObjectId
+@@ -687,16 +689,30 @@ def test_pre_fetch_tools_disabled_per_tool_config(self, mock_mongo_db):
+             "name": "memory",
+             "user": "user1",
+             "status": True,
+-            "config": {"pre_fetch_enabled": False},
++            "config": {},
+         }
+         db["user_tools"].insert_one(tool_doc)
+ 
+         request_data = {"question": "test"}
+         processor = StreamProcessor(request_data, {"sub": "user1"})
+ 
+-        result = processor.pre_fetch_tools()
++        with patch(
++            "application.agents.tools.tool_manager.ToolManager"
++        ) as mock_manager_class:
++            mock_manager = MagicMock()
++            mock_manager_class.return_value = mock_manager
+ 
+-        assert result is None
++            # Mock the tool instance
++            mock_tool = MagicMock()
++            mock_manager.load_tool.return_value = mock_tool
++
++            # Tool has no actions
++            mock_tool.get_actions_metadata.return_value = []
++
++            result = processor.pre_fetch_tools()
++
++            # Should return None when tool has no actions
++            assert result is None
+ 
+     def test_pre_fetch_tools_enabled_by_default(self, mock_mongo_db, monkeypatch):
+         from unittest.mock import MagicMock, patch
+@@ -718,16 +734,27 @@ def test_pre_fetch_tools_enabled_by_default(self, mock_mongo_db, monkeypatch):
+         request_data = {"question": "test"}
+         processor = StreamProcessor(request_data, {"sub": "user1"})
+ 
+-        with patch("application.agents.tools.memory.MemoryTool") as mock_tool:
+-            memory_instance = MagicMock()
+-            memory_instance.execute_action.return_value = "Directory: /\n- file.txt"
+-            mock_tool.return_value = memory_instance
++        with patch(
++            "application.agents.tools.tool_manager.ToolManager"
++        ) as mock_manager_class:
++            mock_manager = MagicMock()
++            mock_manager_class.return_value = mock_manager
++
++            # Mock the tool instance returned by load_tool
++            mock_tool = MagicMock()
++            mock_manager.load_tool.return_value = mock_tool
++
++            # Mock get_actions_metadata on the tool instance
++            mock_tool.get_actions_metadata.return_value = [
++                {"name": "memory_ls", "description": "List files", "parameters": {"properties": {}}}
++            ]
++            mock_tool.execute_action.return_value = "Directory: /\n- file.txt"
+ 
+             result = processor.pre_fetch_tools()
+ 
+             assert result is not None
+             assert "memory" in result
+-            assert result["memory"]["available"] is True
++            assert "memory_ls" in result["memory"]
+ 
+     def test_pre_fetch_tools_no_tools_configured(self, mock_mongo_db):
+         from application.api.answer.services.stream_processor import StreamProcessor
+@@ -759,13 +786,25 @@ def test_pre_fetch_tools_memory_returns_error(self, mock_mongo_db):
+         request_data = {"question": "test"}
+         processor = StreamProcessor(request_data, {"sub": "user1"})
+ 
+-        with patch("application.agents.tools.memory.MemoryTool") as mock_tool:
+-            memory_instance = MagicMock()
+-            memory_instance.execute_action.return_value = "Error: Something went wrong"
+-            mock_tool.return_value = memory_instance
++        with patch(
++            "application.agents.tools.tool_manager.ToolManager"
++        ) as mock_manager_class:
++            mock_manager = MagicMock()
++            mock_manager_class.return_value = mock_manager
++
++            # Mock the tool instance
++            mock_tool = MagicMock()
++            mock_manager.load_tool.return_value = mock_tool
++
++            mock_tool.get_actions_metadata.return_value = [
++                {"name": "memory_ls", "description": "List files", "parameters": {"properties": {}}}
++            ]
++            # Simulate execution error
++            mock_tool.execute_action.side_effect = Exception("Tool error")
+ 
+             result = processor.pre_fetch_tools()
+ 
++            # Should return None when all actions fail
+             assert result is None
+ 
+     def test_pre_fetch_tools_memory_returns_empty(self, mock_mongo_db):
+@@ -788,11 +827,24 @@ def test_pre_fetch_tools_memory_returns_empty(self, mock_mongo_db):
+         request_data = {"question": "test"}
+         processor = StreamProcessor(request_data, {"sub": "user1"})
+ 
+-        with patch("application.agents.tools.memory.MemoryTool") as mock_tool:
+-            memory_instance = MagicMock()
+-            memory_instance.execute_action.return_value = ""
+-            mock_tool.return_value = memory_instance
++        with patch(
++            "application.agents.tools.tool_manager.ToolManager"
++        ) as mock_manager_class:
++            mock_manager = MagicMock()
++            mock_manager_class.return_value = mock_manager
++
++            # Mock the tool instance
++            mock_tool = MagicMock()
++            mock_manager.load_tool.return_value = mock_tool
++
++            mock_tool.get_actions_metadata.return_value = [
++                {"name": "memory_ls", "description": "List files", "parameters": {"properties": {}}}
++            ]
++            # Return empty string
++            mock_tool.execute_action.return_value = ""
+ 
+             result = processor.pre_fetch_tools()
+ 
+-            assert result is None
++            # Empty result should still be included
++            assert result is not None
++            assert "memory" in result
+diff --git a/tests/api/answer/services/test_stream_processor.py b/tests/api/answer/services/test_stream_processor.py
+index 6fd1856e0..c78c0c113 100644
+--- a/tests/api/answer/services/test_stream_processor.py
++++ b/tests/api/answer/services/test_stream_processor.py
+@@ -250,3 +250,330 @@ def test_handles_empty_attachments(self, mock_mongo_db):
+             "attachments" not in processor.data
+             or processor.data.get("attachments") is None
+         )
++
++
++@pytest.mark.unit
++class TestToolPreFetch:
++    """Tests for tool pre-fetching with saved parameter values from MongoDB"""
++
++    def test_cryptoprice_prefetch_with_saved_parameters(self, mock_mongo_db):
++        """Test that cryptoprice tool is pre-fetched with saved parameter values from MongoDB structure"""
++        from application.api.answer.services.stream_processor import StreamProcessor
++        from application.core.settings import settings
++        from unittest.mock import patch, MagicMock
++
++        # Setup MongoDB with cryptoprice tool configuration
++        # NOTE: The collection is called "user_tools" not "tools"
++        tools_collection = mock_mongo_db[settings.MONGO_DB_NAME]["user_tools"]
++        tool_id = ObjectId()
++
++        tools_collection.insert_one(
++            {
++                "_id": tool_id,
++                "name": "cryptoprice",
++                "user": "user_123",
++                "status": True,  # Must be True for tool to be included
++                "actions": [
++                    {
++                        "name": "cryptoprice_get",
++                        "description": "Get cryptocurrency price",
++                        "parameters": {
++                            "type": "object",
++                            "properties": {
++                                "symbol": {
++                                    "type": "string",
++                                    "description": "Crypto symbol",
++                                    "value": "BTC"  # Saved value in MongoDB
++                                },
++                                "currency": {
++                                    "type": "string",
++                                    "description": "Currency for price",
++                                    "value": "USD"  # Saved value in MongoDB
++                                }
++                            },
++                            "required": ["symbol", "currency"]
++                        }
++                    }
++                ],
++                "config": {
++                    "token": ""
++                }
++            }
++        )
++
++        request_data = {
++            "question": "What is the price of Bitcoin?",
++            "tools": [str(tool_id)]
++        }
++
++        processor = StreamProcessor(request_data, {"sub": "user_123"})
++        processor._required_tool_actions = {"cryptoprice": {"cryptoprice_get"}}
++
++        # Mock the ToolManager and tool instance
++        with patch("application.agents.tools.tool_manager.ToolManager") as mock_manager_class:
++            mock_manager = MagicMock()
++            mock_manager_class.return_value = mock_manager
++
++            # Mock the tool instance returned by load_tool
++            mock_tool = MagicMock()
++            mock_manager.load_tool.return_value = mock_tool
++
++            # Mock get_actions_metadata on the tool instance
++            mock_tool.get_actions_metadata.return_value = [
++                {
++                    "name": "cryptoprice_get",
++                    "description": "Get cryptocurrency price",
++                    "parameters": {
++                        "type": "object",
++                        "properties": {
++                            "symbol": {"type": "string", "description": "Crypto symbol"},
++                            "currency": {"type": "string", "description": "Currency for price"}
++                        },
++                        "required": ["symbol", "currency"]
++                    }
++                }
++            ]
++
++            # Mock execute_action on the tool instance to return price data
++            mock_tool.execute_action.return_value = {
++                "status_code": 200,
++                "price": 45000.50,
++                "message": "Price of BTC in USD retrieved successfully."
++            }
++
++            # Execute pre-fetch
++            tools_data = processor.pre_fetch_tools()
++
++            # Verify the tool was called
++            assert mock_tool.execute_action.called
++
++            # Verify it was called with the saved parameters from MongoDB
++            call_args = mock_tool.execute_action.call_args
++            assert call_args is not None
++
++            # Check action name uses the full metadata name for execution
++            assert call_args[0][0] == "cryptoprice_get"
++
++            # Check kwargs contain saved values
++            kwargs = call_args[1]
++            assert kwargs.get("symbol") == "BTC"
++            assert kwargs.get("currency") == "USD"
++
++            # Verify tools_data structure
++            assert "cryptoprice" in tools_data
++            # Results are exposed under the full action name
++            assert "cryptoprice_get" in tools_data["cryptoprice"]
++            assert tools_data["cryptoprice"]["cryptoprice_get"]["price"] == 45000.50
++
++    def test_prefetch_with_missing_saved_values_uses_defaults(self, mock_mongo_db):
++        """Test that pre-fetch falls back to defaults when saved values are missing"""
++        from application.api.answer.services.stream_processor import StreamProcessor
++        from application.core.settings import settings
++        from unittest.mock import patch, MagicMock
++
++        tools_collection = mock_mongo_db[settings.MONGO_DB_NAME]["user_tools"]
++        tool_id = ObjectId()
++
++        # Tool configuration without saved values
++        tools_collection.insert_one(
++            {
++                "_id": tool_id,
++                "name": "cryptoprice",
++                "user": "user_123",
++                "status": True,
++                "actions": [
++                    {
++                        "name": "cryptoprice_get",
++                        "description": "Get cryptocurrency price",
++                        "parameters": {
++                            "type": "object",
++                            "properties": {
++                                "symbol": {
++                                    "type": "string",
++                                    "description": "Crypto symbol",
++                                    "default": "ETH"  # Only default, no saved value
++                                },
++                                "currency": {
++                                    "type": "string",
++                                    "description": "Currency",
++                                    "default": "EUR"
++                                }
++                            },
++                            "required": ["symbol", "currency"]
++                        }
++                    }
++                ],
++                "config": {}
++            }
++        )
++
++        request_data = {
++            "question": "Crypto price?",
++            "tools": [str(tool_id)]
++        }
++
++        processor = StreamProcessor(request_data, {"sub": "user_123"})
++        processor._required_tool_actions = {"cryptoprice": {"cryptoprice_get"}}
++
++        with patch("application.agents.tools.tool_manager.ToolManager") as mock_manager_class:
++            mock_manager = MagicMock()
++            mock_manager_class.return_value = mock_manager
++
++            # Mock the tool instance
++            mock_tool = MagicMock()
++            mock_manager.load_tool.return_value = mock_tool
++
++            mock_tool.get_actions_metadata.return_value = [
++                {
++                    "name": "cryptoprice_get",
++                    "parameters": {
++                        "type": "object",
++                        "properties": {
++                            "symbol": {"type": "string", "default": "ETH"},
++                            "currency": {"type": "string", "default": "EUR"}
++                        }
++                    }
++                }
++            ]
++
++            mock_tool.execute_action.return_value = {
++                "status_code": 200,
++                "price": 2500.00
++            }
++
++            tools_data = processor.pre_fetch_tools()
++
++            # Should use default values when saved values are missing
++            call_args = mock_tool.execute_action.call_args
++            if call_args:
++                kwargs = call_args[1]
++                # Either uses defaults or skips if no values available
++                assert kwargs.get("symbol") in ["ETH", None]
++                assert kwargs.get("currency") in ["EUR", None]
++
++    def test_prefetch_with_tool_id_reference(self, mock_mongo_db):
++        """Test that tools can be referenced by MongoDB ObjectId in templates"""
++        from application.api.answer.services.stream_processor import StreamProcessor
++        from application.core.settings import settings
++        from unittest.mock import patch, MagicMock
++
++        tools_collection = mock_mongo_db[settings.MONGO_DB_NAME]["user_tools"]
++        tool_id = ObjectId()
++
++        # Create a tool in the database
++        tools_collection.insert_one(
++            {
++                "_id": tool_id,
++                "name": "memory",
++                "user": "user_123",
++                "status": True,
++                "actions": [
++                    {
++                        "name": "memory_ls",
++                        "description": "List files",
++                        "parameters": {
++                            "type": "object",
++                            "properties": {}
++                        }
++                    }
++                ],
++                "config": {},
++            }
++        )
++
++        request_data = {"question": "test"}
++        processor = StreamProcessor(request_data, {"sub": "user_123"})
++
++        # Mock the filtering to require this specific tool by ID
++        processor._required_tool_actions = {
++            str(tool_id): {"memory_ls"}  # Reference by ObjectId string
++        }
++
++        with patch(
++            "application.agents.tools.tool_manager.ToolManager"
++        ) as mock_manager_class:
++            mock_manager = MagicMock()
++            mock_manager_class.return_value = mock_manager
++
++            # Mock the tool instance
++            mock_tool = MagicMock()
++            mock_manager.load_tool.return_value = mock_tool
++
++            mock_tool.get_actions_metadata.return_value = [
++                {"name": "memory_ls", "description": "List files", "parameters": {"properties": {}}}
++            ]
++            mock_tool.execute_action.return_value = "Directory: /\n- file.txt"
++
++            result = processor.pre_fetch_tools()
++
++            # Tool data should be available under both name and ID
++            assert result is not None
++            assert "memory" in result
++            assert str(tool_id) in result
++            # Both should point to the same data
++            assert result["memory"] == result[str(tool_id)]
++            assert "memory_ls" in result[str(tool_id)]
++
++    def test_prefetch_with_multiple_same_name_tools(self, mock_mongo_db):
++        """Test that multiple tools with the same name can be distinguished by ID"""
++        from application.api.answer.services.stream_processor import StreamProcessor
++        from application.core.settings import settings
++        from unittest.mock import patch, MagicMock
++
++        tools_collection = mock_mongo_db[settings.MONGO_DB_NAME]["user_tools"]
++
++        # Create two memory tools with different IDs
++        tool_id_1 = ObjectId()
++        tool_id_2 = ObjectId()
++
++        tools_collection.insert_many([
++            {
++                "_id": tool_id_1,
++                "name": "memory",
++                "user": "user_123",
++                "status": True,
++                "actions": [{"name": "memory_ls", "parameters": {"properties": {}}}],
++                "config": {"path": "/home"},
++            },
++            {
++                "_id": tool_id_2,
++                "name": "memory",
++                "user": "user_123",
++                "status": True,
++                "actions": [{"name": "memory_ls", "parameters": {"properties": {}}}],
++                "config": {"path": "/work"},
++            }
++        ])
++
++        request_data = {"question": "test"}
++        processor = StreamProcessor(request_data, {"sub": "user_123"})
++
++        # Mock the filtering to require only the second tool by ID
++        processor._required_tool_actions = {
++            str(tool_id_2): {"memory_ls"}  # Only reference the second one
++        }
++
++        with patch(
++            "application.agents.tools.tool_manager.ToolManager"
++        ) as mock_manager_class:
++            mock_manager = MagicMock()
++            mock_manager_class.return_value = mock_manager
++
++            # Mock the tool instance
++            mock_tool = MagicMock()
++            mock_manager.load_tool.return_value = mock_tool
++
++            mock_tool.get_actions_metadata.return_value = [
++                {"name": "memory_ls", "parameters": {"properties": {}}}
++            ]
++            mock_tool.execute_action.return_value = "Work directory"
++
++            result = processor.pre_fetch_tools()
++
++            # Only the second tool should be fetched (referenced by ID)
++            assert result is not None
++            assert str(tool_id_2) in result
++            # Since filtering is enabled and only tool_id_2 is referenced,
++            # only tool_id_2 should be pre-fetched
++            # The "memory" key will still exist because we store under both name and ID
++            assert "memory" in result

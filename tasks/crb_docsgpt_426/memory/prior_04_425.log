@@ -1,0 +1,79 @@
+--- step: ruff ---
+329 |                     logging.error("Cannot refresh credentials: missing refresh_token")
+... (3917 lines omitted)
+18 |     ):
+19 |         super().__init__()
+   |
+help: Convert to `T | None`
+I001 [*] Import block is un-sorted or un-formatted
+  --> application/vectorstore/pgvector.py:39:13
+   |
+38 |           try:
+39 | /             import psycopg2
+40 | |             from psycopg2.extras import Json
+41 | |             import pgvector.psycopg2
+   | |____________________________________^
+42 |           except ImportError:
+43 |               raise ImportError(
+   |
+help: Organize imports
+   |
+38 |         try:
+39 +             import pgvector.psycopg2
+40 |             import psycopg2
+41 |             from psycopg2.extras import Json
+   -             import pgvector.psycopg2
+42 |         except ImportError:
+   |
+LOG015 `error()` call on root logger
+   --> application/vectorstore/pgvector.py:105:13
+    |
+103 |         except Exception as e:
+104 |             conn.rollback()
+105 |             logging.error(f"Error creating table: {e}")
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+106 |             raise
+107 |         finally:
+    |
+help: Use own logger instead
+... (308 lines omitted)
+   |
+8  |     def __init__(self, source_id: str = "", embeddings_key: str = "embeddings"):
+9  +         from langchain_community.vectorstores.qdrant import Qdrant
+10 |         from qdrant_client import models
+   -         from langchain_community.vectorstores.qdrant import Qdrant
+11 |
+   |
+BLE001 Do not catch blind exception: `Exception`
+  --> application/vectorstore/qdrant.py:60:20
+   |
+58 |                     field_schema=models.PayloadSchemaType.KEYWORD,
+59 |                 )
+60 |             except Exception as index_error:
+   |                    ^^^^^^^^^
+61 |                 # Index might already exist, which is fine
+62 |                 if "already exists" not in str(index_error).lower():
+   |
+LOG015 `warning()` call on root logger
+  --> application/vectorstore/qdrant.py:63:21
+   |
+61 |                 # Index might already exist, which is fine
+62 |                 if "already exists" not in str(index_error).lower():
+63 |                     logging.warning(f"Could not create index for metadata.source_id: {index_error}")
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+64 |
+... (1304 lines omitted)
+1 | / import pytest
+2 | | from openapi_parser import parse
+3 | | from application.parser.file.openapi3_parser import OpenAPI3Parser
+  | |__________________________________________________________________^
+help: Organize imports
+  |
+2 | from openapi_parser import parse
+3 +
+4 | from application.parser.file.openapi3_parser import OpenAPI3Parser
+  |
+Found 941 errors.
+[*] 484 fixable with the `--fix` option (36 hidden fixes can be enabled with the `--unsafe-fixes` option).
+##[error]Process completed with exit code 1.
+##[end-action id=__chartboost_ruff-action.__run;outcome=failure

@@ -1,0 +1,37 @@
+--- step: tests (3.10) ---
+=================================== FAILURES ===================================
+_____ TestTraceListenerSetup.test_trace_listener_setup_correctly_for_flow ______
+[gw0] linux -- Python 3.10.18 /home/runner/work/crewAI/crewAI/.venv/bin/python
+tests/tracing/test_tracing.py:335: in test_trace_listener_setup_correctly_for_flow
+    assert mock_listener_setup.call_count >= 1
+E   AssertionError: assert 0 >= 1
+E    +  where 0 = <MagicMock name='setup_listeners' id='139953303950752'>.call_count
+=============================== warnings summary ===============================
+tests/agents/test_lite_agent.py:285
+tests/agents/test_lite_agent.py:285
+  /home/runner/work/crewAI/crewAI/lib/crewai/tests/agents/test_lite_agent.py:285: PytestCollectionWarning: cannot collect test class 'TestFlow' because it has a __init__ constructor (from: lib/crewai/tests/agents/test_lite_agent.py)
+    class TestFlow(Flow):
+tests/test_flow_persistence.py:12
+tests/test_flow_persistence.py:12
+  /home/runner/work/crewAI/crewAI/lib/crewai/tests/test_flow_persistence.py:12: PytestCollectionWarning: cannot collect test class 'TestState' because it has a __init__ constructor (from: lib/crewai/tests/test_flow_persistence.py)
+    class TestState(FlowState):
+tests/test_llm.py:416
+tests/test_llm.py:416
+... (47 lines omitted)
+============================= slowest 10 durations =============================
+5.05s call     lib/crewai/tests/tracing/test_tracing.py::TestTraceListenerSetup::test_trace_listener_ephemeral_batch
+5.04s call     lib/crewai/tests/tracing/test_tracing.py::TestTraceListenerSetup::test_first_time_user_trace_consolidation_logic
+5.03s call     lib/crewai/tests/tracing/test_tracing.py::TestTraceListenerSetup::test_trace_listener_with_authenticated_user
+0.33s call     lib/crewai/tests/llms/google/test_google.py::test_gemini_context_window_size
+0.30s call     lib/crewai/tests/agents/test_lite_agent.py::test_lite_agent_created_with_correct_parameters[True]
+0.17s call     lib/crewai/tests/agents/test_lite_agent.py::test_lite_agent_created_with_correct_parameters[False]
+0.17s call     lib/crewai/tests/tracing/test_tracing.py::TestTraceListenerSetup::test_trace_batch_marked_as_failed_on_finalize_error
+0.17s call     lib/crewai/tests/tools/agent_tools/test_agent_tools.py::test_ask_question_with_coworker_as_array
+0.09s call     lib/crewai/tests/knowledge/test_knowledge_storage_integration.py::test_embedding_configuration_flow
+0.06s call     lib/crewai/tests/llms/bedrock/test_bedrock.py::test_bedrock_completion_module_is_imported
+=========================== short test summary info ============================
+FAILED tests/tracing/test_tracing.py::TestTraceListenerSetup::test_trace_listener_setup_correctly_for_flow - AssertionError: assert 0 >= 1
+ +  where 0 = <MagicMock name='setup_listeners' id='139953303950752'>.call_count
+============ 1 failed, 212 passed, 3 skipped, 23 warnings in 40.40s ============
+##[error]Process completed with exit code 1.
+Post job cl

@@ -1,0 +1,24 @@
+--- step: build (3.12) ---
+Expected: completion(model='gpt-4', messages=[{'role': 'user', 'content': 'Hello'}], stream=False, temperature=0, timeout=600)
+  Actual: completion(tools=[{'googleSearch': {}}], model='gpt-4', stream=False, temperature=0, timeout=600, messages=[{'role': 'user', 'content': 'Hello'}])
+FAILED tests/basic/test_models.py::TestModels::test_ollama_num_ctx_set_when_missing - AssertionError: expected call not found.
+Expected: completion(model='ollama/llama3', messages=[{'role': 'user', 'content': 'Hello'}], stream=False, temperature=0, num_ctx=9442, timeout=600)
+  Actual: completion(tools=[{'googleSearch': {}}], model='ollama/llama3', stream=False, temperature=0, num_ctx=9442, timeout=600, messages=[{'role': 'user', 'content': 'Hello'}])
+FAILED tests/basic/test_models.py::TestModels::test_ollama_uses_existing_num_ctx - AssertionError: expected call not found.
+Expected: completion(model='ollama/llama3', messages=[{'role': 'user', 'content': 'Hello'}], stream=False, temperature=0, num_ctx=4096, timeout=600)
+  Actual: completion(tools=[{'googleSearch': {}}], model='ollama/llama3', stream=False, temperature=0, num_ctx=4096, timeout=600, messages=[{'role': 'user', 'content': 'Hello'}])
+FAILED tests/basic/test_models.py::TestModels::test_request_timeout_default - AssertionError: expected call not found.
+Expected: completion(model='gpt-4', messages=[{'role': 'user', 'content': 'Hello'}], stream=False, temperature=0, timeout=600)
+  Actual: completion(tools=[{'googleSearch': {}}], model='gpt-4', stream=False, temperature=0, timeout=600, messages=[{'role': 'user', 'content': 'Hello'}])
+FAILED tests/basic/test_models.py::TestModels::test_request_timeout_from_extra_params - AssertionError: expected call not found.
+Expected: completion(model='gpt-4', messages=[{'role': 'user', 'content': 'Hello'}], stream=False, temperature=0, timeout=300)
+  Actual: completion(tools=[{'googleSearch': {}}], model='gpt-4', stream=False, temperature=0, timeout=300, messages=[{'role': 'user', 'content': 'Hello'}])
+FAILED tests/basic/test_models.py::TestModels::test_use_temperature_in_send_completion - AssertionError: expected call not found.
+Expected: completion(model='gpt-4', messages=[{'role': 'user', 'content': 'Hello'}], stream=False, temperature=0, timeout=600)
+  Actual: completion(tools=[{'googleSearch': {}}], model='gpt-4', stream=False, temperature=0, timeout=600, messages=[{'role': 'user', 'content': 'Hello'}])
+FAILED tests/basic/test_repomap.py::TestRepoMapAllLanguages::test_language_csharp - AssertionError: 1 not greater than 1
+FAILED tests/basic/test_sendchat.py::TestSendChat::test_send_completion_with_functions - TypeError: <MagicMock name='completion' id='139890229665888'> got multiple values for keyword argument 'tools'
+============ 11 failed, 472 passed, 1 skipped in 303.95s (0:05:03) =============
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

@@ -1,0 +1,19 @@
+--- step: lint ---
+cd litellm
+poetry run mypy . --ignore-missing-imports
+cd ..
+shell: /usr/bin/bash -e {0}
+env:
+  pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+  VENV: .venv/bin/activate
+secret_managers/get_azure_ad_token_provider.py:42: error: Incompatible types in assignment (expression has type "ManagedIdentityCredential", variable has type "ClientSecretCredential")  [assignment]
+secret_managers/get_azure_ad_token_provider.py:44: error: Incompatible types in assignment (expression has type "CertificateCredential", variable has type "ClientSecretCredential")  [assignment]
+Found 2 errors in 1 file (checked 819 source files)
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

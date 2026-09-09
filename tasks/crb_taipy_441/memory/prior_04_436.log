@@ -1,0 +1,36 @@
+--- step: linter ---
+with:
+  version: 0.6.4
+  args: check
+  src: /home/runner/work/taipy/taipy
+  github-token: ***
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+[command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/6164e5a5-ab62-42fd-b0f3-b95df500fcfb -f /home/runner/work/_temp/d31026a9-8a27-4709-97db-13020bd4a9eb
+Added /opt/hostedtoolcache/ruff/0.6.4/x86_64 to the path
+Set RUFF_OUTPUT_FORMAT to github
+Successfully installed ruff version 0.6.4
+[command]/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff check /home/runner/work/taipy/taipy
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:48:54: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:49:72: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:53:72: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:55:72: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:61:42: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:66:46: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:68:54: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:72:46: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:74:54: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:77:42: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:92:54: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:93:72: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:97:72: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:99:72: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:105:42: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:110:46: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:112:54: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:116:46: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:118:54: F821 Undefined name `Gui`
+##[error]tests/gui/notebook/test_notebook_simple_gui.py:121:42: F821 Undefined name `Gui`
+##[error]The process '/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff' failed with exit code 1
+Post job cleanup.
+http.https://github.com/.extraheader

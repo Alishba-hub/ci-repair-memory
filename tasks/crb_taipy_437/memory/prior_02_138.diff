@@ -1,0 +1,106 @@
+diff --git a/tests/gui/config/test_filename.py b/tests/gui/config/test_filename.py
+index fbb99cbbe5..6b1dd13921 100644
+--- a/tests/gui/config/test_filename.py
++++ b/tests/gui/config/test_filename.py
+@@ -11,8 +11,6 @@
+ 
+ import pathlib
+ 
+-import pytest
+-
+ from taipy.gui import Gui
+ 
+ 
+diff --git a/Pipfile b/Pipfile
+index 803af92f81..2c9c85e842 100644
+--- a/Pipfile
++++ b/Pipfile
+@@ -20,12 +20,12 @@ markdown = "==3.4.4"
+ marshmallow = "==3.20.1"
+ networkx = "==2.6"
+ openpyxl = "==3.1.2"
+-pandas = "==1.3.5"
++pandas = ">=1.5.3,<2.3.0"
+ pyarrow = "==16.0.0"
+ pymongo = {extras = ["srv"], version = "==4.6.3"}
+ python-dotenv = "==1.0.0"
+-python-magic = {version = "==0.4.24", markers="sys_platform != 'win32'"}
+-python-magic-bin = {version = "==0.4.14", markers="sys_platform == 'win32'"}
++python-magic = {version = "==0.4.24", markers="platform_system != 'Windows'"}
++setuptools = "<81"
+ pytz = "==2021.3"
+ simple-websocket = "==0.10.1"
+ sqlalchemy = "==2.0.16"
+diff --git a/tools/packages/pipfiles/Pipfile3.10.max b/tools/packages/pipfiles/Pipfile3.10.max
+index 814d662ccd..f2044aac26 100644
+--- a/tools/packages/pipfiles/Pipfile3.10.max
++++ b/tools/packages/pipfiles/Pipfile3.10.max
+@@ -56,6 +56,7 @@ version = "==4.2.13"
+ "openpyxl" = {version="==3.1.5"}
+ "pandas" = {version="==2.2.3", markers="python_version>'3.8'"}
+ "pymongo" = {version="==4.10.1", extras=["srv"]}
++"setuptools" = {version="<81"}
+ "sqlalchemy" = {version="==2.0.36"}
+ "toml" = {version="==0.10.2"}
+ "boto3" = {version="==1.35.90"}
+diff --git a/tools/packages/pipfiles/Pipfile3.11.max b/tools/packages/pipfiles/Pipfile3.11.max
+index 814d662ccd..f2044aac26 100644
+--- a/tools/packages/pipfiles/Pipfile3.11.max
++++ b/tools/packages/pipfiles/Pipfile3.11.max
+@@ -56,6 +56,7 @@ version = "==4.2.13"
+ "openpyxl" = {version="==3.1.5"}
+ "pandas" = {version="==2.2.3", markers="python_version>'3.8'"}
+ "pymongo" = {version="==4.10.1", extras=["srv"]}
++"setuptools" = {version="<81"}
+ "sqlalchemy" = {version="==2.0.36"}
+ "toml" = {version="==0.10.2"}
+ "boto3" = {version="==1.35.90"}
+diff --git a/tools/packages/pipfiles/Pipfile3.12.max b/tools/packages/pipfiles/Pipfile3.12.max
+index 814d662ccd..f2044aac26 100644
+--- a/tools/packages/pipfiles/Pipfile3.12.max
++++ b/tools/packages/pipfiles/Pipfile3.12.max
+@@ -56,6 +56,7 @@ version = "==4.2.13"
+ "openpyxl" = {version="==3.1.5"}
+ "pandas" = {version="==2.2.3", markers="python_version>'3.8'"}
+ "pymongo" = {version="==4.10.1", extras=["srv"]}
++"setuptools" = {version="<81"}
+ "sqlalchemy" = {version="==2.0.36"}
+ "toml" = {version="==0.10.2"}
+ "boto3" = {version="==1.35.90"}
+diff --git a/tools/packages/pipfiles/Pipfile3.9.max b/tools/packages/pipfiles/Pipfile3.9.max
+index b0bd3bfadf..c306b12c48 100644
+--- a/tools/packages/pipfiles/Pipfile3.9.max
++++ b/tools/packages/pipfiles/Pipfile3.9.max
+@@ -56,6 +56,7 @@ version = "==4.2.13"
+ "openpyxl" = {version="==3.1.5"}
+ "pandas" = {version="==2.2.3", markers="python_version>'3.8'"}
+ "pymongo" = {version="==4.10.1", extras=["srv"]}
++"setuptools" = {version="<81"}
+ "sqlalchemy" = {version="==2.0.36"}
+ "toml" = {version="==0.10.2"}
+ "boto3" = {version="==1.35.90"}
+diff --git a/taipy/core/_entity/_reload.py b/taipy/core/_entity/_reload.py
+index 74742183a5..cfa4eb7024 100644
+--- a/taipy/core/_entity/_reload.py
++++ b/taipy/core/_entity/_reload.py
+@@ -15,8 +15,8 @@
+ 
+ from ...common._check_dependencies import EnterpriseEditionUtils
+ from .._manager._manager import _Manager
+-from ..exceptions.exceptions import NonExistingEntity
+ from ..common._utils import _load_fct
++from ..exceptions.exceptions import NonExistingEntity
+ from ..notification import EventOperation, Notifier, _make_event
+ 
+ 
+diff --git a/tests/core/_orchestrator/test_orchestrator.py b/tests/core/_orchestrator/test_orchestrator.py
+index 644cb2ad6a..51a759ebd7 100644
+--- a/tests/core/_orchestrator/test_orchestrator.py
++++ b/tests/core/_orchestrator/test_orchestrator.py
+@@ -35,7 +35,7 @@
+ 
+ 
+ def multiply(nb1: float, nb2: float):
+-    sleep(0.1)
++    sleep(1)
+     return nb1 * nb2

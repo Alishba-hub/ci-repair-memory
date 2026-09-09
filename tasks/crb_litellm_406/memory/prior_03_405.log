@@ -1,0 +1,16 @@
+--- step: lint ---
+shell: /usr/bin/bash -e {0}
+env:
+  pythonLocation: /opt/hostedtoolcache/Python/3.12.13/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.13/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.13/x64/lib
+  VENV: .venv/bin/activate
+proxy/image_endpoints/endpoints.py:13:59: F401 [*] `litellm.proxy.common_utils.http_parsing_utils.get_form_data` imported but unused
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

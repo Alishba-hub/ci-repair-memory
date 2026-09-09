@@ -1,0 +1,91 @@
+{
+  "task_id": "crb_docsgpt_430",
+  "name": "CI failure in docsgpt (Runtime Error, Test Failure, Configuration Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "430",
+  "repo_name": "docsgpt",
+  "repo_owner": "arc53",
+  "sha_fail": "ab4ebf9a9dc3c4ee40947141afdbc96a981d1ed5",
+  "sha_success": "94f70e6de590257f4ba9c24f936cac9ab501bef1",
+  "commit_date": "2025-10-28T10:14:37Z",
+  "error_type": [
+    "Runtime Error",
+    "Test Failure",
+    "Configuration Error"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/pytest.yml",
+  "target_files": [
+    "tests/test_todo_tool.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "429",
+      "commit_date": "2025-10-27T09:37:21Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "tests/agents/test_base_agent.py"
+      ],
+      "log_file": "memory/prior_00_429.log",
+      "diff_file": "memory/prior_00_429.diff"
+    },
+    {
+      "instance_id": "433",
+      "commit_date": "2025-10-19T15:21:25Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "application/parser/embedding_pipeline.py"
+      ],
+      "log_file": "memory/prior_01_433.log",
+      "diff_file": "memory/prior_01_433.diff"
+    },
+    {
+      "instance_id": "426",
+      "commit_date": "2025-10-07T16:15:56Z",
+      "error_type": [
+        "Package Installation Error",
+        "Dependency Issues"
+      ],
+      "workflow_filename": "pytest.yml",
+      "changed_files": [
+        "application/agents/tools/todo_list.py"
+      ],
+      "log_file": "memory/prior_02_426.log",
+      "diff_file": "memory/prior_02_426.diff"
+    },
+    {
+      "instance_id": "376",
+      "commit_date": "2025-10-07T12:57:38Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "tests/test_todo_tool.py"
+      ],
+      "log_file": "memory/prior_03_376.log",
+      "diff_file": "memory/prior_03_376.diff"
+    },
+    {
+      "instance_id": "427",
+      "commit_date": "2025-10-01T21:10:30Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "tests/security/test_encryption.py",
+        "tests/storage/test_local_storage.py"
+      ],
+      "log_file": "memory/prior_04_427.log",
+      "diff_file": "memory/prior_04_427.diff"
+    }
+  ]
+}

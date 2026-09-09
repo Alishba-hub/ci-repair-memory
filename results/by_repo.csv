@@ -36,9 +36,3 @@ claude-code,taipy,no_memory,0,1,1,1,1.0,0.2065,1.0
 claude-code,taipy,memory_k3,3,1,1,1,1.0,0.2065,1.0
 claude-code,uvicorn,no_memory,0,1,1,0,0.0,0.0,0.7935
 claude-code,uvicorn,memory_k3,3,1,1,0,0.0,0.0,0.7935
-copilot,agentscope,no_memory,0,1,10,0,0.0,0.0,0.2775
-copilot,agentscope,memory_k3,3,1,10,0,0.0,0.0,0.2775
-copilot,agentscope,foreign_memory,3,1,4,0,0.0,0.0,0.4899
-copilot-claude-fable-5.1,aider,no_memory,0,1,5,3,0.6,0.2307,0.8824
-copilot-claude-fable-5.1,aider,memory_k3,3,1,5,3,0.6,0.2307,0.8824
-copilot-claude-fable-5.1,aider,foreign_memory,3,1,2,0,0.0,0.0,0.6576

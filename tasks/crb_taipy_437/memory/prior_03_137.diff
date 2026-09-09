@@ -1,0 +1,73 @@
+diff --git a/taipy/core/data/excel.py b/taipy/core/data/excel.py
+index 471e7907a7..5a680972c2 100644
+--- a/taipy/core/data/excel.py
++++ b/taipy/core/data/excel.py
+@@ -177,7 +177,9 @@ def _read_as(self, path: str):
+             sheet_names = excel_file.sheetnames
+ 
+             user_provided_sheet_names = properties.get(self.__SHEET_NAME_PROPERTY) or []
+-            if not isinstance(user_provided_sheet_names, (list, set, tuple)):
++            if isinstance(user_provided_sheet_names, (list, tuple, set)):
++                user_provided_sheet_names = list(user_provided_sheet_names)
++            else:
+                 user_provided_sheet_names = [user_provided_sheet_names]
+ 
+             provided_sheet_names = user_provided_sheet_names or sheet_names
+diff --git a/taipy/gui/page.py b/taipy/gui/page.py
+index 67a2faa59e..2699d51a05 100644
+--- a/taipy/gui/page.py
++++ b/taipy/gui/page.py
+@@ -146,7 +146,7 @@ def render(self, gui) -> str:
+             return self._renderer.render(gui)
+         return "<h1>No renderer found for page</h1>"
+ 
+-    def set_style(self, style: t.Dict[str, t.Dict[str, t.Any]]) -> Page:
++    def set_style(self, style: t.Optional[t.Dict[str, t.Dict[str, t.Any]]]) -> Page:
+         """Set the style for this page.
+ 
+         The *style* parameter must contain a series of CSS rules that apply to the generated
+diff --git a/taipy/core/data/_file_datanode_mixin.py b/taipy/core/data/_file_datanode_mixin.py
+index 376c0fa37a..a8542396c0 100644
+--- a/taipy/core/data/_file_datanode_mixin.py
++++ b/taipy/core/data/_file_datanode_mixin.py
+@@ -48,8 +48,8 @@ class _FileDataNodeMixin:
+ 
+     def __init__(self, properties: Dict) -> None:
+         initial_path = properties.get(self._PATH_KEY, properties.get(self._DEFAULT_PATH_KEY))
+-        self._path: Optional[str] = initial_path if isinstance(initial_path, str) else None
+-        self._is_generated: bool = properties.get(self._IS_GENERATED_KEY, self._path is None)
++        self._path: str = initial_path if isinstance(initial_path, str) else ""
++        self._is_generated: bool = properties.get(self._IS_GENERATED_KEY, initial_path is None)
+         self._last_edit_date: Optional[datetime] = None
+ 
+         if self._path and ".data" in self._path:
+diff --git a/taipy/core/_entity/_reload.py b/taipy/core/_entity/_reload.py
+index 74742183a5..cfa4eb7024 100644
+--- a/taipy/core/_entity/_reload.py
++++ b/taipy/core/_entity/_reload.py
+@@ -15,8 +15,8 @@
+ 
+ from ...common._check_dependencies import EnterpriseEditionUtils
+ from .._manager._manager import _Manager
+-from ..exceptions.exceptions import NonExistingEntity
+ from ..common._utils import _load_fct
++from ..exceptions.exceptions import NonExistingEntity
+ from ..notification import EventOperation, Notifier, _make_event
+ 
+ 
+diff --git a/taipy.sqlite3.db b/taipy.sqlite3.db
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/Pipfile b/Pipfile
+index cf838fc7b1..c6fb7bbeb2 100644
+--- a/Pipfile
++++ b/Pipfile
+@@ -18,7 +18,7 @@ gitignore-parser = "==0.1.11"
+ kthread = "==0.2.3"
+ markdown = "==3.7"
+ marshmallow = "==3.23.2"
+-networkx = "==3.4.2"
++networkx = "==3.2.1"
+ openpyxl = "==3.1.5"
+ pandas = "==2.2.3"
+ passlib = "==1.7.4"

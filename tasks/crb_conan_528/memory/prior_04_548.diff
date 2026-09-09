@@ -1,0 +1,140 @@
+diff --git a/conan/internal/api/detect/detect_api.py b/conan/internal/api/detect/detect_api.py
+index 27d519fa205..71d8e6e8a9d 100644
+--- a/conan/internal/api/detect/detect_api.py
++++ b/conan/internal/api/detect/detect_api.py
+@@ -233,7 +233,7 @@ def _detect_gcc_libcxx(version_, executable):
+         old_path = os.getcwd()
+         os.chdir(t)
+         try:
+-            error, out_str = detect_runner(f'"{executable} main.cpp -std=c++11')
++            error, out_str = detect_runner(f'"{executable}" main.cpp -std=c++11')
+             if error:
+                 if "using libstdc++" in out_str:
+                     output.info("gcc C++ standard library: libstdc++")
+@@ -482,7 +482,7 @@ def _detect_vs_ide_version():
+ def _cc_compiler(compiler_exe="cc"):
+     # Try to detect the "cc" linux system "alternative". It could point to gcc or clang
+     try:
+-        ret, out = detect_runner(f'"{compiler_exe} --version')
++        ret, out = detect_runner(f'"{compiler_exe}" --version')
+         if ret != 0:
+             return None, None, None
+         compiler = "clang" if "clang" in out else "gcc"
+@@ -505,13 +505,13 @@ def detect_gcc_compiler(compiler_exe="gcc"):
+     try:
+         if platform.system() == "Darwin":
+             # In Mac OS X check if gcc is a fronted using apple-clang
+-            _, out = detect_runner(f'"{compiler_exe} --version')
++            _, out = detect_runner(f'"{compiler_exe}" --version')
+             out = out.lower()
+             if "clang" in out:
+                 return None, None, None
+ 
+         # TODO: Add -dumpfullversion to always return major.minor
+-        ret, out = detect_runner(f'"{compiler_exe} -dumpversion')
++        ret, out = detect_runner(f'"{compiler_exe}" -dumpversion')
+         if ret != 0:
+             return None, None, None
+         compiler = "gcc"
+@@ -532,7 +532,7 @@ def detect_compiler():
+ 
+ def detect_intel_compiler(compiler_exe="icx"):
+     try:
+-        ret, out = detect_runner(f'"{compiler_exe} --version')
++        ret, out = detect_runner(f'"{compiler_exe}" --version')
+         if ret != 0:
+             return None, None
+         compiler = "intel-cc"
+@@ -546,7 +546,7 @@ def detect_intel_compiler(compiler_exe="icx"):
+ 
+ def detect_suncc_compiler(compiler_exe="cc"):
+     try:
+-        _, out = detect_runner(f'"{compiler_exe} -V')
++        _, out = detect_runner(f'"{compiler_exe}" -V')
+         compiler = "sun-cc"
+         installed_version = re.search(r"Sun C.*([0-9]+\.[0-9]+)", out)
+         if installed_version:
+@@ -562,7 +562,7 @@ def detect_suncc_compiler(compiler_exe="cc"):
+ 
+ def detect_clang_compiler(compiler_exe="clang"):
+     try:
+-        ret, out = detect_runner(f'"{compiler_exe} --version')
++        ret, out = detect_runner(f'"{compiler_exe}" --version')
+         if ret != 0:
+             return None, None, None
+         if "Apple" in out:
+diff --git a/test/functional/toolchains/meson/_base.py b/test/functional/toolchains/meson/_base.py
+index 4d2d8c5a896..b4cdd1444ee 100644
+--- a/test/functional/toolchains/meson/_base.py
++++ b/test/functional/toolchains/meson/_base.py
+@@ -33,4 +33,4 @@ def _check_binary(self):
+             self.assertIn("main _MSVC_LANG2014", self.t.out)
+         elif platform.system() == "Linux":
+             self.assertIn(f"main {arch_macro['gcc'][host_arch]} defined", self.t.out)
+-            self.assertIn("main __GNUC__9", self.t.out)
++            self.assertIn("main __GNUC__", self.t.out)
+diff --git a/test/conftest.py b/test/conftest.py
+index a189d4aaae7..c686f57faa5 100644
+--- a/test/conftest.py
++++ b/test/conftest.py
+@@ -274,7 +274,7 @@ def _get_individual_tool(name, version):
+         if tool_path == "skip-tests":
+             return False
+         elif tool_path is not None and not os.path.isdir(tool_path):
+-            return True
++            return False
+     else:
+         if version is not None:  # if the version is specified, it should be in the conf
+             return True
+@@ -296,10 +296,7 @@ def _get_individual_tool(name, version):
+     exe_found = which(exe)  # TODO: This which doesn't detect version either
+     exe_path = str(pathlib.Path(exe_found).parent) if exe_found else None
+     if not exe_found:
+-        cached = True
+-        if tool_path is None:
+-            # will fail the test, not exe found and path None
+-            cached = True
++        cached = False
+     elif tool_path is not None and tool_path not in exe_found:
+         # finds the exe in a path that is not the one set in the conf -> fail
+         cached = True
+diff --git a/test/unittests/test_conftest_tools.py b/test/unittests/test_conftest_tools.py
+new file mode 100644
+index 00000000000..b47ba499bbf
+--- /dev/null
++++ b/test/unittests/test_conftest_tools.py
+@@ -0,0 +1,34 @@
++import platform
++
++from test import conftest
++
++
++def test_get_individual_tool_skips_missing_configured_path(monkeypatch, tmp_path):
++    tool_name = "missing_configured_tool"
++    monkeypatch.setitem(conftest.tools_locations, tool_name, {
++        "default": "1.0",
++        "exe": "missing-configured-tool",
++        "1.0": {"path": {platform.system(): str(tmp_path / "missing")}}
++    })
++
++    assert conftest._get_individual_tool(tool_name, None) is False
++
++
++def test_get_individual_tool_skips_missing_pathless_tool(monkeypatch, tmp_path):
++    tool_name = "missing_pathless_tool"
++    monkeypatch.setenv("PATH", str(tmp_path))
++    monkeypatch.setitem(conftest.tools_locations, tool_name, {
++        "exe": "missing-pathless-tool"
++    })
++
++    assert conftest._get_individual_tool(tool_name, None) is False
++
++
++def test_get_individual_tool_fails_unknown_configured_version(monkeypatch):
++    tool_name = "configured_tool"
++    monkeypatch.setitem(conftest.tools_locations, tool_name, {
++        "default": "1.0",
++        "1.0": {}
++    })
++
++    assert conftest._get_individual_tool(tool_name, "2.0") is True

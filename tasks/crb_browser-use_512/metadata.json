@@ -1,0 +1,125 @@
+{
+  "task_id": "crb_browser-use_512",
+  "name": "CI failure in browser-use (Code Formatting, Dependency Issues, Code Linting)",
+  "source": "ci-repair-bench",
+  "instance_id": "512",
+  "repo_name": "browser-use",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "88c4f3ff124763577043c1741057863ee519f9b2",
+  "sha_success": "8709678bd0179822bf20c5506c77a1af86e72844",
+  "commit_date": "2025-07-05T15:07:42Z",
+  "error_type": [
+    "Code Formatting",
+    "Dependency Issues",
+    "Code Linting"
+  ],
+  "error_group": "dependency_env",
+  "workflow_path": ".github/workflows/lint.yml",
+  "target_files": [
+    "browser_use/dom/playground/test_accessibility.py",
+    "browser_use/llm/anthropic/chat.py",
+    "browser_use/llm/aws/chat_anthropic.py",
+    "browser_use/llm/google/serializer.py",
+    "eval/judge_system.py",
+    "eval/service.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "499",
+      "commit_date": "2025-07-01T21:20:50Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "browser_use/dom/tests/test_accessibility_playground.py",
+        "browser_use/llm/anthropic/chat.py",
+        "browser_use/llm/aws/chat_anthropic.py",
+        "browser_use/llm/google/serializer.py",
+        "browser_use/llm/openai/chat.py",
+        "eval/judge_system.py",
+        "pyproject.toml"
+      ],
+      "log_file": "memory/prior_00_499.log",
+      "diff_file": "memory/prior_00_499.diff"
+    },
+    {
+      "instance_id": "515",
+      "commit_date": "2025-07-01T10:05:10Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "browser_use/cli.py",
+        "browser_use/dom/tests/test_accessibility_playground.py",
+        "browser_use/llm/anthropic/chat.py",
+        "browser_use/llm/aws/chat_anthropic.py",
+        "browser_use/llm/google/serializer.py",
+        "eval/judge_system.py",
+        "pyproject.toml"
+      ],
+      "log_file": "memory/prior_01_515.log",
+      "diff_file": "memory/prior_01_515.diff"
+    },
+    {
+      "instance_id": "519",
+      "commit_date": "2025-06-26T07:28:42Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "browser_use/controller/service.py",
+        "browser_use/dom/tests/test_accessibility_playground.py",
+        "browser_use/llm/anthropic/chat.py",
+        "browser_use/llm/google/serializer.py",
+        "browser_use/telemetry/service.py",
+        "pyproject.toml",
+        "tests/ci/test_filesystem.py",
+        "eval/judge_system.py"
+      ],
+      "log_file": "memory/prior_02_519.log",
+      "diff_file": "memory/prior_02_519.diff"
+    },
+    {
+      "instance_id": "502",
+      "commit_date": "2025-06-25T09:08:15Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "browser_use/controller/registry/service.py",
+        "browser_use/controller/service.py",
+        "browser_use/dom/tests/test_accessibility_playground.py",
+        "browser_use/llm/google/serializer.py",
+        "browser_use/telemetry/service.py",
+        "eval/judge_system.py",
+        "pyproject.toml"
+      ],
+      "log_file": "memory/prior_03_502.log",
+      "diff_file": "memory/prior_03_502.diff"
+    },
+    {
+      "instance_id": "496",
+      "commit_date": "2025-06-25T08:34:50Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "browser_use/controller/registry/service.py",
+        "browser_use/controller/service.py",
+        "browser_use/dom/tests/test_accessibility_playground.py",
+        "browser_use/llm/google/serializer.py",
+        "browser_use/telemetry/service.py",
+        "eval/judge_system.py",
+        "pyproject.toml"
+      ],
+      "log_file": "memory/prior_04_496.log",
+      "diff_file": "memory/prior_04_496.diff"
+    }
+  ]
+}

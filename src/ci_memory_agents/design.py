@@ -42,6 +42,26 @@ RQ1_K: int = 3
 RUNS_PER_CONDITION: int = 5
 
 #: Task population. 10 repositories x 3 tasks each.
+#:
+#: This is the design's intent and is deliberately NOT lowered to what the dataset
+#: currently yields. Measured on the 567-row parquet, exactly ten repositories have
+#: three or more K=5-eligible targets -- agno, aider, axolotl, browser-use, camel,
+#: conan, crewai, docsgpt, litellm, taipy -- and the count does not improve at any
+#: MAX_FILES ceiling (15, 20, 25, 30, 40 and 60 all give the same ten). So there is no
+#: substitute bench: losing one repository costs a tenth of the study.
+#:
+#: One is currently lost. All three of camel's eligible instances (410, 419, 420) carry
+#: a gold patch whose pre-image does not match the repository at `sha_fail` -- in 410,
+#: the patch deletes `if board[a] in ("X", "O") and ...` where the commit actually holds
+#: `if board[a] != " " and ...`. That is a defect in the dataset, not in the importer:
+#: no patch tool can apply a hunk whose deleted line is absent, and fuzz relaxes context
+#: only. The importable ceiling is therefore 9 x 3 = 27 until those rows are corrected
+#: upstream or a tenth repository becomes eligible.
+#:
+#: The importer reports the shortfall loudly and records what it actually built in
+#: `tasks/study_population.json`. Lowering N_REPOS to 9 here would make the harness
+#: agree with itself by moving the target, which is the one thing this module exists to
+#: prevent.
 N_REPOS: int = 10
 TASKS_PER_REPO: int = 3
 N_TASKS: int = N_REPOS * TASKS_PER_REPO
@@ -124,13 +144,26 @@ def error_group(error_types) -> str | None:
 #: same harness is driven by more than one model, and results collected under different
 #: models would otherwise pool into a single row.
 #:
-#: Currently GitHub Copilot driven by two models. Add rows to extend the matrix; every
-#: script derives its agent list from here, so nothing else needs editing.
+#: GitHub Copilot driven by three models. `gpt-5.4` and `gpt-5.4-mini` are the same
+#: family at two sizes, so the pair isolates model capacity with the harness, the
+#: prompts and the task population all held fixed; `claude-fable-5.1` is the
+#: cross-vendor comparison. Add rows to extend the matrix; every script derives its
+#: agent list from here, so nothing else needs editing.
+#:
+#: `model` must match the family string VS Code reports for the model, because the
+#: extension pins `ciMemory.modelFamily` to it and refuses to run on a mismatch rather
+#: than silently collecting a condition under whatever model the router chose.
 AGENTS: tuple[dict[str, str], ...] = (
     {
         "name": "copilot-claude-fable-5.1",
         "harness": "copilot",
         "model": "claude-fable-5.1",
+        "output_mode": "text",
+    },
+    {
+        "name": "copilot-gpt-5.4",
+        "harness": "copilot",
+        "model": "gpt-5.4",
         "output_mode": "text",
     },
     {

@@ -1,0 +1,21 @@
+diff --git a/tests/agents/test_base_agent.py b/tests/agents/test_base_agent.py
+index 78beb3984..125cf9a76 100644
+--- a/tests/agents/test_base_agent.py
++++ b/tests/agents/test_base_agent.py
+@@ -134,14 +134,14 @@ def test_build_messages_uses_title_as_fallback(
+     ):
+         agent = ClassicAgent(**agent_base_params)
+ 
+-        messages = agent._build_messages("System prompt", "query")
++        agent._build_messages("System prompt", "query")
+ 
+     def test_build_messages_uses_source_as_fallback(
+         self, agent_base_params, mock_llm_creator, mock_llm_handler_creator
+     ):
+         agent = ClassicAgent(**agent_base_params)
+ 
+-        messages = agent._build_messages("System prompt", "query")
++        agent._build_messages("System prompt", "query")
+ 
+ 
+ @pytest.mark.unit

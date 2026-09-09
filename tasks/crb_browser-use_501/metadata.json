@@ -1,0 +1,92 @@
+{
+  "task_id": "crb_browser-use_501",
+  "name": "CI failure in browser-use (Package Installation Error, Configuration Error)",
+  "source": "ci-repair-bench",
+  "instance_id": "501",
+  "repo_name": "browser-use",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "6e17756e76d2a4c471575a5e5ff660d2058352f7",
+  "sha_success": "fe4e13b35b58a891f61e895d7431ed3bc5f1dba2",
+  "commit_date": "2025-06-21T22:46:19Z",
+  "error_type": [
+    "Package Installation Error",
+    "Configuration Error"
+  ],
+  "error_group": "dependency_env",
+  "workflow_path": ".github/workflows/lint.yml",
+  "target_files": [
+    "browser_use/controller/service.py",
+    "browser_use/dom/tests/test_accessibility_playground.py",
+    "browser_use/telemetry/service.py",
+    "pyproject.toml",
+    "tests/ci/test_controller.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "498",
+      "commit_date": "2025-06-07T00:10:31Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "examples/features/graph_memory.py"
+      ],
+      "log_file": "memory/prior_00_498.log",
+      "diff_file": "memory/prior_00_498.diff"
+    },
+    {
+      "instance_id": "514",
+      "commit_date": "2025-06-04T11:45:23Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "browser_use/agent/service.py"
+      ],
+      "log_file": "memory/prior_01_514.log",
+      "diff_file": "memory/prior_01_514.diff"
+    },
+    {
+      "instance_id": "522",
+      "commit_date": "2025-05-31T03:47:16Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "browser_use/agent/capabilities.py"
+      ],
+      "log_file": "memory/prior_02_522.log",
+      "diff_file": "memory/prior_02_522.diff"
+    },
+    {
+      "instance_id": "509",
+      "commit_date": "2025-05-29T18:58:10Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "examples/use-cases/play_chess.py"
+      ],
+      "log_file": "memory/prior_03_509.log",
+      "diff_file": "memory/prior_03_509.diff"
+    },
+    {
+      "instance_id": "506",
+      "commit_date": "2025-05-26T18:29:41Z",
+      "error_type": [
+        "Code Formatting"
+      ],
+      "workflow_filename": "lint.yml",
+      "changed_files": [
+        "browser_use/agent/service.py"
+      ],
+      "log_file": "memory/prior_04_506.log",
+      "diff_file": "memory/prior_04_506.diff"
+    }
+  ]
+}

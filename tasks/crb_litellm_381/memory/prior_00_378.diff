@@ -1,0 +1,1515 @@
+diff --git a/tests/test_litellm/enterprise/enterprise_callbacks/send_emails/test_resend_email.py b/tests/test_litellm/enterprise/enterprise_callbacks/send_emails/test_resend_email.py
+index dffa343d99f..32e78f4b236 100644
+--- a/tests/test_litellm/enterprise/enterprise_callbacks/send_emails/test_resend_email.py
++++ b/tests/test_litellm/enterprise/enterprise_callbacks/send_emails/test_resend_email.py
+@@ -20,19 +20,25 @@ def mock_env_vars():
+ 
+ @pytest.fixture
+ def mock_httpx_client():
+-    with mock.patch(
+-        "litellm_enterprise.enterprise_callbacks.send_emails.resend_email.get_async_httpx_client"
+-    ) as mock_client:
+-        # Create a mock response
+-        mock_response = mock.AsyncMock(spec=Response)
+-        mock_response.status_code = 200
+-        mock_response.json.return_value = {"id": "test_email_id"}
+-
+-        # Create a mock client
+-        mock_async_client = mock.AsyncMock()
+-        mock_async_client.post.return_value = mock_response
+-        mock_client.return_value = mock_async_client
+-
++    # Patch the globals used by the imported class directly. Other tests reload
++    # LiteLLM modules, which can make string patch targets point at a newer
++    # module object than this class was imported from.
++    mock_client = mock.Mock()
++
++    # Create a mock response
++    mock_response = mock.AsyncMock(spec=Response)
++    mock_response.status_code = 200
++    mock_response.json.return_value = {"id": "test_email_id"}
++
++    # Create a mock client
++    mock_async_client = mock.AsyncMock()
++    mock_async_client.post.return_value = mock_response
++    mock_client.return_value = mock_async_client
++
++    with mock.patch.dict(
++        ResendEmailLogger.__init__.__globals__,
++        {"get_async_httpx_client": mock_client},
++    ):
+         yield mock_async_client
+ 
+ 
+diff --git a/tests/test_litellm/llms/azure/response/test_azure_transformation.py b/tests/test_litellm/llms/azure/response/test_azure_transformation.py
+index 8edd87a12fc..43708f607aa 100644
+--- a/tests/test_litellm/llms/azure/response/test_azure_transformation.py
++++ b/tests/test_litellm/llms/azure/response/test_azure_transformation.py
+@@ -10,6 +10,13 @@
+ from litellm.types.router import GenericLiteLLMParams
+ 
+ 
++def _get_base_validate_environment_globals():
++    base_azure_llm = AzureOpenAIResponsesAPIConfig.validate_environment.__globals__[
++        "BaseAzureLLM"
++    ]
++    return base_azure_llm._base_validate_azure_environment.__globals__
++
++
+ def test_validate_environment_api_key_within_litellm_params():
+     azure_openai_responses_apiconfig = AzureOpenAIResponsesAPIConfig()
+     litellm_params = GenericLiteLLMParams(api_key="test-api-key")
+@@ -25,8 +32,10 @@ def test_validate_environment_api_key_within_litellm_params():
+ 
+ def test_validate_environment_api_key_within_litellm():
+     azure_openai_responses_apiconfig = AzureOpenAIResponsesAPIConfig()
++    base_validate_globals = _get_base_validate_environment_globals()
++    config_litellm = base_validate_globals["litellm"]
+ 
+-    with patch("litellm.api_key", "test-api-key"):
++    with patch.object(config_litellm, "api_key", "test-api-key"):
+         litellm_params = GenericLiteLLMParams()
+         result = azure_openai_responses_apiconfig.validate_environment(
+             headers={}, model="", litellm_params=litellm_params
+@@ -39,8 +48,10 @@ def test_validate_environment_api_key_within_litellm():
+ 
+ def test_validate_environment_azure_key_within_litellm():
+     azure_openai_responses_apiconfig = AzureOpenAIResponsesAPIConfig()
++    base_validate_globals = _get_base_validate_environment_globals()
++    config_litellm = base_validate_globals["litellm"]
+ 
+-    with patch("litellm.azure_key", "test-azure-key"):
++    with patch.object(config_litellm, "azure_key", "test-azure-key"):
+         litellm_params = GenericLiteLLMParams()
+         result = azure_openai_responses_apiconfig.validate_environment(
+             headers={}, model="", litellm_params=litellm_params
+@@ -53,19 +64,26 @@ def test_validate_environment_azure_key_within_litellm():
+ 
+ def test_validate_environment_azure_openai_api_key_within_secret_str():
+     azure_openai_responses_apiconfig = AzureOpenAIResponsesAPIConfig()
++    base_validate_globals = _get_base_validate_environment_globals()
++    config_litellm = base_validate_globals["litellm"]
+ 
+-    with patch("litellm.api_key", None), \
+-         patch("litellm.azure_key", None), \
+-         patch("litellm.llms.azure.common_utils.get_secret_str") as mock_get_secret_str:
++    def mock_get_secret_str(key):
+         # Configure the mock to return "test-api-key" when called with "AZURE_OPENAI_API_KEY"
+-        mock_get_secret_str.side_effect = (
+-            lambda key: "test-api-key" if key == "AZURE_OPENAI_API_KEY" else None
+-        )
+-
++        return "test-api-key" if key == "AZURE_OPENAI_API_KEY" else None
++
++    with (
++        patch.object(config_litellm, "api_key", None),
++        patch.object(config_litellm, "azure_key", None),
++        patch.dict(
++            base_validate_globals,
++            {"get_secret_str": mock_get_secret_str},
++        ),
++    ):
+         litellm_params = GenericLiteLLMParams()
+         result = azure_openai_responses_apiconfig.validate_environment(
+             headers={}, model="", litellm_params=litellm_params
+         )
++
+         expected = {"api-key": "test-api-key"}
+ 
+         assert result == expected
+@@ -73,21 +91,23 @@ def test_validate_environment_azure_openai_api_key_within_secret_str():
+ 
+ def test_validate_environment_azure_api_key_within_secret_str():
+     azure_openai_responses_apiconfig = AzureOpenAIResponsesAPIConfig()
+-
+-    with patch("litellm.api_key", None), \
+-         patch("litellm.azure_key", None), \
+-         patch("litellm.llms.azure.common_utils.get_secret_str") as mock_get_secret_str:
+-        # Configure the mock to return None for "AZURE_OPENAI_API_KEY" and "test-api-key" for "AZURE_API_KEY"
+-        def mock_side_effect(key):
+-            if key == "AZURE_OPENAI_API_KEY":
+-                return None
+-            elif key == "AZURE_API_KEY":
+-                return "test-api-key"
+-            else:
+-                return None
+-        
+-        mock_get_secret_str.side_effect = mock_side_effect
+-
++    base_validate_globals = _get_base_validate_environment_globals()
++    config_litellm = base_validate_globals["litellm"]
++
++    def mock_get_secret_str(key):
++        # Return None for AZURE_OPENAI_API_KEY and a value for AZURE_API_KEY.
++        if key == "AZURE_API_KEY":
++            return "test-api-key"
++        return None
++
++    with (
++        patch.object(config_litellm, "api_key", None),
++        patch.object(config_litellm, "azure_key", None),
++        patch.dict(
++            base_validate_globals,
++            {"get_secret_str": mock_get_secret_str},
++        ),
++    ):
+         litellm_params = GenericLiteLLMParams()
+         result = azure_openai_responses_apiconfig.validate_environment(
+             headers={}, model="", litellm_params=litellm_params
+diff --git a/tests/test_litellm/llms/custom_httpx/test_http_handler.py b/tests/test_litellm/llms/custom_httpx/test_http_handler.py
+index 6f66bf20a0a..158772fc05d 100644
+--- a/tests/test_litellm/llms/custom_httpx/test_http_handler.py
++++ b/tests/test_litellm/llms/custom_httpx/test_http_handler.py
+@@ -45,23 +45,21 @@ async def test_ssl_security_level(monkeypatch):
+     # assert "DEFAULT@SECLEVEL=1" in ssl_context.get_ciphers()
+ 
+ 
+-@pytest.mark.asyncio
+-async def test_force_ipv4_transport():
++def test_force_ipv4_transport(monkeypatch):
+     """Test transport creation with force_ipv4 enabled"""
+-    litellm.force_ipv4 = True
+-    litellm.disable_aiohttp_transport = True
++    monkeypatch.setattr(litellm, "force_ipv4", True)
++    monkeypatch.setattr(litellm, "disable_aiohttp_transport", True)
+ 
+-    transport = AsyncHTTPHandler._create_async_transport()
++    with patch(
++        "litellm.llms.custom_httpx.http_handler.AsyncHTTPTransport"
++    ) as mock_transport_constructor:
++        mock_transport = MagicMock()
++        mock_transport_constructor.return_value = mock_transport
++
++        transport = AsyncHTTPHandler._create_async_transport()
+ 
+-    # Should get an AsyncHTTPTransport
+-    assert isinstance(transport, httpx.AsyncHTTPTransport)
+-    # Verify IPv4 configuration through a request
+-    client = httpx.AsyncClient(transport=transport)
+-    try:
+-        response = await client.get("http://example.com")
+-        assert response.status_code == 200
+-    finally:
+-        await client.aclose()
++    mock_transport_constructor.assert_called_once_with(local_address="0.0.0.0")
++    assert transport is mock_transport
+ 
+ 
+ @pytest.mark.asyncio
+diff --git a/tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py b/tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py
+index 289b895318a..46b1b406c7e 100644
+--- a/tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py
++++ b/tests/test_litellm/llms/ollama/test_ollama_chat_transformation.py
+@@ -73,10 +73,8 @@ def test_map_openai_params_with_json_object(self):
+ 
+     def test_transform_request_loads_config_parameters(self):
+         """Test that transform_request loads config parameters without overriding existing optional_params"""
+-        # Set config parameters on the class
+-        import litellm
+-
+-        litellm.OllamaChatConfig(num_ctx=8000, temperature=0.0)
++        # Set config parameters on the same class object used by this test.
++        OllamaChatConfig(num_ctx=8000, temperature=0.0)
+ 
+         try:
+             config = OllamaChatConfig()
+@@ -99,5 +97,5 @@ def test_transform_request_loads_config_parameters(self):
+ 
+         finally:
+             # Clean up class attributes
+-            delattr(litellm.OllamaChatConfig, "num_ctx")
+-            delattr(litellm.OllamaChatConfig, "temperature")
++            delattr(OllamaChatConfig, "num_ctx")
++            delattr(OllamaChatConfig, "temperature")
+diff --git a/tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py b/tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py
+index db0a69482b2..2183d488eda 100644
+--- a/tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py
++++ b/tests/test_litellm/llms/openai/responses/test_openai_responses_transformation.py
+@@ -150,6 +150,9 @@ def test_transform_streaming_response(self):
+ 
+     def test_validate_environment(self):
+         """Test that validate_environment correctly sets the Authorization header"""
++        config_globals = self.config.validate_environment.__globals__
++        config_litellm = config_globals["litellm"]
++
+         # Test with provided API key
+         headers = {}
+         api_key = "test_api_key"
+@@ -164,7 +167,7 @@ def test_validate_environment(self):
+         # Test with empty headers
+         headers = {}
+ 
+-        with patch("litellm.api_key", "litellm_api_key"):
++        with patch.object(config_litellm, "api_key", "litellm_api_key"):
+             litellm_params = GenericLiteLLMParams()
+             result = self.config.validate_environment(
+                 headers=headers, model=self.model, litellm_params=litellm_params
+@@ -176,8 +179,8 @@ def test_validate_environment(self):
+         # Test with existing headers
+         headers = {"Content-Type": "application/json"}
+ 
+-        with patch("litellm.openai_key", "openai_key"):
+-            with patch("litellm.api_key", None):
++        with patch.object(config_litellm, "openai_key", "openai_key"):
++            with patch.object(config_litellm, "api_key", None):
+                 litellm_params = GenericLiteLLMParams()
+                 result = self.config.validate_environment(
+                     headers=headers, model=self.model, litellm_params=litellm_params
+@@ -191,12 +194,9 @@ def test_validate_environment(self):
+         # Test with environment variable
+         headers = {}
+ 
+-        with patch("litellm.api_key", None):
+-            with patch("litellm.openai_key", None):
+-                with patch(
+-                    "litellm.llms.openai.responses.transformation.get_secret_str",
+-                    return_value="env_api_key",
+-                ):
++        with patch.object(config_litellm, "api_key", None):
++            with patch.object(config_litellm, "openai_key", None):
++                with patch.dict(config_globals, {"get_secret_str": Mock(return_value="env_api_key")}):
+                     litellm_params = GenericLiteLLMParams()
+                     result = self.config.validate_environment(
+                         headers=headers, model=self.model, litellm_params=litellm_params
+@@ -207,6 +207,9 @@ def test_validate_environment(self):
+ 
+     def test_get_complete_url(self):
+         """Test that get_complete_url returns the correct URL"""
++        config_globals = self.config.get_complete_url.__globals__
++        config_litellm = config_globals["litellm"]
++
+         # Test with provided API base
+         api_base = "https://custom-openai.example.com/v1"
+ 
+@@ -218,7 +221,9 @@ def test_get_complete_url(self):
+         assert result == "https://custom-openai.example.com/v1/responses"
+ 
+         # Test with litellm.api_base
+-        with patch("litellm.api_base", "https://litellm-api-base.example.com/v1"):
++        with patch.object(
++            config_litellm, "api_base", "https://litellm-api-base.example.com/v1"
++        ):
+             result = self.config.get_complete_url(
+                 api_base=None,
+                 litellm_params={},
+@@ -227,24 +232,21 @@ def test_get_complete_url(self):
+             assert result == "https://litellm-api-base.example.com/v1/responses"
+ 
+         # Test with environment variable
+-        with patch("litellm.api_base", None):
+-            with patch(
+-                "litellm.llms.openai.responses.transformation.get_secret_str",
+-                return_value="https://env-api-base.example.com/v1",
++        with patch.object(config_litellm, "api_base", None):
++            with patch.dict(
++                config_globals,
++                {"get_secret_str": Mock(return_value="https://env-api-base.example.com/v1")},
+             ):
+                 result = self.config.get_complete_url(
+                     api_base=None,
+                     litellm_params={},
+                 )
+ 
+-                assert result == "https://env-api-base.example.com/v1/responses"
++            assert result == "https://env-api-base.example.com/v1/responses"
+ 
+         # Test with default API base
+-        with patch("litellm.api_base", None):
+-            with patch(
+-                "litellm.llms.openai.responses.transformation.get_secret_str",
+-                return_value=None,
+-            ):
++        with patch.object(config_litellm, "api_base", None):
++            with patch.dict(config_globals, {"get_secret_str": Mock(return_value=None)}):
+                 result = self.config.get_complete_url(
+                     api_base=None,
+                     litellm_params={},
+diff --git a/tests/test_litellm/proxy/auth/test_auth_checks.py b/tests/test_litellm/proxy/auth/test_auth_checks.py
+index 9b7af1859e8..86bf0f18488 100644
+--- a/tests/test_litellm/proxy/auth/test_auth_checks.py
++++ b/tests/test_litellm/proxy/auth/test_auth_checks.py
+@@ -309,8 +309,10 @@ async def test_vector_store_access_check_with_permissions():
+     mock_vector_store_registry = MagicMock()
+     mock_vector_store_registry.get_vector_store_ids_to_run.return_value = ["store-1"]
+ 
+-    with patch("litellm.proxy.proxy_server.prisma_client", mock_prisma_client), patch(
+-        "litellm.vector_store_registry", mock_vector_store_registry
++    auth_checks_litellm = vector_store_access_check.__globals__["litellm"]
++
++    with patch("litellm.proxy.proxy_server.prisma_client", mock_prisma_client), patch.object(
++        auth_checks_litellm, "vector_store_registry", mock_vector_store_registry
+     ):
+         result = await vector_store_access_check(
+             request_body=request_body,
+@@ -323,8 +325,8 @@ async def test_vector_store_access_check_with_permissions():
+     # Test with denied access
+     mock_vector_store_registry.get_vector_store_ids_to_run.return_value = ["store-3"]
+ 
+-    with patch("litellm.proxy.proxy_server.prisma_client", mock_prisma_client), patch(
+-        "litellm.vector_store_registry", mock_vector_store_registry
++    with patch("litellm.proxy.proxy_server.prisma_client", mock_prisma_client), patch.object(
++        auth_checks_litellm, "vector_store_registry", mock_vector_store_registry
+     ):
+         with pytest.raises(ProxyException) as exc_info:
+             await vector_store_access_check(
+diff --git a/tests/test_litellm/proxy/client/cli/test_auth_commands.py b/tests/test_litellm/proxy/client/cli/test_auth_commands.py
+index 611fde7767e..45412888a63 100644
+--- a/tests/test_litellm/proxy/client/cli/test_auth_commands.py
++++ b/tests/test_litellm/proxy/client/cli/test_auth_commands.py
+@@ -359,6 +359,9 @@ def setup_method(self):
+         """Setup for each test"""
+         self.runner = CliRunner()
+ 
++    def _patch_whoami_load_token(self, token_data):
++        return patch.dict(whoami.callback.__globals__, {"load_token": Mock(return_value=token_data)})
++
+     def test_whoami_authenticated(self):
+         """Test whoami when user is authenticated"""
+         token_data = {
+@@ -368,7 +371,7 @@ def test_whoami_authenticated(self):
+             'timestamp': time.time() - 3600  # 1 hour ago
+         }
+         
+-        with patch('litellm.proxy.client.cli.commands.auth.load_token', return_value=token_data):
++        with self._patch_whoami_load_token(token_data):
+             result = self.runner.invoke(whoami)
+             
+             assert result.exit_code == 0
+@@ -380,7 +383,7 @@ def test_whoami_authenticated(self):
+ 
+     def test_whoami_not_authenticated(self):
+         """Test whoami when user is not authenticated"""
+-        with patch('litellm.proxy.client.cli.commands.auth.load_token', return_value=None):
++        with self._patch_whoami_load_token(None):
+             result = self.runner.invoke(whoami)
+             
+             assert result.exit_code == 0
+@@ -396,7 +399,7 @@ def test_whoami_old_token(self):
+             'timestamp': time.time() - (25 * 3600)  # 25 hours ago
+         }
+         
+-        with patch('litellm.proxy.client.cli.commands.auth.load_token', return_value=token_data):
++        with self._patch_whoami_load_token(token_data):
+             result = self.runner.invoke(whoami)
+             
+             assert result.exit_code == 0
+@@ -410,7 +413,7 @@ def test_whoami_missing_fields(self):
+             # Missing user_email, user_id, user_role
+         }
+         
+-        with patch('litellm.proxy.client.cli.commands.auth.load_token', return_value=token_data):
++        with self._patch_whoami_load_token(token_data):
+             result = self.runner.invoke(whoami)
+             
+             assert result.exit_code == 0
+@@ -426,7 +429,7 @@ def test_whoami_no_timestamp(self):
+             # Missing timestamp
+         }
+         
+-        with patch('litellm.proxy.client.cli.commands.auth.load_token', return_value=token_data), \
++        with self._patch_whoami_load_token(token_data), \
+              patch('time.time', return_value=1000):
+             
+             result = self.runner.invoke(whoami)
+diff --git a/tests/test_litellm/proxy/client/cli/test_users_commands.py b/tests/test_litellm/proxy/client/cli/test_users_commands.py
+index f18ceb30c22..693a58daa70 100644
+--- a/tests/test_litellm/proxy/client/cli/test_users_commands.py
++++ b/tests/test_litellm/proxy/client/cli/test_users_commands.py
+@@ -1,5 +1,6 @@
+ import os
+ import sys
++from contextlib import ExitStack
+ from unittest.mock import patch
+ 
+ import pytest
+@@ -32,9 +33,20 @@ def mock_env():
+ 
+ @pytest.fixture
+ def mock_users_client():
+-    with patch(
+-        "litellm.proxy.client.cli.commands.users.UsersManagementClient"
+-    ) as MockClient:
++    with ExitStack() as stack:
++        MockClient = stack.enter_context(
++            patch("litellm.proxy.client.cli.commands.users.UsersManagementClient")
++        )
++        users_group = cli.commands["users"]
++        for command in users_group.commands.values():
++            callback = command.callback
++            wrapped_callback = getattr(callback, "__wrapped__", callback)
++            stack.enter_context(
++                patch.dict(
++                    wrapped_callback.__globals__,
++                    {"UsersManagementClient": MockClient},
++                )
++            )
+         yield MockClient
+ 
+ 
+diff --git a/tests/test_litellm/proxy/hooks/test_parallel_request_limiter_v3.py b/tests/test_litellm/proxy/hooks/test_parallel_request_limiter_v3.py
+index 2ae1fea59d0..a1d2f4bbe70 100644
+--- a/tests/test_litellm/proxy/hooks/test_parallel_request_limiter_v3.py
++++ b/tests/test_litellm/proxy/hooks/test_parallel_request_limiter_v3.py
+@@ -18,7 +18,6 @@
+     _PROXY_MaxParallelRequestsHandler_v3 as _PROXY_MaxParallelRequestsHandler,
+ )
+ from litellm.proxy.utils import InternalUsageCache, ProxyLogging, hash_token
+-from litellm.types.utils import ModelResponse, Usage
+ 
+ 
+ @pytest.mark.flaky(reruns=3)
+@@ -408,6 +407,10 @@ def mock_get_rate_limit_type():
+         parallel_request_handler, "get_rate_limit_type", mock_get_rate_limit_type
+     )
+ 
++    # Import inside the test so these classes match the module instance imported
++    # by async_log_success_event, even when earlier tests reload LiteLLM modules.
++    from litellm.types.utils import ModelResponse, Usage
++
+     # Create a mock response with different token counts
+     mock_usage = Usage(prompt_tokens=20, completion_tokens=30, total_tokens=50)
+     mock_response = ModelResponse(
+diff --git a/tests/test_litellm/proxy/management_endpoints/scim/test_scim_patch_user.py b/tests/test_litellm/proxy/management_endpoints/scim/test_scim_patch_user.py
+index 6719728233f..522ec3c6056 100644
+--- a/tests/test_litellm/proxy/management_endpoints/scim/test_scim_patch_user.py
++++ b/tests/test_litellm/proxy/management_endpoints/scim/test_scim_patch_user.py
+@@ -62,8 +62,11 @@ async def mock_update(*, where, data):
+     )
+ 
+     with patch("litellm.proxy.proxy_server.prisma_client", mock_client), \
+-         patch("litellm.proxy.management_endpoints.scim.scim_v2.ScimTransformations.transform_litellm_user_to_scim_user", 
+-               AsyncMock(return_value=mock_scim_user)):
++         patch.object(
++             patch_user.__globals__["ScimTransformations"],
++             "transform_litellm_user_to_scim_user",
++             AsyncMock(return_value=mock_scim_user),
++         ):
+         result = await patch_user(user_id="user-1", patch_ops=patch_ops)
+ 
+     mock_db.litellm_usertable.update.assert_called_once()
+@@ -127,17 +130,21 @@ async def mock_delete(data, user_api_key_dict):
+         ]
+     )
+ 
++    mock_patch_team_membership = AsyncMock(return_value=True)
++
+     with patch("litellm.proxy.proxy_server.prisma_client", mock_client), \
+-         patch("litellm.proxy.management_endpoints.scim.scim_v2.team_member_add",
+-               AsyncMock(side_effect=mock_add)) as mock_add_fn, \
+-         patch("litellm.proxy.management_endpoints.scim.scim_v2.team_member_delete",
+-               AsyncMock(side_effect=mock_delete)) as mock_del_fn, \
+-         patch("litellm.proxy.management_endpoints.scim.scim_v2.ScimTransformations.transform_litellm_user_to_scim_user",
+-               AsyncMock(return_value=mock_scim_user)):
++         patch.dict(
++             patch_user.__globals__,
++             {"patch_team_membership": mock_patch_team_membership},
++         ), \
++         patch.object(
++             patch_user.__globals__["ScimTransformations"],
++             "transform_litellm_user_to_scim_user",
++             AsyncMock(return_value=mock_scim_user),
++         ):
+         result = await patch_user(user_id="user-2", patch_ops=patch_ops)
+ 
+-    assert mock_add_fn.called
+-    assert mock_del_fn.called
++    assert mock_patch_team_membership.called
+     # Check that the database update was called with the correct teams
+     call_args = mock_db.litellm_usertable.update.call_args
+     assert "new-team" in call_args[1]["data"]["teams"]
+diff --git a/tests/test_litellm/proxy/management_endpoints/scim/test_scim_v2_endpoints.py b/tests/test_litellm/proxy/management_endpoints/scim/test_scim_v2_endpoints.py
+index f93728b90c3..bdc33479d3c 100644
+--- a/tests/test_litellm/proxy/management_endpoints/scim/test_scim_v2_endpoints.py
++++ b/tests/test_litellm/proxy/management_endpoints/scim/test_scim_v2_endpoints.py
+@@ -1,4 +1,4 @@
+-from unittest.mock import AsyncMock
++from unittest.mock import AsyncMock, patch
+ 
+ import pytest
+ from fastapi import HTTPException
+@@ -408,29 +408,27 @@ async def test_update_user_success(mocker):
+     mock_prisma_client.db.litellm_usertable = mocker.MagicMock()
+     mock_prisma_client.db.litellm_usertable.update = AsyncMock(return_value=updated_user)
+     
+-    # Mock dependencies
+-    mocker.patch(
+-        "litellm.proxy.management_endpoints.scim.scim_v2._get_prisma_client_or_raise_exception",
+-        AsyncMock(return_value=mock_prisma_client)
+-    )
+-    mocker.patch(
+-        "litellm.proxy.management_endpoints.scim.scim_v2._check_user_exists",
+-        AsyncMock(return_value=existing_user)
+-    )
+-    mocker.patch(
+-        "litellm.proxy.management_endpoints.scim.scim_v2._handle_team_membership_changes",
+-        AsyncMock()
+-    )
+-    mock_transform = mocker.patch(
+-        "litellm.proxy.management_endpoints.scim.scim_v2.ScimTransformations.transform_litellm_user_to_scim_user",
+-        AsyncMock(return_value=response_scim_user)
+-    )
+-    
+-    # Call update_user
+-    result = await update_user(user_id="test-user", user=scim_user)
++    # Patch the function's live globals because other tests reload scim_v2.
++    with patch.dict(
++        update_user.__globals__,
++        {
++            "_get_prisma_client_or_raise_exception": AsyncMock(return_value=mock_prisma_client),
++            "_check_user_exists": AsyncMock(return_value=existing_user),
++            "_handle_team_membership_changes": AsyncMock(),
++        },
++    ):
++        mock_transform = mocker.patch.object(
++            update_user.__globals__["ScimTransformations"],
++            "transform_litellm_user_to_scim_user",
++            AsyncMock(return_value=response_scim_user),
++        )
++
++        # Call update_user
++        result = await update_user(user_id="test-user", user=scim_user)
+     
+     # Verify result
+     assert result == response_scim_user
++    mock_transform.assert_called_once_with(updated_user)
+     
+     # Verify database update was called with correct data
+     mock_prisma_client.db.litellm_usertable.update.assert_called_once()
+@@ -504,26 +502,27 @@ async def test_patch_user_success(mocker):
+     mock_prisma_client.db.litellm_usertable = mocker.MagicMock()
+     mock_prisma_client.db.litellm_usertable.update = AsyncMock(return_value=updated_user)
+     
+-    # Mock dependencies
+-    mocker.patch(
+-        "litellm.proxy.management_endpoints.scim.scim_v2._get_prisma_client_or_raise_exception",
+-        AsyncMock(return_value=mock_prisma_client)
+-    )
+-    mocker.patch(
+-        "litellm.proxy.management_endpoints.scim.scim_v2._check_user_exists",
+-        AsyncMock(return_value=existing_user)
+-    )
+-    mocker.patch(
+-        "litellm.proxy.management_endpoints.scim.scim_v2._handle_team_membership_changes",
+-        AsyncMock()
+-    )
+-    mock_transform = mocker.patch(
+-        "litellm.proxy.management_endpoints.scim.scim_v2.ScimTransformations.transform_litellm_user_to_scim_user",
+-        AsyncMock(return_value=response_scim_user)
+-    )
+-    
+-    # Call patch_user
+-    result = await patch_user(user_id="test-user", patch_ops=patch_ops)
++    mock_get_prisma_client = AsyncMock(return_value=mock_prisma_client)
++    mock_check_user_exists = AsyncMock(return_value=existing_user)
++    mock_handle_team_membership_changes = AsyncMock()
++    mock_transform = mocker.patch.object(
++        patch_user.__globals__["ScimTransformations"],
++        "transform_litellm_user_to_scim_user",
++        AsyncMock(return_value=response_scim_user),
++    )
++    
++    # Patch the globals used by the imported patch_user function. Some tests
++    # reload litellm modules, so string patch targets can point at a newer
++    # module object than patch_user.__globals__ in the full xdist suite.
++    with patch.dict(
++        patch_user.__globals__,
++        {
++            "_get_prisma_client_or_raise_exception": mock_get_prisma_client,
++            "_check_user_exists": mock_check_user_exists,
++            "_handle_team_membership_changes": mock_handle_team_membership_changes,
++        },
++    ):
++        result = await patch_user(user_id="test-user", patch_ops=patch_ops)
+     
+     # Verify result
+     assert result == response_scim_user
+diff --git a/tests/test_litellm/proxy/management_endpoints/test_budget_endpoints.py b/tests/test_litellm/proxy/management_endpoints/test_budget_endpoints.py
+index 5dab71a1679..d1c7431df9b 100644
+--- a/tests/test_litellm/proxy/management_endpoints/test_budget_endpoints.py
++++ b/tests/test_litellm/proxy/management_endpoints/test_budget_endpoints.py
+@@ -1,5 +1,6 @@
+ # tests/test_budget_endpoints.py
+ 
++import importlib
+ import os
+ import sys
+ import types
+@@ -7,7 +8,6 @@
+ from unittest.mock import AsyncMock, MagicMock
+ from fastapi.testclient import TestClient
+ 
+-import litellm.proxy.proxy_server as ps
+ from litellm.proxy.proxy_server import app
+ from litellm.proxy._types import UserAPIKeyAuth, LitellmUserRoles, CommonProxyErrors
+ 
+@@ -20,6 +20,8 @@
+ 
+ @pytest.fixture
+ def client_and_mocks(monkeypatch):
++    proxy_server = importlib.import_module("litellm.proxy.proxy_server")
++
+     # Setup MagicMock Prisma
+     mock_prisma = MagicMock()
+     mock_table  = MagicMock()
+@@ -31,15 +33,17 @@ def client_and_mocks(monkeypatch):
+         litellm_dailyspend   = mock_table,
+     )
+ 
+-    # Monkeypatch Mocked Prisma client into the server module
+-    monkeypatch.setattr(ps, "prisma_client", mock_prisma)
++    # Endpoint handlers import prisma_client from proxy_server at request time.
++    # Patch the currently loaded module to avoid stale imports after reload-heavy tests.
++    monkeypatch.setattr(proxy_server, "prisma_client", mock_prisma)
+ 
+     # override returned auth user
+     fake_user = UserAPIKeyAuth(
+         user_id="test_user",
+         user_role=LitellmUserRoles.INTERNAL_USER,
+     )
+-    app.dependency_overrides[ps.user_api_key_auth] = lambda: fake_user
++    app.dependency_overrides[bm.user_api_key_auth] = lambda: fake_user
++    app.dependency_overrides[proxy_server.user_api_key_auth] = lambda: fake_user
+ 
+     client = TestClient(app)
+ 
+@@ -47,7 +51,6 @@ def client_and_mocks(monkeypatch):
+ 
+     # teardown
+     app.dependency_overrides.clear()
+-    monkeypatch.setattr(ps, "prisma_client", ps.prisma_client)
+ 
+ 
+ @pytest.mark.asyncio
+@@ -78,8 +81,8 @@ async def test_new_budget_db_not_connected(client_and_mocks, monkeypatch):
+     client, mock_prisma, mock_table = client_and_mocks
+ 
+     # override the prisma_client that the handler imports at runtime
+-    import litellm.proxy.proxy_server as ps
+-    monkeypatch.setattr(ps, "prisma_client", None)
++    proxy_server = importlib.import_module("litellm.proxy.proxy_server")
++    monkeypatch.setattr(proxy_server, "prisma_client", None)
+ 
+     # Call /budget/new endpoint
+     resp = client.post("/budget/new", json={"budget_id": "no_db", "max_budget": 1.0})
+@@ -122,8 +125,8 @@ async def test_update_budget_db_not_connected(client_and_mocks, monkeypatch):
+     client, mock_prisma, mock_table = client_and_mocks
+ 
+     # override the prisma_client that the handler imports at runtime
+-    import litellm.proxy.proxy_server as ps
+-    monkeypatch.setattr(ps, "prisma_client", None)
++    proxy_server = importlib.import_module("litellm.proxy.proxy_server")
++    monkeypatch.setattr(proxy_server, "prisma_client", None)
+ 
+     payload = {"budget_id": "any", "max_budget": 1.0}
+     resp = client.post("/budget/update", json=payload)
+diff --git a/tests/test_litellm/proxy/management_endpoints/test_tag_management_endpoints.py b/tests/test_litellm/proxy/management_endpoints/test_tag_management_endpoints.py
+index add08f55683..31b0518393a 100644
+--- a/tests/test_litellm/proxy/management_endpoints/test_tag_management_endpoints.py
++++ b/tests/test_litellm/proxy/management_endpoints/test_tag_management_endpoints.py
+@@ -10,7 +10,7 @@
+     0, os.path.abspath("../../../..")
+ )  # Adds the parent directory to the system path
+ 
+-from unittest.mock import patch
++from unittest.mock import AsyncMock, patch
+ 
+ import litellm
+ from litellm.proxy.proxy_server import app
+@@ -19,6 +19,36 @@
+ client = TestClient(app)
+ 
+ 
++def _get_route_endpoint(path: str):
++    for route in app.routes:
++        if getattr(route, "path", None) == path:
++            return route.endpoint
++    raise AssertionError(f"Route {path} not found")
++
++
++@pytest.fixture(autouse=True)
++def isolate_proxy_auth_state(monkeypatch):
++    """
++    These endpoint tests authenticate with the default test master key.
++    Other proxy tests mutate auth globals in the shared app, so pin the
++    auth state here to keep this module order-independent under xdist.
++    """
++    from litellm.caching import DualCache
++    import litellm.proxy.auth.user_api_key_auth as user_api_key_auth
++    import litellm.proxy.proxy_server as proxy_server
++
++    monkeypatch.setattr(proxy_server, "master_key", "sk-1234")
++    monkeypatch.setattr(proxy_server, "user_custom_auth", None)
++    monkeypatch.setattr(user_api_key_auth, "enterprise_custom_auth", None)
++    monkeypatch.setattr(proxy_server, "user_api_key_cache", DualCache())
++    monkeypatch.setitem(proxy_server.general_settings, "enable_jwt_auth", False)
++    monkeypatch.setitem(proxy_server.general_settings, "enable_oauth2_auth", False)
++    monkeypatch.setitem(
++        proxy_server.general_settings, "enable_oauth2_proxy_auth", False
++    )
++    monkeypatch.setitem(proxy_server.general_settings, "litellm_key_header_name", None)
++
++
+ @pytest.mark.asyncio
+ async def test_create_and_get_tag():
+     """
+@@ -83,14 +113,22 @@ async def test_update_tag():
+     """
+     Test updating an existing tag
+     """
+-    # Mock the prisma client and _get_tags_config and _save_tags_config
+-    with patch("litellm.proxy.proxy_server.prisma_client") as mock_prisma, patch(
+-        "litellm.proxy.management_endpoints.tag_management_endpoints._get_tags_config"
+-    ) as mock_get_tags, patch(
+-        "litellm.proxy.management_endpoints.tag_management_endpoints._save_tags_config"
+-    ) as mock_save_tags, patch(
+-        "litellm.proxy.management_endpoints.tag_management_endpoints._get_model_names"
+-    ) as mock_get_models:
++    update_tag_endpoint = _get_route_endpoint("/tag/update")
++    mock_get_tags = AsyncMock()
++    mock_save_tags = AsyncMock()
++    mock_get_models = AsyncMock()
++
++    # Mock the prisma client and endpoint helpers. Patch the route endpoint's
++    # globals directly because proxy reloads can leave the app with older
++    # function objects than the importable module name.
++    with patch("litellm.proxy.proxy_server.prisma_client") as mock_prisma, patch.dict(
++        update_tag_endpoint.__globals__,
++        {
++            "_get_tags_config": mock_get_tags,
++            "_save_tags_config": mock_save_tags,
++            "_get_model_names": mock_get_models,
++        },
++    ):
+         # Setup mocks for existing tag
+         mock_get_tags.return_value = {
+             "test-tag": {
+diff --git a/tests/test_litellm/proxy/pass_through_endpoints/test_llm_pass_through_endpoints.py b/tests/test_litellm/proxy/pass_through_endpoints/test_llm_pass_through_endpoints.py
+index afcc8f8ec72..cefb4d21db7 100644
+--- a/tests/test_litellm/proxy/pass_through_endpoints/test_llm_pass_through_endpoints.py
++++ b/tests/test_litellm/proxy/pass_through_endpoints/test_llm_pass_through_endpoints.py
+@@ -212,11 +212,6 @@ async def test_vertex_passthrough_with_credentials(self, monkeypatch):
+             vertex_credentials=vertex_credentials,
+         )
+ 
+-        monkeypatch.setattr(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.passthrough_endpoint_router",
+-            pass_through_router,
+-        )
+-
+         endpoint = f"/v1/projects/{vertex_project}/locations/{vertex_location}/publishers/google/models/gemini-1.5-flash:generateContent"
+ 
+         # Mock request
+@@ -237,23 +232,35 @@ async def test_vertex_passthrough_with_credentials(self, monkeypatch):
+         test_location = vertex_location
+         test_token = vertex_credentials
+ 
+-        with mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.vertex_llm_base._ensure_access_token_async"
+-        ) as mock_ensure_token, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.vertex_llm_base._get_token_and_url"
+-        ) as mock_get_token, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.create_pass_through_route"
+-        ) as mock_create_route, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.get_litellm_virtual_key"
+-        ) as mock_get_virtual_key, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.user_api_key_auth"
+-        ) as mock_user_auth:
+-            # Setup mocks
+-            mock_ensure_token.return_value = ("test-auth-header", test_project)
+-            mock_get_token.return_value = (test_token, "")
+-            mock_get_virtual_key.return_value = "Bearer test-key"
+-            mock_user_auth.return_value = {"api_key": "test-key"}
+-
++        route_globals = vertex_proxy_route.__globals__
++        base_route_globals = route_globals["_base_vertex_proxy_route"].__globals__
++        mock_ensure_token = AsyncMock(return_value=("test-auth-header", test_project))
++        mock_get_token = Mock(return_value=(test_token, ""))
++        mock_create_route = Mock()
++        mock_get_virtual_key = Mock(return_value="Bearer test-key")
++        mock_user_auth = AsyncMock(return_value={"api_key": "test-key"})
++
++        with (
++            patch.object(
++                base_route_globals["vertex_llm_base"],
++                "_ensure_access_token_async",
++                mock_ensure_token,
++            ),
++            patch.object(
++                base_route_globals["vertex_llm_base"],
++                "_get_token_and_url",
++                mock_get_token,
++            ),
++            patch.dict(
++                base_route_globals,
++                {
++                    "create_pass_through_route": mock_create_route,
++                    "get_litellm_virtual_key": mock_get_virtual_key,
++                    "passthrough_endpoint_router": pass_through_router,
++                    "user_api_key_auth": mock_user_auth,
++                },
++            ),
++        ):
+             # Mock create_pass_through_route to return a function that returns a mock response
+             mock_endpoint_func = AsyncMock(return_value={"status": "success"})
+             mock_create_route.return_value = mock_endpoint_func
+@@ -392,11 +399,6 @@ async def test_vertex_passthrough_with_default_credentials(
+             vertex_credentials=default_credentials,
+         )
+ 
+-        monkeypatch.setattr(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.passthrough_endpoint_router",
+-            pass_through_router,
+-        )
+-
+         # Use different project/location in request than the default
+         endpoint = initial_endpoint
+ 
+@@ -406,20 +408,40 @@ async def test_vertex_passthrough_with_default_credentials(
+                 "method": "POST",
+                 "path": f"/vertex_ai/{endpoint}",
+                 "headers": {},
++                "query_string": b"",
+             }
+         )
+         mock_response = Response()
+ 
+-        with mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.vertex_llm_base._ensure_access_token_async"
+-        ) as mock_ensure_token, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.vertex_llm_base._get_token_and_url"
+-        ) as mock_get_token, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.create_pass_through_route"
+-        ) as mock_create_route:
+-            mock_ensure_token.return_value = ("test-auth-header", default_project)
+-            mock_get_token.return_value = (default_credentials, "")
+-
++        route_globals = vertex_proxy_route.__globals__
++        base_route_globals = route_globals["_base_vertex_proxy_route"].__globals__
++        mock_ensure_token = AsyncMock(return_value=("test-auth-header", default_project))
++        mock_get_token = Mock(return_value=(default_credentials, ""))
++        mock_create_route = Mock(return_value=AsyncMock(return_value={"status": "success"}))
++        mock_get_virtual_key = Mock(return_value="Bearer test-key")
++        mock_user_auth = AsyncMock(return_value={"api_key": "test-key"})
++
++        with (
++            patch.object(
++                base_route_globals["vertex_llm_base"],
++                "_ensure_access_token_async",
++                mock_ensure_token,
++            ),
++            patch.object(
++                base_route_globals["vertex_llm_base"],
++                "_get_token_and_url",
++                mock_get_token,
++            ),
++            patch.dict(
++                base_route_globals,
++                {
++                    "create_pass_through_route": mock_create_route,
++                    "get_litellm_virtual_key": mock_get_virtual_key,
++                    "passthrough_endpoint_router": pass_through_router,
++                    "user_api_key_auth": mock_user_auth,
++                },
++            ),
++        ):
+             try:
+                 await vertex_proxy_route(
+                     endpoint=endpoint,
+@@ -579,11 +601,6 @@ async def test_vertex_discovery_passthrough_with_credentials(self, monkeypatch):
+             vertex_credentials=vertex_credentials,
+         )
+ 
+-        monkeypatch.setattr(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.passthrough_endpoint_router",
+-            pass_through_router,
+-        )
+-
+         endpoint = f"/v1/projects/{vertex_project}/locations/{vertex_location}/dataStores/default/servingConfigs/default:search"
+ 
+         # Mock request
+@@ -604,24 +621,36 @@ async def test_vertex_discovery_passthrough_with_credentials(self, monkeypatch):
+         test_location = vertex_location
+         test_token = vertex_credentials
+ 
+-        with mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.vertex_llm_base._ensure_access_token_async"
+-        ) as mock_ensure_token, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.vertex_llm_base._get_token_and_url"
+-        ) as mock_get_token, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.create_pass_through_route"
+-        ) as mock_create_route, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.get_litellm_virtual_key"
+-        ) as mock_get_virtual_key, mock.patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.user_api_key_auth"
+-        ) as mock_user_auth:
++        route_globals = vertex_discovery_proxy_route.__globals__
++        base_route_globals = route_globals["_base_vertex_proxy_route"].__globals__
++        mock_ensure_token = AsyncMock(return_value=("test-auth-header", test_project))
++        mock_get_token = Mock(return_value=(test_token, ""))
++        mock_create_route = Mock()
++        mock_get_virtual_key = Mock(return_value="Bearer test-key")
++        mock_user_auth = AsyncMock(return_value={"api_key": "test-key"})
++
++        with (
++            patch.object(
++                base_route_globals["vertex_llm_base"],
++                "_ensure_access_token_async",
++                mock_ensure_token,
++            ),
++            patch.object(
++                base_route_globals["vertex_llm_base"],
++                "_get_token_and_url",
++                mock_get_token,
++            ),
++            patch.dict(
++                base_route_globals,
++                {
++                    "create_pass_through_route": mock_create_route,
++                    "get_litellm_virtual_key": mock_get_virtual_key,
++                    "passthrough_endpoint_router": pass_through_router,
++                    "user_api_key_auth": mock_user_auth,
++                },
++            ),
++        ):
+             # Setup mocks
+-            mock_ensure_token.return_value = ("test-auth-header", test_project)
+-            mock_get_token.return_value = (test_token, "")
+-            mock_get_virtual_key.return_value = "Bearer test-key"
+-            mock_user_auth.return_value = {"api_key": "test-key"}
+-
+-            # Mock create_pass_through_route to return a function that returns a mock response
+             mock_endpoint_func = AsyncMock(return_value={"status": "success"})
+             mock_create_route.return_value = mock_endpoint_func
+ 
+@@ -653,29 +682,33 @@ async def test_vertex_discovery_proxy_route_api_key_auth(self):
+         mock_request.method = "POST"
+         mock_response = Mock()
+ 
+-        with patch(
+-            "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.user_api_key_auth"
+-        ) as mock_auth:
+-            mock_auth.return_value = {"api_key": "test-key-123"}
+-
+-            with patch(
+-                "litellm.proxy.pass_through_endpoints.llm_passthrough_endpoints.create_pass_through_route"
+-            ) as mock_pass_through:
+-                mock_pass_through.return_value = AsyncMock(
+-                    return_value={"status": "success"}
+-                )
+-
+-                # Call the function
+-                result = await vertex_discovery_proxy_route(
+-                    endpoint="v1/projects/test-project/locations/us-central1/dataStores/default/servingConfigs/default:search",
+-                    request=mock_request,
+-                    fastapi_response=mock_response,
+-                )
++        route_globals = vertex_discovery_proxy_route.__globals__
++        base_route_globals = route_globals["_base_vertex_proxy_route"].__globals__
++        mock_auth = AsyncMock(return_value={"api_key": "test-key-123"})
++        mock_pass_through = Mock(
++            return_value=AsyncMock(return_value={"status": "success"})
++        )
++        mock_get_virtual_key = Mock(return_value="Bearer test-key-123")
++
++        with patch.dict(
++            base_route_globals,
++            {
++                "create_pass_through_route": mock_pass_through,
++                "get_litellm_virtual_key": mock_get_virtual_key,
++                "user_api_key_auth": mock_auth,
++            },
++        ):
++            # Call the function
++            result = await vertex_discovery_proxy_route(
++                endpoint="v1/projects/test-project/locations/us-central1/dataStores/default/servingConfigs/default:search",
++                request=mock_request,
++                fastapi_response=mock_response,
++            )
+ 
+-                # Verify user_api_key_auth was called with the correct Bearer token
+-                mock_auth.assert_called_once()
+-                call_args = mock_auth.call_args[1]
+-                assert call_args["api_key"] == "Bearer test-key-123"
++            # Verify user_api_key_auth was called with the correct Bearer token
++            mock_auth.assert_called_once()
++            call_args = mock_auth.call_args[1]
++            assert call_args["api_key"] == "Bearer test-key-123"
+ 
+ 
+ @pytest.mark.asyncio
+diff --git a/litellm/proxy/guardrails/guardrail_endpoints.py b/litellm/proxy/guardrails/guardrail_endpoints.py
+index ec75c61eda0..d40140d3d46 100644
+--- a/litellm/proxy/guardrails/guardrail_endpoints.py
++++ b/litellm/proxy/guardrails/guardrail_endpoints.py
+@@ -34,6 +34,34 @@
+ GUARDRAIL_REGISTRY = GuardrailRegistry()
+ 
+ 
++def _coerce_litellm_params_to_model(
++    litellm_params: Optional[Union[LitellmParams, Dict[str, Any]]],
++) -> Optional[LitellmParams]:
++    """Normalize guardrail params to a LitellmParams instance.
++
++    The guardrail registry and in-memory handler can surface either a
++    Pydantic model or a plain dictionary depending on the source. The
++    endpoint response model expects a full LitellmParams instance.
++    """
++    if litellm_params is None:
++        return None
++
++    if isinstance(litellm_params, LitellmParams):
++        return litellm_params
++
++    if isinstance(litellm_params, dict):
++        try:
++            return LitellmParams(**litellm_params)
++        except Exception:
++            # Fall back to a best-effort dict-based model when the payload is
++            # not fully compatible with the strict guardrail schema.
++            return LitellmParams(
++                **{k: v for k, v in litellm_params.items() if v is not None}
++            )
++
++    return LitellmParams(**dict(litellm_params))
++
++
+ def _get_guardrails_list_response(
+     guardrails_config: List[Dict],
+ ) -> ListGuardrailsResponse:
+@@ -45,7 +73,9 @@ def _get_guardrails_list_response(
+         guardrail_configs.append(
+             GuardrailInfoResponse(
+                 guardrail_name=guardrail.get("guardrail_name"),
+-                litellm_params=guardrail.get("litellm_params"),
++                litellm_params=_coerce_litellm_params_to_model(
++                    guardrail.get("litellm_params")
++                ),
+                 guardrail_info=guardrail.get("guardrail_info"),
+             )
+         )
+@@ -162,7 +192,9 @@ async def list_guardrails_v2():
+                 GuardrailInfoResponse(
+                     guardrail_id=guardrail.get("guardrail_id"),
+                     guardrail_name=guardrail.get("guardrail_name"),
+-                    litellm_params=guardrail.get("litellm_params"),
++                    litellm_params=_coerce_litellm_params_to_model(
++                        guardrail.get("litellm_params")
++                    ),
+                     guardrail_info=guardrail.get("guardrail_info"),
+                     created_at=guardrail.get("created_at"),
+                     updated_at=guardrail.get("updated_at"),
+@@ -180,7 +212,9 @@ async def list_guardrails_v2():
+                     GuardrailInfoResponse(
+                         guardrail_id=guardrail.get("guardrail_id"),
+                         guardrail_name=guardrail.get("guardrail_name"),
+-                        litellm_params=dict(guardrail.get("litellm_params") or {}),
++                        litellm_params=_coerce_litellm_params_to_model(
++                            guardrail.get("litellm_params")
++                        ),
+                         guardrail_info=dict(guardrail.get("guardrail_info") or {}),
+                         guardrail_definition_location="config",
+                     )
+@@ -591,7 +625,9 @@ async def get_guardrail_info(guardrail_id: str):
+                 status_code=404, detail=f"Guardrail with ID {guardrail_id} not found"
+             )
+ 
+-        litellm_params: Optional[LitellmParams] = result.get("litellm_params")
++        litellm_params = _coerce_litellm_params_to_model(
++            result.get("litellm_params")
++        )
+         result_litellm_params_dict = (
+             litellm_params.model_dump(exclude_none=True) if litellm_params else {}
+         )
+diff --git a/litellm/types/guardrails.py b/litellm/types/guardrails.py
+index d7835db54b0..a6a94d97cf2 100644
+--- a/litellm/types/guardrails.py
++++ b/litellm/types/guardrails.py
+@@ -437,7 +437,7 @@ class DynamicGuardrailParams(TypedDict):
+ class GuardrailInfoResponse(BaseModel):
+     guardrail_id: Optional[str] = None
+     guardrail_name: str
+-    litellm_params: Optional[BaseLitellmParams] = None
++    litellm_params: Optional[LitellmParams] = None
+     guardrail_info: Optional[Dict] = None
+     created_at: Optional[datetime] = None
+     updated_at: Optional[datetime] = None
+diff --git a/litellm/constants.py b/litellm/constants.py
+index eaec161ebee..997117dd18e 100644
+--- a/litellm/constants.py
++++ b/litellm/constants.py
+@@ -725,6 +725,9 @@
+ MAX_SPENDLOG_ROWS_TO_QUERY = int(
+     os.getenv("MAX_SPENDLOG_ROWS_TO_QUERY", 1_000_000)
+ )  # if spendLogs has more than 1M rows, do not query the DB
++EMAIL_BUDGET_ALERT_MAX_SPEND_ALERT_PERCENTAGE = float(
++    os.getenv("EMAIL_BUDGET_ALERT_MAX_SPEND_ALERT_PERCENTAGE", 0.8)
++)  # compatibility constant for enterprise email budget alerting
+ DEFAULT_SOFT_BUDGET = float(
+     os.getenv("DEFAULT_SOFT_BUDGET", 50.0)
+ )  # by default all litellm proxy keys have a soft budget of 50.0
+diff --git a/tests/test_litellm/test_constants.py b/tests/test_litellm/test_constants.py
+index 8fea7342305..1ecc24e0aff 100644
+--- a/tests/test_litellm/test_constants.py
++++ b/tests/test_litellm/test_constants.py
+@@ -17,6 +17,12 @@
+ from litellm import constants
+ 
+ 
++def test_enterprise_email_budget_alert_constant_is_available():
++    """Enterprise email callbacks expect this compatibility constant to exist."""
++    assert hasattr(constants, "EMAIL_BUDGET_ALERT_MAX_SPEND_ALERT_PERCENTAGE")
++    assert constants.EMAIL_BUDGET_ALERT_MAX_SPEND_ALERT_PERCENTAGE >= 0
++
++
+ def test_all_numeric_constants_can_be_overridden():
+     """
+     Test that all integer and float constants in constants.py can be overridden with environment variables.
+diff --git a/tests/test_litellm/router_utils/pre_call_checks/test_responses_api_deployment_check.py b/tests/test_litellm/router_utils/pre_call_checks/test_responses_api_deployment_check.py
+index c1d979d0b1d..3c6a05e7786 100644
+--- a/tests/test_litellm/router_utils/pre_call_checks/test_responses_api_deployment_check.py
++++ b/tests/test_litellm/router_utils/pre_call_checks/test_responses_api_deployment_check.py
+@@ -17,13 +17,12 @@
+     ResponseAPIUsage,
+     ResponseCompletedEvent,
+     ResponsesAPIResponse,
+-    ResponseTextConfig,
+ )
+ from litellm.types.utils import StandardLoggingPayload
+ 
+ 
+ @pytest.mark.asyncio
+-async def test_responses_api_routing_with_previous_response_id():
++async def test_async_responses_api_routing_with_previous_response_id():
+     """
+     Test that when using a previous_response_id, the request is sent to the same model_id
+     """
+@@ -79,6 +78,7 @@ def __init__(self, json_data, status_code):
+             self._json_data = json_data
+             self.status_code = status_code
+             self.text = json.dumps(json_data)
++            self.headers = {}
+ 
+         def json(self):
+             return self._json_data
+@@ -109,7 +109,7 @@ def json(self):
+     MODEL = "azure-computer-use-preview"
+ 
+     with patch(
+-        "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.single_connection_post_request",
++        "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.post",
+         new_callable=AsyncMock,
+     ) as mock_post:
+         # Configure the mock to return our response
+@@ -150,7 +150,7 @@ def json(self):
+ 
+ 
+ @pytest.mark.asyncio
+-async def test_routing_without_previous_response_id():
++async def test_async_routing_without_previous_response_id():
+     """
+     Test that normal routing (load balancing) works when no previous_response_id is provided
+     """
+@@ -199,6 +199,7 @@ def __init__(self, json_data, status_code):
+             self._json_data = json_data
+             self.status_code = status_code
+             self.text = json.dumps(json_data)
++            self.headers = {}
+ 
+         def json(self):
+             return self._json_data
+@@ -249,7 +250,7 @@ def json(self):
+     MODEL = "azure-computer-use-preview"
+ 
+     with patch(
+-        "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.single_connection_post_request",
++        "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.post",
+         new_callable=AsyncMock,
+     ) as mock_post:
+         # Configure the mock to return our response
+@@ -274,7 +275,7 @@ def json(self):
+ 
+ 
+ @pytest.mark.asyncio
+-async def test_previous_response_id_not_in_cache():
++async def test_async_previous_response_id_not_in_cache():
+     """
+     Test behavior when a previous_response_id is provided but not found in cache
+     """
+@@ -327,6 +328,7 @@ def __init__(self, json_data, status_code):
+             self._json_data = json_data
+             self.status_code = status_code
+             self.text = json.dumps(json_data)
++            self.headers = {}
+ 
+         def json(self):
+             return self._json_data
+@@ -358,7 +360,7 @@ def json(self):
+     MODEL = "azure-computer-use-preview"
+ 
+     with patch(
+-        "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.single_connection_post_request",
++        "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.post",
+         new_callable=AsyncMock,
+     ) as mock_post:
+         # Configure the mock to return our response
+@@ -382,7 +384,7 @@ def json(self):
+ 
+ 
+ @pytest.mark.asyncio
+-async def test_multiple_response_ids_routing():
++async def test_async_multiple_response_ids_routing():
+     """
+     Test that different response IDs correctly route to their respective original deployments
+     """
+@@ -480,6 +482,7 @@ def __init__(self, json_data, status_code):
+             self._json_data = json_data
+             self.status_code = status_code
+             self.text = json.dumps(json_data)
++            self.headers = {}
+ 
+         def json(self):
+             return self._json_data
+@@ -511,7 +514,7 @@ def json(self):
+     MODEL = "azure-computer-use-preview"
+ 
+     with patch(
+-        "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.single_connection_post_request",
++        "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.post",
+         new_callable=AsyncMock,
+     ) as mock_post:
+         # For the first request, return response from deployment 1
+diff --git a/tests/test_litellm/proxy/guardrails/guardrail_hooks/test_pangea.py b/tests/test_litellm/proxy/guardrails/guardrail_hooks/test_pangea.py
+index 6f3d480fddc..67a038f77fa 100644
+--- a/tests/test_litellm/proxy/guardrails/guardrail_hooks/test_pangea.py
++++ b/tests/test_litellm/proxy/guardrails/guardrail_hooks/test_pangea.py
+@@ -1,4 +1,4 @@
+-from unittest.mock import AsyncMock, patch
++from unittest.mock import AsyncMock, MagicMock, patch
+ 
+ import httpx
+ import pytest
+@@ -76,17 +76,17 @@ async def test_pangea_ai_guard_request_blocked(pangea_guardrail):
+         ]
+     }
+ 
++    mock_response = MagicMock()
++    mock_response.status_code = 200
++    mock_response.json.return_value = {
++        "result": {"blocked": True, "prompt_messages": data["messages"]}
++    }
++
+     with pytest.raises(HTTPException, match="Violated Pangea guardrail policy"):
+         with patch(
+             "litellm.llms.custom_httpx.http_handler.AsyncHTTPHandler.post",
+-            return_value=httpx.Response(
+-                status_code=200,
+-                # Mock only tested part of response
+-                json={"result": {"blocked": True, "prompt_messages": data["messages"]}},
+-                request=httpx.Request(
+-                    method="POST", url=pangea_guardrail.guardrail_endpoint
+-                ),
+-            ),
++            new_callable=AsyncMock,
++            return_value=mock_response,
+         ) as mock_method:
+             await pangea_guardrail.async_pre_call_hook(
+                 user_api_key_dict=None, cache=None, data=data, call_type="completion"
+diff --git a/litellm/proxy/guardrails/guardrail_hooks/pangea.py b/litellm/proxy/guardrails/guardrail_hooks/pangea.py
+index 0159955d81b..f869b2e7637 100644
+--- a/litellm/proxy/guardrails/guardrail_hooks/pangea.py
++++ b/litellm/proxy/guardrails/guardrail_hooks/pangea.py
+@@ -5,6 +5,7 @@
+ from fastapi import HTTPException
+ 
+ from litellm._logging import verbose_proxy_logger
++import httpx
+ from litellm.caching.dual_cache import DualCache
+ from litellm.integrations.custom_guardrail import (
+     CustomGuardrail,
+@@ -266,6 +267,40 @@ async def _call_pangea_guard(self, payload: dict, hook_name: str) -> dict:
+         except HTTPException as e:
+             # Re-raise HTTPException if it's the one we raised for blocking
+             raise e
++        except httpx.HTTPStatusError as e:
++            # If the remote returned an error status but included a JSON body
++            # that indicates the request was blocked, surface the blocked error
++            resp = getattr(e, "response", None)
++            try:
++                if resp is not None:
++                    result = resp.json()
++                    if result.get("result", {}).get("blocked") is True:
++                        verbose_proxy_logger.warning(
++                            f"Pangea Guardrail ({hook_name}): Request blocked (status error). Response: {result}"
++                        )
++                        raise HTTPException(
++                            status_code=400,
++                            detail={
++                                "error": "Violated Pangea guardrail policy",
++                                "guardrail_name": self.guardrail_name,
++                                "pangea_response": result.get("result"),
++                            },
++                        )
++            except Exception:
++                # fall through to generic error handling below
++                pass
++
++            verbose_proxy_logger.error(
++                f"Pangea Guardrail ({hook_name}): Error calling API: {e}. Response text: {getattr(e, 'response', None) and getattr(e.response, 'text', None)}"  # type: ignore
++            )
++            raise HTTPException(
++                status_code=500,
++                detail={
++                    "error": "Error communicating with Pangea Guardrail",
++                    "guardrail_name": self.guardrail_name,
++                    "exception": str(e),
++                },
++            ) from e
+         except Exception as e:
+             verbose_proxy_logger.error(
+                 f"Pangea Guardrail ({hook_name}): Error calling API: {e}. Response text: {getattr(e, 'response', None) and getattr(e.response, 'text', None)}"  # type: ignore
+diff --git a/litellm/litellm_core_utils/core_helpers.py b/litellm/litellm_core_utils/core_helpers.py
+index e4fe26cd564..fb33b58ad53 100644
+--- a/litellm/litellm_core_utils/core_helpers.py
++++ b/litellm/litellm_core_utils/core_helpers.py
+@@ -97,22 +97,35 @@ def add_missing_spend_metadata_to_litellm_metadata(
+ 
+ def get_litellm_metadata_from_kwargs(kwargs: dict):
+     """
+-    Helper to get litellm metadata from all litellm request kwargs
++    Helper to get litellm metadata from all litellm request kwargs.
+ 
+-    Return `litellm_metadata` if it exists, otherwise return `metadata`
++    This handles both the normal top-level `metadata` payload and the nested
++    `litellm_params.metadata` / `litellm_params.litellm_metadata` payloads used
++    by router and proxy calls.
++
++    Return `litellm_metadata` if it exists, otherwise return `metadata`.
+     """
+-    litellm_params = kwargs.get("litellm_params", {})
+-    if litellm_params:
+-        metadata = litellm_params.get("metadata", {})
+-        litellm_metadata = litellm_params.get("litellm_metadata", {})
+-        if litellm_metadata and metadata:
+-            litellm_metadata = add_missing_spend_metadata_to_litellm_metadata(
+-                litellm_metadata, metadata
+-            )
+-        if litellm_metadata:
+-            return litellm_metadata
+-        elif metadata:
+-            return metadata
++    litellm_params = kwargs.get("litellm_params", {}) or {}
++    metadata = kwargs.get("metadata") or {}
++    litellm_metadata = litellm_params.get("litellm_metadata", {}) or {}
++
++    if isinstance(litellm_params, dict):
++        param_metadata = litellm_params.get("metadata") or {}
++        if isinstance(param_metadata, dict):
++            metadata = {**metadata, **param_metadata}
++
++        if isinstance(litellm_metadata, dict):
++            litellm_metadata = {**litellm_metadata, **param_metadata}
++
++    if litellm_metadata and metadata:
++        litellm_metadata = add_missing_spend_metadata_to_litellm_metadata(
++            litellm_metadata, metadata
++        )
++
++    if litellm_metadata:
++        return litellm_metadata
++    if metadata:
++        return metadata
+ 
+     return {}
+ 
+diff --git a/tests/test_litellm/litellm_core_utils/test_core_helpers.py b/tests/test_litellm/litellm_core_utils/test_core_helpers.py
+index 215663cae80..7f336dc39e5 100644
+--- a/tests/test_litellm/litellm_core_utils/test_core_helpers.py
++++ b/tests/test_litellm/litellm_core_utils/test_core_helpers.py
+@@ -35,3 +35,19 @@ def test_add_missing_spend_metadata_to_litellm_metadata():
+         "test_key": "test_value",
+         "user_api_key_hash_value": "1234567890",
+     }
++
++
++def test_get_litellm_metadata_from_kwargs_with_nested_litellm_params_metadata():
++    kwargs = {
++        "litellm_params": {
++            "metadata": {
++                "user_api_key": "router-key",
++                "user_api_key_user_id": "router-user",
++            }
++        }
++    }
++
++    assert get_litellm_metadata_from_kwargs(kwargs) == {
++        "user_api_key": "router-key",
++        "user_api_key_user_id": "router-user",
++    }
+diff --git a/tests/test_litellm/integrations/test_prometheus.py b/tests/test_litellm/integrations/test_prometheus.py
+index 747329124b6..47deef10f11 100644
+--- a/tests/test_litellm/integrations/test_prometheus.py
++++ b/tests/test_litellm/integrations/test_prometheus.py
+@@ -236,11 +236,11 @@ def test_prometheus_config_parsing():
+         }
+     ]
+ 
+-    # Resolve/import proxy_server before setting the module-level configuration.
+-    # Import-time proxy initialization can otherwise overwrite this test value.
+-    with patch("litellm.proxy.proxy_server.premium_user", True):
+-        litellm.prometheus_metrics_config = test_config
++    # Set configuration
++    litellm.prometheus_metrics_config = test_config
+ 
++    # Create PrometheusLogger instance
++    with patch("litellm.proxy.proxy_server.premium_user", True):
+         logger = PrometheusLogger()
+ 
+         label_filters = logger.label_filters
+diff --git a/tests/test_litellm/litellm_core_utils/test_json_logs_initialization.py b/tests/test_litellm/litellm_core_utils/test_json_logs_initialization.py
+index 00c6e6baa4f..14d99d2f4d0 100644
+--- a/tests/test_litellm/litellm_core_utils/test_json_logs_initialization.py
++++ b/tests/test_litellm/litellm_core_utils/test_json_logs_initialization.py
+@@ -13,6 +13,23 @@
+ import pytest
+ 
+ 
++@pytest.fixture(autouse=True)
++def restore_litellm_modules():
++    """Prevent clean-import tests from replacing modules used by other tests."""
++    original_modules = {
++        name: module
++        for name, module in sys.modules.items()
++        if name.startswith("litellm")
++    }
++
++    yield
++
++    for module in list(sys.modules):
++        if module.startswith("litellm"):
++            del sys.modules[module]
++    sys.modules.update(original_modules)
++
++
+ def test_json_logs_initialization():
+     """Test that all loggers are properly configured when JSON_LOGS=True"""
+     # Reset modules to ensure clean import
+@@ -169,4 +186,4 @@ def test_json_logs_disabled():
+                 json.loads(output)
+                 pytest.fail("Output should not be valid JSON when JSON_LOGS is disabled")
+             except json.JSONDecodeError:
+-                pass  # Expected
+\ No newline at end of file
++                pass  # Expected
+diff --git a/tests/test_litellm/test_main.py b/tests/test_litellm/test_main.py
+index 02f51dccf80..b2e2ac5bdac 100644
+--- a/tests/test_litellm/test_main.py
++++ b/tests/test_litellm/test_main.py
+@@ -160,7 +160,7 @@ async def test_url_with_format_param(model, sync_mode, monkeypatch):
+                     {
+                         "type": "image_url",
+                         "image_url": {
+-                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
++                            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
+                             "format": "image/png",
+                         },
+                     },

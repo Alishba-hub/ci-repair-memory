@@ -1,0 +1,180 @@
+diff --git a/litellm/proxy/proxy_cli.py b/litellm/proxy/proxy_cli.py
+index 729db54b1b0..364e9a16b96 100644
+--- a/litellm/proxy/proxy_cli.py
++++ b/litellm/proxy/proxy_cli.py
+@@ -48,6 +48,32 @@ def append_query_params(url, params) -> str:
+     return modified_url  # type: ignore
+ 
+ 
++def run_separate_health_app() -> None:
++    if os.getenv("SEPARATE_HEALTH_APP") != "1":
++        return
++
++    import threading
++
++    import uvicorn
++
++    from litellm.proxy.health_endpoints.health_app_factory import build_health_app
++
++    health_port = int(os.getenv("SEPARATE_HEALTH_PORT", "4001"))
++    print(  # noqa
++        f"LiteLLM Health Endpoints running separately on http://0.0.0.0:{health_port}"
++    )
++
++    thread = threading.Thread(
++        target=lambda: uvicorn.run(
++            build_health_app(),
++            host="0.0.0.0",
++            port=health_port,
++        ),
++        daemon=True,
++    )
++    thread.start()
++
++
+ class ProxyInitializationHelpers:
+     @staticmethod
+     def _echo_litellm_version():
+@@ -790,11 +816,7 @@ def run_server(  # noqa: PLR0915
+         # DO NOT DELETE - enables global variables to work across files
+         from litellm.proxy.proxy_server import app  # noqa
+         
+-        # --- SEPARATE HEALTH APP LOGIC ---
+-        # To run the health app separately, use:
+-        #   uvicorn litellm.proxy.health_app_factory:build_health_app --factory --host 0.0.0.0 --port=4001
+-        # This is compatible with the SEPARATE_HEALTH_APP Docker/supervisord pattern.
+-        # --- END SEPARATE HEALTH APP LOGIC ---
++        run_separate_health_app()
+         
+         # Skip server startup if requested (after all setup is done)
+         if skip_server_startup:
+diff --git a/litellm/litellm_core_utils/prompt_templates/factory.py b/litellm/litellm_core_utils/prompt_templates/factory.py
+index 2a1fc6cdc88..042a9683e3f 100644
+--- a/litellm/litellm_core_utils/prompt_templates/factory.py
++++ b/litellm/litellm_core_utils/prompt_templates/factory.py
+@@ -36,7 +36,7 @@
+ from litellm.types.utils import GenericImageParsingChunk
+ 
+ from .common_utils import convert_content_list_to_str, is_non_content_values_set
+-from .image_handling import convert_url_to_base64
++from .image_handling import IMAGE_FETCH_HEADERS, convert_url_to_base64
+ 
+ 
+ def default_pt(messages):
+@@ -2416,7 +2416,9 @@ async def get_image_details_async(image_url) -> Tuple[str, str]:
+                 params={"concurrent_limit": 1},
+             )
+             # Send a GET request to the image URL
+-            response = await client.get(image_url, follow_redirects=True)
++            response = await client.get(
++                image_url, headers=IMAGE_FETCH_HEADERS, follow_redirects=True
++            )
+             response.raise_for_status()  # Raise an exception for HTTP errors
+ 
+             return BedrockImageProcessor._post_call_image_processing(response)
+@@ -2429,7 +2431,9 @@ def get_image_details(image_url) -> Tuple[str, str]:
+         try:
+             client = HTTPHandler(concurrent_limit=1)
+             # Send a GET request to the image URL
+-            response = client.get(image_url, follow_redirects=True)
++            response = client.get(
++                image_url, headers=IMAGE_FETCH_HEADERS, follow_redirects=True
++            )
+             response.raise_for_status()  # Raise an exception for HTTP errors
+ 
+             return BedrockImageProcessor._post_call_image_processing(response)
+diff --git a/litellm/litellm_core_utils/prompt_templates/image_handling.py b/litellm/litellm_core_utils/prompt_templates/image_handling.py
+index a9ff14d6c82..b8ad98e2a21 100644
+--- a/litellm/litellm_core_utils/prompt_templates/image_handling.py
++++ b/litellm/litellm_core_utils/prompt_templates/image_handling.py
+@@ -14,6 +14,11 @@
+ 
+ in_memory_cache = InMemoryCache(max_size_in_memory=MAX_IMGS_IN_MEMORY)
+ 
++IMAGE_FETCH_HEADERS = {
++    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
++    "User-Agent": "Mozilla/5.0 (compatible; LiteLLM/1.0; +https://github.com/BerriAI/litellm)",
++}
++
+ 
+ def _process_image_response(response: Response, url: str) -> str:
+     if response.status_code != 200:
+@@ -55,7 +60,9 @@ async def async_convert_url_to_base64(url: str) -> str:
+     client = litellm.module_level_aclient
+     for _ in range(3):
+         try:
+-            response = await client.get(url, follow_redirects=True)
++            response = await client.get(
++                url, headers=IMAGE_FETCH_HEADERS, follow_redirects=True
++            )
+             return _process_image_response(response, url)
+         except Exception:
+             pass
+@@ -72,7 +79,9 @@ def convert_url_to_base64(url: str) -> str:
+     client = litellm.module_level_client
+     for _ in range(3):
+         try:
+-            response = client.get(url, follow_redirects=True)
++            response = client.get(
++                url, headers=IMAGE_FETCH_HEADERS, follow_redirects=True
++            )
+             return _process_image_response(response, url)
+         except Exception as e:
+             verbose_logger.exception(e)
+diff --git a/tests/test_litellm/test_main.py b/tests/test_litellm/test_main.py
+index fd9c366a2f0..b338fc9dc83 100644
+--- a/tests/test_litellm/test_main.py
++++ b/tests/test_litellm/test_main.py
+@@ -5,7 +5,6 @@
+ import httpx
+ import pytest
+ import respx
+-from fastapi.testclient import TestClient
+ 
+ sys.path.insert(
+     0, os.path.abspath("../..")
+@@ -145,6 +144,26 @@ def test_completion_missing_role(openai_api_response):
+ async def test_url_with_format_param(model, sync_mode, monkeypatch):
+     from litellm import acompletion, completion
+     from litellm.llms.custom_httpx.http_handler import AsyncHTTPHandler, HTTPHandler
++    from litellm.litellm_core_utils.prompt_templates.factory import BedrockImageProcessor
++
++    monkeypatch.setattr(
++        "litellm.litellm_core_utils.prompt_templates.factory.convert_url_to_base64",
++        lambda url: "data:image/jpeg;base64,AAAA",
++    )
++    monkeypatch.setattr(
++        BedrockImageProcessor,
++        "get_image_details",
++        staticmethod(lambda image_url: ("AAAA", "image/jpeg")),
++    )
++
++    async def mock_get_image_details_async(image_url):
++        return "AAAA", "image/jpeg"
++
++    monkeypatch.setattr(
++        BedrockImageProcessor,
++        "get_image_details_async",
++        staticmethod(mock_get_image_details_async),
++    )
+ 
+     if sync_mode:
+         client = HTTPHandler()
+@@ -269,8 +288,6 @@ def test_bedrock_latency_optimized_inference():
+ 
+ 
+ def test_custom_provider_with_extra_headers():
+-    from litellm.llms.custom_httpx.http_handler import HTTPHandler
+-
+     with patch.object(
+         litellm.llms.custom_httpx.http_handler.HTTPHandler, "post"
+     ) as mock_post:
+@@ -286,8 +303,6 @@ def test_custom_provider_with_extra_headers():
+ 
+ 
+ def test_custom_provider_with_extra_body():
+-    from litellm.llms.custom_httpx.http_handler import HTTPHandler
+-
+     with patch.object(
+         litellm.llms.custom_httpx.http_handler.HTTPHandler, "post"
+     ) as mock_post:

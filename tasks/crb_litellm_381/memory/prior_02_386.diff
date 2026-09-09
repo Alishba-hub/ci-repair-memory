@@ -1,0 +1,225 @@
+diff --git a/litellm/llms/anthropic/experimental_pass_through/adapters/streaming_iterator.py b/litellm/llms/anthropic/experimental_pass_through/adapters/streaming_iterator.py
+index ebc6cb5b7c4..33842c4872c 100644
+--- a/litellm/llms/anthropic/experimental_pass_through/adapters/streaming_iterator.py
++++ b/litellm/llms/anthropic/experimental_pass_through/adapters/streaming_iterator.py
+@@ -383,7 +383,7 @@ def _should_start_new_content_block(self, chunk: "ModelResponseStream") -> bool:
+ 
+         if block_type != self.current_content_block_type:
+             self.current_content_block_type = block_type
+-            self.current_content_block_start = content_block_start
++            self.current_content_block_start = content_block_start["content_block"]
+             return True
+ 
+         return False
+diff --git a/litellm/llms/anthropic/experimental_pass_through/adapters/transformation.py b/litellm/llms/anthropic/experimental_pass_through/adapters/transformation.py
+index 5cf36a63f00..daeb084dd14 100644
+--- a/litellm/llms/anthropic/experimental_pass_through/adapters/transformation.py
++++ b/litellm/llms/anthropic/experimental_pass_through/adapters/transformation.py
+@@ -1,6 +1,5 @@
+ import json
+ from typing import (
+-    TYPE_CHECKING,
+     Any,
+     AsyncIterator,
+     List,
+@@ -55,10 +54,6 @@
+ 
+ from .streaming_iterator import AnthropicStreamWrapper
+ 
+-if TYPE_CHECKING:
+-    from litellm.types.llms.anthropic import ContentBlockContentBlockDict
+-
+-
+ class AnthropicAdapter:
+     def __init__(self) -> None:
+         pass
+@@ -456,7 +451,7 @@ def _translate_streaming_openai_chunk_to_anthropic_content_block(
+         self, choices: List[OpenAIStreamingChoice]
+     ) -> Tuple[
+         Literal["text", "tool_use"],
+-        "ContentBlockContentBlockDict",
++        dict,
+     ]:
+         import uuid
+ 
+@@ -464,20 +459,32 @@ def _translate_streaming_openai_chunk_to_anthropic_content_block(
+ 
+         for choice in choices:
+             if choice.delta.content is not None and len(choice.delta.content) > 0:
+-                return "text", TextBlock(type="text", text="")
++                return "text", {
++                    "type": "content_block_start",
++                    "index": 0,
++                    "content_block": TextBlock(type="text", text=""),
++                }
+             elif (
+                 choice.delta.tool_calls is not None
+                 and len(choice.delta.tool_calls) > 0
+                 and choice.delta.tool_calls[0].function is not None
+             ):
+-                return "tool_use", ToolUseBlock(
+-                    type="tool_use",
+-                    id=choice.delta.tool_calls[0].id or str(uuid.uuid4()),
+-                    name=choice.delta.tool_calls[0].function.name or "",
+-                    input={},
+-                )
+-
+-        return "text", TextBlock(type="text", text="")
++                return "tool_use", {
++                    "type": "content_block_start",
++                    "index": 0,
++                    "content_block": ToolUseBlock(
++                        type="tool_use",
++                        id=choice.delta.tool_calls[0].id or str(uuid.uuid4()),
++                        name=choice.delta.tool_calls[0].function.name or "",
++                        input={},
++                    ),
++                }
++
++        return "text", {
++            "type": "content_block_start",
++            "index": 0,
++            "content_block": TextBlock(type="text", text=""),
++        }
+ 
+     def _translate_streaming_openai_chunk_to_anthropic(
+         self, choices: List[OpenAIStreamingChoice]
+diff --git a/litellm/litellm_core_utils/prompt_templates/factory.py b/litellm/litellm_core_utils/prompt_templates/factory.py
+index c99c0ae726e..e6bdfbafc64 100644
+--- a/litellm/litellm_core_utils/prompt_templates/factory.py
++++ b/litellm/litellm_core_utils/prompt_templates/factory.py
+@@ -36,7 +36,7 @@
+ from litellm.types.utils import GenericImageParsingChunk
+ 
+ from .common_utils import convert_content_list_to_str, is_non_content_values_set
+-from .image_handling import convert_url_to_base64
++from .image_handling import IMAGE_FETCH_HEADERS, convert_url_to_base64
+ 
+ 
+ def default_pt(messages):
+@@ -2416,7 +2416,9 @@ async def get_image_details_async(image_url) -> Tuple[str, str]:
+                 params={"concurrent_limit": 1},
+             )
+             # Send a GET request to the image URL
+-            response = await client.get(image_url, follow_redirects=True)
++            response = await client.get(
++                image_url, headers=IMAGE_FETCH_HEADERS, follow_redirects=True
++            )
+             response.raise_for_status()  # Raise an exception for HTTP errors
+ 
+             return BedrockImageProcessor._post_call_image_processing(response)
+@@ -2429,7 +2431,9 @@ def get_image_details(image_url) -> Tuple[str, str]:
+         try:
+             client = HTTPHandler(concurrent_limit=1)
+             # Send a GET request to the image URL
+-            response = client.get(image_url, follow_redirects=True)
++            response = client.get(
++                image_url, headers=IMAGE_FETCH_HEADERS, follow_redirects=True
++            )
+             response.raise_for_status()  # Raise an exception for HTTP errors
+ 
+             return BedrockImageProcessor._post_call_image_processing(response)
+diff --git a/litellm/litellm_core_utils/prompt_templates/image_handling.py b/litellm/litellm_core_utils/prompt_templates/image_handling.py
+index a9ff14d6c82..b8ad98e2a21 100644
+--- a/litellm/litellm_core_utils/prompt_templates/image_handling.py
++++ b/litellm/litellm_core_utils/prompt_templates/image_handling.py
+@@ -14,6 +14,11 @@
+ 
+ in_memory_cache = InMemoryCache(max_size_in_memory=MAX_IMGS_IN_MEMORY)
+ 
++IMAGE_FETCH_HEADERS = {
++    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
++    "User-Agent": "Mozilla/5.0 (compatible; LiteLLM/1.0; +https://github.com/BerriAI/litellm)",
++}
++
+ 
+ def _process_image_response(response: Response, url: str) -> str:
+     if response.status_code != 200:
+@@ -55,7 +60,9 @@ async def async_convert_url_to_base64(url: str) -> str:
+     client = litellm.module_level_aclient
+     for _ in range(3):
+         try:
+-            response = await client.get(url, follow_redirects=True)
++            response = await client.get(
++                url, headers=IMAGE_FETCH_HEADERS, follow_redirects=True
++            )
+             return _process_image_response(response, url)
+         except Exception:
+             pass
+@@ -72,7 +79,9 @@ def convert_url_to_base64(url: str) -> str:
+     client = litellm.module_level_client
+     for _ in range(3):
+         try:
+-            response = client.get(url, follow_redirects=True)
++            response = client.get(
++                url, headers=IMAGE_FETCH_HEADERS, follow_redirects=True
++            )
+             return _process_image_response(response, url)
+         except Exception as e:
+             verbose_logger.exception(e)
+diff --git a/tests/test_litellm/test_main.py b/tests/test_litellm/test_main.py
+index e69292f5693..840f508ec20 100644
+--- a/tests/test_litellm/test_main.py
++++ b/tests/test_litellm/test_main.py
+@@ -5,7 +5,6 @@
+ import httpx
+ import pytest
+ import respx
+-from fastapi.testclient import TestClient
+ 
+ sys.path.insert(
+     0, os.path.abspath("../..")
+@@ -145,6 +144,53 @@ def test_completion_missing_role(openai_api_response):
+ async def test_url_with_format_param(model, sync_mode, monkeypatch):
+     from litellm import acompletion, completion
+     from litellm.llms.custom_httpx.http_handler import AsyncHTTPHandler, HTTPHandler
++    from litellm.litellm_core_utils.prompt_templates.factory import (
++        BedrockImageProcessor,
++    )
++
++    def mock_convert_to_anthropic_image_obj(openai_image_url, format=None):
++        if format is not None:
++            assert format == "image/png"
++        return {
++            "type": "base64",
++            "media_type": format or "image/png",
++            "data": "AAAA",
++        }
++
++    monkeypatch.setattr(
++        "litellm.litellm_core_utils.prompt_templates.factory.convert_url_to_base64",
++        lambda url: "data:image/jpeg;base64,AAAA",
++    )
++    monkeypatch.setattr(
++        "litellm.litellm_core_utils.prompt_templates.image_handling.convert_url_to_base64",
++        lambda url: "data:image/jpeg;base64,AAAA",
++    )
++    monkeypatch.setattr(
++        "litellm.litellm_core_utils.prompt_templates.factory.convert_to_anthropic_image_obj",
++        mock_convert_to_anthropic_image_obj,
++    )
++    monkeypatch.setattr(
++        "litellm.llms.gemini.chat.transformation.convert_to_anthropic_image_obj",
++        mock_convert_to_anthropic_image_obj,
++    )
++    monkeypatch.setattr(
++        "litellm.llms.vertex_ai.gemini.transformation.convert_to_anthropic_image_obj",
++        mock_convert_to_anthropic_image_obj,
++    )
++    monkeypatch.setattr(
++        BedrockImageProcessor,
++        "get_image_details",
++        staticmethod(lambda image_url: ("AAAA", "image/jpeg")),
++    )
++
++    async def mock_get_image_details_async(image_url):
++        return "AAAA", "image/jpeg"
++
++    monkeypatch.setattr(
++        BedrockImageProcessor,
++        "get_image_details_async",
++        staticmethod(mock_get_image_details_async),
++    )
+ 
+     if sync_mode:
+         client = HTTPHandler()

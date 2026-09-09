@@ -1,0 +1,23 @@
+--- step: linter ---
+##[start-action display=Run docker run --rm -v $(pwd):/github/workspace --workdir /github/workspace mypy "." "--ignore-missing-imports --implicit-optional --disable-error-code attr-defined --no-namespace-packages --exclude (taipy/templates/|tools/|doc/gui/examples/.*/builder.py|taipy/common/config/config.pyi) --follow-imports skip --disable-error-code import-untyped" "" "";id=__jpetrucciani_mypy-check.run]
+docker run --rm -v $(pwd):/github/workspace --workdir /github/workspace mypy "." "--ignore-missing-imports --implicit-optional --disable-error-code attr-defined --no-namespace-packages --exclude (taipy/templates/|tools/|doc/gui/examples/.*/builder.py|taipy/common/config/config.pyi) --follow-imports skip --disable-error-code import-untyped" "" ""
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
++ '[' '!' -z '' ']'
++ '[' '!' -z '' ']'
++ output_file=/tmp/mypy.out
++ mypy --version
+mypy 2.3.0 (compiled: yes)
++ mypy --ignore-missing-imports --implicit-optional --disable-error-code attr-defined --no-namespace-packages --exclude '(taipy/templates/|tools/|doc/gui/examples/.*/builder.py|taipy/common/config/config.pyi)' --follow-imports skip --disable-error-code import-untyped --show-column-numbers --hide-error-context .
++ tee /tmp/mypy.out
+taipy/gui_core/_context.py:666:43: error: Argument 1 to "filter_entities" of "_GuiCoreContext" has incompatible type "DataNode | Any | None"; expected "list[Any]"  [arg-type]
+Found 1 error in 1 file (checked 944 source files)
++ exit_code=1
++ python /github.py /tmp/mypy.out
+##[error]Argument 1 to "filter_entities" of "_GuiCoreContext" has incompatible type "DataNode | Any | None"; expected "list[Any]"  [arg-type]
++ exit 1
+##[error]Process completed with exit code 1.
+##[end-action id=__jpetrucciani_mypy-check.run;outcome=failure;conclusion=failure;duration_ms=5180]
+Post job cleanup.
+http.https://github.com/.extraheader

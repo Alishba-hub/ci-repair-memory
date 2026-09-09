@@ -1,0 +1,106 @@
+{
+  "task_id": "crb_litellm_406",
+  "name": "CI failure in litellm (Runtime Error, Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "406",
+  "repo_name": "litellm",
+  "repo_owner": "RabeyaMuna",
+  "sha_fail": "c4b91c30a2238a1f3399143e846f1b814b7ae6e2",
+  "sha_success": "db02001d54be1ee5d26bdb47dc3e047c3aabab52",
+  "commit_date": "2025-06-07T16:47:19Z",
+  "error_type": [
+    "Runtime Error",
+    "Test Failure"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/test-litellm.yml",
+  "target_files": [
+    "litellm/llms/vertex_ai/gemini/transformation.py",
+    "tests/test_litellm/llms/vertex_ai/test_vertex.py",
+    "litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py",
+    "litellm/llms/openai/chat/o_series_transformation.py",
+    "litellm/router_strategy/base_routing_strategy.py",
+    "tests/test_litellm/test_main.py"
+  ],
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "383",
+      "commit_date": "2025-05-31T16:16:40Z",
+      "error_type": [
+        "Assertion Error",
+        "Syntax Error"
+      ],
+      "workflow_filename": "test-litellm.yml",
+      "changed_files": [
+        "litellm/utils.py",
+        "litellm/llms/vertex_ai/common_utils.py",
+        "tests/test_litellm/llms/vertex_ai/test_vertex.py",
+        "litellm/constants.py",
+        "litellm/llms/openai/chat/o_series_transformation.py",
+        "litellm/litellm_core_utils/llm_cost_calc/tool_call_cost_tracking.py",
+        "litellm/proxy/management_helpers/object_permission_utils.py",
+        "litellm/litellm_core_utils/prompt_templates/factory.py",
+        "litellm/litellm_core_utils/prompt_templates/image_handling.py",
+        "litellm/router.py",
+        "litellm/router_strategy/tag_based_routing.py",
+        "litellm/router_utils/fallback_event_handlers.py",
+        "tests/test_litellm/test_main.py"
+      ],
+      "log_file": "memory/prior_00_383.log",
+      "diff_file": "memory/prior_00_383.diff"
+    },
+    {
+      "instance_id": "403",
+      "commit_date": "2025-05-30T06:04:48Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py"
+      ],
+      "log_file": "memory/prior_01_403.log",
+      "diff_file": "memory/prior_01_403.diff"
+    },
+    {
+      "instance_id": "397",
+      "commit_date": "2025-05-30T05:34:03Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/llms/vertex_ai/batches/handler.py"
+      ],
+      "log_file": "memory/prior_02_397.log",
+      "diff_file": "memory/prior_02_397.diff"
+    },
+    {
+      "instance_id": "405",
+      "commit_date": "2025-05-24T16:00:33Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/proxy/image_endpoints/endpoints.py"
+      ],
+      "log_file": "memory/prior_03_405.log",
+      "diff_file": "memory/prior_03_405.diff"
+    },
+    {
+      "instance_id": "404",
+      "commit_date": "2025-05-22T23:57:48Z",
+      "error_type": [
+        "Code Linting"
+      ],
+      "workflow_filename": "test-linting.yml",
+      "changed_files": [
+        "litellm/secret_managers/get_azure_ad_token_provider.py"
+      ],
+      "log_file": "memory/prior_04_404.log",
+      "diff_file": "memory/prior_04_404.diff"
+    }
+  ]
+}

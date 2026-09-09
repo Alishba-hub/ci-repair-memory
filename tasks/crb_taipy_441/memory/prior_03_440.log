@@ -1,0 +1,17 @@
+--- step: linter ---
+with:
+  version: 0.6.4
+  args: check
+  src: /home/runner/work/taipy/taipy
+  github-token: ***
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+[command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/cf6578a8-60e1-4407-8fc2-7e305de8ca04 -f /home/runner/work/_temp/9bbbc927-396f-4700-9580-d9215559c26d
+Added /opt/hostedtoolcache/ruff/0.6.4/x86_64 to the path
+Set RUFF_OUTPUT_FORMAT to github
+Successfully installed ruff version 0.6.4
+[command]/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff check /home/runner/work/taipy/taipy
+##[error]tests/gui/utils/test_patch.py:13:8: F401 `pytest` imported but unused
+##[error]The process '/opt/hostedtoolcache/ruff/0.6.4/x86_64/ruff' failed with exit code 1
+Post job cleanup.
+http.https://github.com/.extraheader

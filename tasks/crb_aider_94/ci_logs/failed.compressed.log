@@ -1,0 +1,62 @@
+--- step: build (3.12) ---
+        url_attributes = [
+            attr
+            for attr in dir(urls)
+            if not callable(getattr(urls, attr)) and not attr.startswith("__")
+        ]
+        for attr in url_attributes:
+            url = getattr(urls, attr)
+>           response = requests.get(url)
+                       ^^^^^^^^^^^^^^^^^
+... (45 lines omitted)
+            request,
+            stream=stream,
+            timeout=timeout,
+            verify=verify,
+            cert=cert,
+            proxies=proxies,
+        )
+        chunked = not (request.body is None or "Content-Length" in request.headers)
+        if isinstance(timeout, tuple):
+            try:
+                connect, read = timeout
+                timeout = TimeoutSauce(connect=connect, read=read)
+            except ValueError:
+                raise ValueError(
+                    f"Invalid timeout {timeout}. Pass a (connect, read) timeout tuple, "
+                    f"or a single float to set both timeouts to the same value."
+                )
+        elif isinstance(timeout, TimeoutSauce):
+            pass
+        else:
+            timeout = TimeoutSauce(connect=timeout, read=timeout)
+        try:
+            resp = conn.urlopen(
+                method=request.method,
+                url=url,
+                body=request.body,
+                headers=request.headers,
+                redirect=False,
+                assert_same_host=False,
+                preload_content=False,
+                decode_content=False,
+                retries=self.max_retries,
+                timeout=timeout,
+                chunked=chunked,
+            )
+        except (ProtocolError, OSError) as err:
+>           raise ConnectionError(err, request=request)
+E           requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/requests/adapters.py:682: ConnectionError
+=========================== short test summary info ============================
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_read_only_with_image_file - AssertionError: 0 != 1
+FAILED tests/basic/test_commands.py::TestCommands::test_cmd_tokens_output - AssertionError: False is not true
+FAILED tests/basic/test_models.py::TestModels::test_max_context_tokens - KeyError: 'max_input_tokens'
+FAILED tests/basic/test_repo.py::TestRepo::test_commit_with_custom_committer_name - AssertionError: 'Test User' != 'Test User (aider)'
+- Test User
++ Test User (aider)
+FAILED tests/basic/test_repomap.py::TestRepoMapAllLanguages::test_language_csharp - AssertionError: 1 not greater than 1
+FAILED tests/basic/test_urls.py::test_urls - requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+============= 6 failed, 478 passed, 1 skipped in 308.96s (0:05:08) =============
+##[error]Process completed with exit code 1.
+Post job 

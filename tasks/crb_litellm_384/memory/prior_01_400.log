@@ -1,0 +1,30 @@
+--- step: test ---
+DEBUG    LiteLLM:callback_controls.py:58 Error checking disabled callbacks header: 'NoneType' object has no attribute 'get'
+DEBUG    LiteLLM:callback_controls.py:58 Error checking disabled callbacks header: 'NoneType' object has no attribute 'get'
+=============================== warnings summary ===============================
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+tests/test_litellm/integrations/test_custom_prompt_management.py:27
+  /home/runner/work/litellm/litellm/tests/test_litellm/integrations/test_custom_prompt_management.py:27: PytestCollectionWarning: cannot collect test class 'TestCustomPromptManagement' because it has a __init__ constructor (from: tests/test_litellm/integrations/test_custom_prompt_management.py)
+... (71 lines omitted)
+tests/test_litellm/llms/bytez/chat/test_bytez_chat_transformation.py::TestBytezChatConfig::test_bytez_messages_adaptation
+  /home/runner/.cache/pypoetry/virtualenvs/litellm-PTVlFkD5-py3.12/lib/python3.12/site-packages/pydantic/main.py:426: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue: Expected 9 fields but got 5 for type `Message` with value `Message(content='Hello, how can I help you today?'...'inference-meter': None, 'inference-time': None})` - serialized value may not be as expected.
+    PydanticSerializationUnexpectedValue: Expected `StreamingChoices` but got `Choices` with value `Choices(finish_reason='st...inference-time': None}))` - serialized value may not be as expected
+    return self.__pydantic_serializer__.to_python(
+tests/test_litellm/proxy/test_caching_routes.py::test_cache_ping_failure
+  /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/importlib/__init__.py:131: RuntimeWarning: coroutine 'CustomBatchLogger.periodic_flush' was never awaited
+    _bootstrap._exec(spec, module)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_litellm/test_main.py::test_url_with_format_param[False-bedrock/invoke/anthropic.claude-3-5-sonnet-20240620-v1:0] - AssertionError: Expected 'mock' to have been called.
+FAILED tests/test_litellm/test_main.py::test_url_with_format_param[False-anthropic/claude-3-5-sonnet] - AssertionError: Expected 'mock' to have been called.
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 2 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+====== 2 failed, 2101 passed, 6 skipped, 44 warnings in 926.31s (0:15:26) ======
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://github.com/.extraheader

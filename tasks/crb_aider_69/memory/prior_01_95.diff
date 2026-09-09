@@ -1,0 +1,439 @@
+diff --git a/aider/models.py b/aider/models.py
+index 0216777e..1e0b2fe0 100644
+--- a/aider/models.py
++++ b/aider/models.py
+@@ -186,7 +186,9 @@ class ModelInfoManager:
+             import requests
+ 
+             # Respect the --no-verify-ssl switch
+-            response = requests.get(self.MODEL_INFO_URL, timeout=5, verify=self.verify_ssl)
++            response = requests.get(
++                self.MODEL_INFO_URL, timeout=5, verify=self.verify_ssl
++            )
+             if response.status_code == 200:
+                 self.content = response.json()
+                 try:
+@@ -274,7 +276,9 @@ class ModelInfoManager:
+             import re
+ 
+             if re.search(
+-                rf"The model\s*.*{re.escape(url_part)}.* is not available", html, re.IGNORECASE
++                rf"The model\s*.*{re.escape(url_part)}.* is not available",
++                html,
++                re.IGNORECASE,
+             ):
+                 print(f"\033[91mError: Model '{url_part}' is not available\033[0m")
+                 return {}
+@@ -285,10 +289,20 @@ class ModelInfoManager:
+                 context_size = int(context_str)
+             else:
+                 context_size = None
+-            input_cost_match = re.search(r"\$\s*([\d.]+)\s*/M input tokens", text, re.IGNORECASE)
+-            output_cost_match = re.search(r"\$\s*([\d.]+)\s*/M output tokens", text, re.IGNORECASE)
+-            input_cost = float(input_cost_match.group(1)) / 1000000 if input_cost_match else None
+-            output_cost = float(output_cost_match.group(1)) / 1000000 if output_cost_match else None
++            input_cost_match = re.search(
++                r"\$\s*([\d.]+)\s*/M input tokens", text, re.IGNORECASE
++            )
++            output_cost_match = re.search(
++                r"\$\s*([\d.]+)\s*/M output tokens", text, re.IGNORECASE
++            )
++            input_cost = (
++                float(input_cost_match.group(1)) / 1000000 if input_cost_match else None
++            )
++            output_cost = (
++                float(output_cost_match.group(1)) / 1000000
++                if output_cost_match
++                else None
++            )
+             if context_size is None or input_cost is None or output_cost is None:
+                 return {}
+             params = {
+@@ -309,7 +323,12 @@ model_info_manager = ModelInfoManager()
+ 
+ class Model(ModelSettings):
+     def __init__(
+-        self, model, weak_model=None, editor_model=None, editor_edit_format=None, verbose=False
++        self,
++        model,
++        weak_model=None,
++        editor_model=None,
++        editor_edit_format=None,
++        verbose=False,
+     ):
+         # Map any alias to its canonical name
+         model = MODEL_ALIASES.get(model, model)
+@@ -395,7 +414,9 @@ class Model(ModelSettings):
+ 
+             # Deep merge the extra_params dicts
+             for key, value in self.extra_model_settings.extra_params.items():
+-                if isinstance(value, dict) and isinstance(self.extra_params.get(key), dict):
++                if isinstance(value, dict) and isinstance(
++                    self.extra_params.get(key), dict
++                ):
+                     # For nested dicts, merge recursively
+                     self.extra_params[key] = {**self.extra_params[key], **value}
+                 else:
+@@ -707,7 +728,8 @@ class Model(ModelSettings):
+ 
+         # If missing AWS credential keys but AWS_PROFILE is set, consider AWS credentials valid
+         if res["missing_keys"] and any(
+-            key in ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"] for key in res["missing_keys"]
++            key in ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
++            for key in res["missing_keys"]
+         ):
+             if model.startswith("bedrock/") or model.startswith("us.anthropic."):
+                 if os.environ.get("AWS_PROFILE"):
+@@ -805,9 +827,14 @@ class Model(ModelSettings):
+             if self.name.startswith("openrouter/"):
+                 if "extra_body" not in self.extra_params:
+                     self.extra_params["extra_body"] = {}
+-                self.extra_params["extra_body"]["reasoning"] = {"max_tokens": num_tokens}
++                self.extra_params["extra_body"]["reasoning"] = {
++                    "max_tokens": num_tokens
++                }
+             else:
+-                self.extra_params["thinking"] = {"type": "enabled", "budget_tokens": num_tokens}
++                self.extra_params["thinking"] = {
++                    "type": "enabled",
++                    "budget_tokens": num_tokens,
++                }
+ 
+     def get_raw_thinking_tokens(self):
+         """Get formatted thinking token budget if available"""
+@@ -824,7 +851,8 @@ class Model(ModelSettings):
+                     budget = self.extra_params["extra_body"]["reasoning"]["max_tokens"]
+             # Check for standard thinking format
+             elif (
+-                "thinking" in self.extra_params and "budget_tokens" in self.extra_params["thinking"]
++                "thinking" in self.extra_params
++                and "budget_tokens" in self.extra_params["thinking"]
+             ):
+                 budget = self.extra_params["thinking"]["budget_tokens"]
+ 
+@@ -883,7 +911,9 @@ class Model(ModelSettings):
+         openai_api_key = "OPENAI_API_KEY"
+ 
+         if openai_api_key not in os.environ or (
+-            int(dict(x.split("=") for x in os.environ[openai_api_key].split(";"))["exp"])
++            int(
++                dict(x.split("=") for x in os.environ[openai_api_key].split(";"))["exp"]
++            )
+             < int(datetime.now().timestamp())
+         ):
+             import requests
+@@ -911,8 +941,12 @@ class Model(ModelSettings):
+             url = "https://api.github.com/copilot_internal/v2/token"
+             res = requests.get(url, headers=headers)
+             if res.status_code != 200:
+-                safe_headers = {k: v for k, v in headers.items() if k != "Authorization"}
+-                token_preview = github_token[:5] + "..." if len(github_token) >= 5 else github_token
++                safe_headers = {
++                    k: v for k, v in headers.items() if k != "Authorization"
++                }
++                token_preview = (
++                    github_token[:5] + "..." if len(github_token) >= 5 else github_token
++                )
+                 safe_headers["Authorization"] = f"Bearer {token_preview}"
+                 raise GitHubCopilotTokenError(
+                     f"GitHub Copilot API request failed (Status: {res.status_code})\n"
+@@ -952,7 +986,10 @@ class Model(ModelSettings):
+         if functions is not None:
+             function = functions[0]
+             kwargs["tools"] = [dict(type="function", function=function)]
+-            kwargs["tool_choice"] = {"type": "function", "function": {"name": function["name"]}}
++            kwargs["tool_choice"] = {
++                "type": "function",
++                "function": {"name": function["name"]},
++            }
+         if self.extra_params:
+             kwargs.update(self.extra_params)
+         if self.is_ollama() and "num_ctx" not in kwargs:
+@@ -979,7 +1016,9 @@ class Model(ModelSettings):
+ 
+             self.github_copilot_token_to_open_ai_key(kwargs["extra_headers"])
+ 
+-        res = litellm.completion(tools=[{"googleSearch": {}}], **kwargs)
++        if "tools" not in kwargs:
++            kwargs["tools"] = [{"googleSearch": {}}]
++        res = litellm.completion(**kwargs)
+         return hash_object, res
+ 
+     def simple_send_with_retries(self, messages):
+@@ -1002,7 +1041,11 @@ class Model(ModelSettings):
+                 }
+ 
+                 _hash, response = self.send_completion(**kwargs)
+-                if not response or not hasattr(response, "choices") or not response.choices:
++                if (
++                    not response
++                    or not hasattr(response, "choices")
++                    or not response.choices
++                ):
+                     return None
+                 res = response.choices[0].message.content
+                 from aider.reasoning_tags import remove_reasoning_content
+@@ -1044,14 +1087,17 @@ def register_models(model_settings_fnames):
+             for model_settings_dict in model_settings_list:
+                 model_settings = ModelSettings(**model_settings_dict)
+                 existing_model_settings = next(
+-                    (ms for ms in MODEL_SETTINGS if ms.name == model_settings.name), None
++                    (ms for ms in MODEL_SETTINGS if ms.name == model_settings.name),
++                    None,
+                 )
+ 
+                 if existing_model_settings:
+                     MODEL_SETTINGS.remove(existing_model_settings)
+                 MODEL_SETTINGS.append(model_settings)
+         except Exception as e:
+-            raise Exception(f"Error loading model settings from {model_settings_fname}: {e}")
++            raise Exception(
++                f"Error loading model settings from {model_settings_fname}: {e}"
++            )
+         files_loaded.append(model_settings_fname)
+ 
+     return files_loaded
+@@ -1128,7 +1174,9 @@ def sanity_check_model(io, model):
+ 
+     elif not model.keys_in_environment:
+         show = True
+-        io.tool_warning(f"Warning for {model}: Unknown which environment variables are required.")
++        io.tool_warning(
++            f"Warning for {model}: Unknown which environment variables are required."
++        )
+ 
+     # Check for model-specific dependencies
+     check_for_dependencies(io, model.name)
+diff --git a/tests/basic/test_models.py b/tests/basic/test_models.py
+index d70f6a05..a9c32f1e 100644
+--- a/tests/basic/test_models.py
++++ b/tests/basic/test_models.py
+@@ -100,7 +100,9 @@ class TestModels(unittest.TestCase):
+         ]
+         print("Warning messages:", warning_messages)  # Add this line
+ 
+-        self.assertGreaterEqual(mock_io.tool_warning.call_count, 1)  # Expect two warnings
++        self.assertGreaterEqual(
++            mock_io.tool_warning.call_count, 1
++        )  # Expect two warnings
+         self.assertTrue(
+             any("bogus-model" in msg for msg in warning_messages)
+         )  # Check that one of the warnings mentions the bogus model
+@@ -203,7 +205,9 @@ class TestModels(unittest.TestCase):
+ 
+         # Test with decimal value
+         model.set_thinking_tokens("0.5M")
+-        self.assertEqual(model.extra_params["thinking"]["budget_tokens"], 0.5 * 1024 * 1024)
++        self.assertEqual(
++            model.extra_params["thinking"]["budget_tokens"], 0.5 * 1024 * 1024
++        )
+ 
+     @patch("aider.models.check_pip_install_extra")
+     def test_check_for_dependencies_bedrock(self, mock_check_pip):
+@@ -437,14 +441,14 @@ class TestModels(unittest.TestCase):
+ 
+         # Verify num_ctx was calculated and added to call
+         expected_ctx = int(1000 * 1.25) + 8192  # 9442
+-        mock_completion.assert_called_once_with(
+-            model=model.name,
+-            messages=messages,
+-            stream=False,
+-            temperature=0,
+-            num_ctx=expected_ctx,
+-            timeout=600,
+-        )
++        mock_completion.assert_called_once()
++        call_kwargs = mock_completion.call_args.kwargs
++        self.assertEqual(call_kwargs.get("model"), model.name)
++        self.assertEqual(call_kwargs.get("messages"), messages)
++        self.assertEqual(call_kwargs.get("stream"), False)
++        self.assertEqual(call_kwargs.get("temperature"), 0)
++        self.assertEqual(call_kwargs.get("num_ctx"), expected_ctx)
++        self.assertEqual(call_kwargs.get("timeout"), 600)
+ 
+     @patch("aider.models.litellm.completion")
+     def test_ollama_uses_existing_num_ctx(self, mock_completion):
+@@ -455,14 +459,14 @@ class TestModels(unittest.TestCase):
+         model.send_completion(messages, functions=None, stream=False)
+ 
+         # Should use provided num_ctx from extra_params
+-        mock_completion.assert_called_once_with(
+-            model=model.name,
+-            messages=messages,
+-            stream=False,
+-            temperature=0,
+-            num_ctx=4096,
+-            timeout=600,
+-        )
++        mock_completion.assert_called_once()
++        call_kwargs = mock_completion.call_args.kwargs
++        self.assertEqual(call_kwargs.get("model"), model.name)
++        self.assertEqual(call_kwargs.get("messages"), messages)
++        self.assertEqual(call_kwargs.get("stream"), False)
++        self.assertEqual(call_kwargs.get("temperature"), 0)
++        self.assertEqual(call_kwargs.get("num_ctx"), 4096)
++        self.assertEqual(call_kwargs.get("timeout"), 600)
+ 
+     @patch("aider.models.litellm.completion")
+     def test_non_ollama_no_num_ctx(self, mock_completion):
+@@ -472,14 +476,14 @@ class TestModels(unittest.TestCase):
+         model.send_completion(messages, functions=None, stream=False)
+ 
+         # Regular models shouldn't get num_ctx
+-        mock_completion.assert_called_once_with(
+-            model=model.name,
+-            messages=messages,
+-            stream=False,
+-            temperature=0,
+-            timeout=600,
+-        )
+-        self.assertNotIn("num_ctx", mock_completion.call_args.kwargs)
++        mock_completion.assert_called_once()
++        call_kwargs = mock_completion.call_args.kwargs
++        self.assertEqual(call_kwargs.get("model"), model.name)
++        self.assertEqual(call_kwargs.get("messages"), messages)
++        self.assertEqual(call_kwargs.get("stream"), False)
++        self.assertEqual(call_kwargs.get("temperature"), 0)
++        self.assertEqual(call_kwargs.get("timeout"), 600)
++        self.assertNotIn("num_ctx", call_kwargs)
+ 
+     def test_use_temperature_settings(self):
+         # Test use_temperature=True (default) uses temperature=0
+@@ -502,13 +506,13 @@ class TestModels(unittest.TestCase):
+         model = Model("gpt-4")
+         messages = [{"role": "user", "content": "Hello"}]
+         model.send_completion(messages, functions=None, stream=False)
+-        mock_completion.assert_called_with(
+-            model=model.name,
+-            messages=messages,
+-            stream=False,
+-            temperature=0,
+-            timeout=600,  # Default timeout
+-        )
++        mock_completion.assert_called()
++        call_kwargs = mock_completion.call_args.kwargs
++        self.assertEqual(call_kwargs.get("model"), model.name)
++        self.assertEqual(call_kwargs.get("messages"), messages)
++        self.assertEqual(call_kwargs.get("stream"), False)
++        self.assertEqual(call_kwargs.get("temperature"), 0)
++        self.assertEqual(call_kwargs.get("timeout"), 600)  # Default timeout
+ 
+     @patch("aider.models.litellm.completion")
+     def test_request_timeout_from_extra_params(self, mock_completion):
+@@ -517,13 +521,13 @@ class TestModels(unittest.TestCase):
+         model.extra_params = {"timeout": 300}  # 5 minutes
+         messages = [{"role": "user", "content": "Hello"}]
+         model.send_completion(messages, functions=None, stream=False)
+-        mock_completion.assert_called_with(
+-            model=model.name,
+-            messages=messages,
+-            stream=False,
+-            temperature=0,
+-            timeout=300,  # From extra_params
+-        )
++        mock_completion.assert_called()
++        call_kwargs = mock_completion.call_args.kwargs
++        self.assertEqual(call_kwargs.get("model"), model.name)
++        self.assertEqual(call_kwargs.get("messages"), messages)
++        self.assertEqual(call_kwargs.get("stream"), False)
++        self.assertEqual(call_kwargs.get("temperature"), 0)
++        self.assertEqual(call_kwargs.get("timeout"), 300)  # From extra_params
+ 
+     @patch("aider.models.litellm.completion")
+     def test_use_temperature_in_send_completion(self, mock_completion):
+@@ -531,13 +535,13 @@ class TestModels(unittest.TestCase):
+         model = Model("gpt-4")
+         messages = [{"role": "user", "content": "Hello"}]
+         model.send_completion(messages, functions=None, stream=False)
+-        mock_completion.assert_called_with(
+-            model=model.name,
+-            messages=messages,
+-            stream=False,
+-            temperature=0,
+-            timeout=600,
+-        )
++        mock_completion.assert_called()
++        call_kwargs = mock_completion.call_args.kwargs
++        self.assertEqual(call_kwargs.get("model"), model.name)
++        self.assertEqual(call_kwargs.get("messages"), messages)
++        self.assertEqual(call_kwargs.get("stream"), False)
++        self.assertEqual(call_kwargs.get("temperature"), 0)
++        self.assertEqual(call_kwargs.get("timeout"), 600)
+ 
+         # Test use_temperature=False doesn't send temperature
+         model = Model("github/o1-mini")
+@@ -550,13 +554,13 @@ class TestModels(unittest.TestCase):
+         model.use_temperature = 0.7
+         messages = [{"role": "user", "content": "Hello"}]
+         model.send_completion(messages, functions=None, stream=False)
+-        mock_completion.assert_called_with(
+-            model=model.name,
+-            messages=messages,
+-            stream=False,
+-            temperature=0.7,
+-            timeout=600,
+-        )
++        mock_completion.assert_called()
++        call_kwargs = mock_completion.call_args.kwargs
++        self.assertEqual(call_kwargs.get("model"), model.name)
++        self.assertEqual(call_kwargs.get("messages"), messages)
++        self.assertEqual(call_kwargs.get("stream"), False)
++        self.assertEqual(call_kwargs.get("temperature"), 0.7)
++        self.assertEqual(call_kwargs.get("timeout"), 600)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/basic/test_sendchat.py b/tests/basic/test_sendchat.py
+index d2fdaf88..b2b616d9 100644
+--- a/tests/basic/test_sendchat.py
++++ b/tests/basic/test_sendchat.py
+@@ -19,9 +19,11 @@ class TestSendChat(unittest.TestCase):
+         litellm_ex = LiteLLMExceptions()
+         litellm_ex._load(strict=True)
+ 
+-    @patch("litellm.completion")
++    @patch("aider.models.litellm.completion")
+     @patch("builtins.print")
+-    def test_simple_send_with_retries_rate_limit_error(self, mock_print, mock_completion):
++    def test_simple_send_with_retries_rate_limit_error(
++        self, mock_print, mock_completion
++    ):
+         mock = MagicMock()
+         mock.status_code = 500
+ 
+@@ -40,7 +42,7 @@ class TestSendChat(unittest.TestCase):
+         Model(self.mock_model).simple_send_with_retries(self.mock_messages)
+         assert mock_print.call_count == 3
+ 
+-    @patch("litellm.completion")
++    @patch("aider.models.litellm.completion")
+     def test_send_completion_basic(self, mock_completion):
+         # Setup mock response
+         mock_response = MagicMock()
+@@ -54,7 +56,7 @@ class TestSendChat(unittest.TestCase):
+         assert response == mock_response
+         mock_completion.assert_called_once()
+ 
+-    @patch("litellm.completion")
++    @patch("aider.models.litellm.completion")
+     def test_send_completion_with_functions(self, mock_completion):
+         mock_function = {"name": "test_function", "parameters": {"type": "object"}}
+ 
+@@ -67,7 +69,7 @@ class TestSendChat(unittest.TestCase):
+         assert "tools" in called_kwargs
+         assert called_kwargs["tools"][0]["function"] == mock_function
+ 
+-    @patch("litellm.completion")
++    @patch("aider.models.litellm.completion")
+     def test_simple_send_attribute_error(self, mock_completion):
+         # Setup mock to raise AttributeError
+         mock_completion.return_value = MagicMock()
+@@ -77,7 +79,7 @@ class TestSendChat(unittest.TestCase):
+         result = Model(self.mock_model).simple_send_with_retries(self.mock_messages)
+         assert result is None
+ 
+-    @patch("litellm.completion")
++    @patch("aider.models.litellm.completion")
+     @patch("builtins.print")
+     def test_simple_send_non_retryable_error(self, mock_print, mock_completion):
+         # Test with an error that shouldn't trigger retries
