@@ -1,0 +1,981 @@
+agent,harness,model,task_id,repo,error_group,error_type,condition,k,run,attempted,decided,solved,oracle,ci_conclusion,static_verdict,judge_solved,unstable,cheats,confidence,reason,duration_s,prompt_chars,reply_chars,exit_code,finished_at,arm_kind,analysis_condition
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_01,1,1,0,judge,,open,0,0,0,high,"CI failure is an mcp package import error unrelated to files given; candidate only touches unrelated MilvusLite code, root cause remains.",181.4,14068,2136,0,2026-08-17T22:18:56.324200+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,high,"Skips the milvus_lite test when pymilvus/milvus_lite aren't importable, a narrowly scoped conditional guard equivalent to the reference's OS check.",202.2,14068,2086,0,2026-08-18T19:50:19.332325+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_03,1,1,1,judge,,open,1,1,0,high,"Skips the milvus-lite test only when its optional deps aren't importable, narrowly matching the reference's environmental root cause.",285.9,14068,1902,0,2026-08-18T20:52:58.963133+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_04,1,1,1,judge,,open,1,0,0,high,"Skips the Windows-unsupported Milvus Lite test conditionally based on package availability, same environmental cause as reference.",258.3,14068,1485,0,2026-08-18T20:52:31.526234+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_05,1,1,1,judge,,open,1,1,0,high,Fixes real bugs and adds a conditional skip based on milvus_lite availability rather than an unconditional skip.,269.4,14068,2166,0,2026-08-18T20:52:42.586589+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_06,1,1,1,judge,,open,1,1,0,high,"Conditionally skips test when pymilvus/milvus_lite unavailable and guards import error, narrowly addressing the same optional-backend root cause.",241.1,14068,1326,0,2026-08-18T20:52:14.201119+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_07,1,1,1,judge,,open,1,0,0,high,"Guards test_milvus_lite_store with a skipUnless checking platform/optional deps, narrowly matching the environmental root cause without altering the actual assertions.",366.0,14068,2205,0,2026-08-18T20:54:19.247677+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_08,1,1,1,judge,,open,1,0,0,high,"Guards the Milvus Lite test to skip when pymilvus/milvus-lite unavailable, matching the same root cause narrowly.",251.3,14068,2000,0,2026-08-18T20:52:24.604878+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_09,1,1,1,judge,,open,1,1,0,high,"Skips test when milvus_lite/pymilvus unavailable, a narrowly scoped condition matching the reference's platform-skip intent; unrelated hash change is harmless.",180.7,14068,2010,0,2026-08-18T20:51:13.992496+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_10,1,1,0,judge,,open,0,1,0,high,"Root cause is an mcp package import error unrelated to milvus files; candidate never touches mcp module, so collection error persists.",381.8,14068,2890,0,2026-08-18T20:54:35.164978+00:00,design,no_memory
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_01,1,1,0,judge,,open,0,1,0,high,Root cause is an mcp package import error unrelated to milvus files; candidate's edits don't touch that import at all.,217.1,27487,2027,0,2026-08-17T22:22:34.435851+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_02,1,1,1,judge,,open,1,1,0,high,"Guards the optional milvus-lite dependency with a module skip and import error handling, addressing the same environmental root cause via a different mechanism.",146.3,27487,1942,0,2026-08-18T19:49:40.147015+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_03,1,1,0,judge,,open,0,0,0,high,"Root cause is unrelated mcp package import error; candidate only touches unrelated MilvusLiteStore logic, doesn't fix the streamablehttp_client import.",237.4,27487,1761,0,2026-08-18T20:52:10.501199+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_04,1,1,0,judge,,open,0,1,0,high,"Root cause is mcp package streamablehttp_client import error in mcp/_http_stateless_client.py, a file not touched by the candidate.",237.1,27487,2093,0,2026-08-18T20:52:10.319173+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_05,1,1,1,judge,,open,1,1,0,high,"Adds a properly scoped skipUnless guard for missing Windows/milvus-lite backend, matching reference's environmental skip without hiding real defects.",195.1,27487,1921,0,2026-08-18T20:51:28.208495+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_06,1,1,1,judge,,open,1,0,0,high,"Skips the milvus_lite test when the optional dependency is missing, an environmental guard equivalent to the reference's platform skip.",161.6,27487,1447,0,2026-08-18T20:50:54.850689+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_07,1,1,1,judge,,open,1,1,0,high,"Skips the Milvus Lite test when unavailable (incl. Windows), same root cause addressed via a broader import-based guard.",298.2,27487,2359,0,2026-08-18T20:53:11.378249+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_08,1,1,0,judge,,open,0,1,0,high,"Root cause is unrelated mcp package import error; candidate only touches milvus store code/tests, which doesn't fix the collection error.",228.9,27487,2326,0,2026-08-18T20:52:02.178845+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_09,1,1,1,judge,,open,1,1,0,high,"Guards the milvus_lite-dependent test with an importlib skip, avoiding the ImportError root cause, unlike reference's OS-based skip.",232.0,27487,2131,0,2026-08-18T20:52:05.338804+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_10,1,1,0,judge,,open,0,1,0,high,"Root cause is unrelated mcp package import error; candidate only touches Milvus store code, doesn't address the failing import.",187.7,27487,1736,0,2026-08-18T20:51:21.084565+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,high,Both files' None-workspace-dir and non-dict response_format root causes are guarded correctly; extra unrelated tweaks don't break anything.,125.1,8251,1701,0,2026-08-17T22:24:40.597709+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,high,"Both files' root causes (unguarded dict access, missing None check) are fixed correctly; print removal is a harmless bonus.",168.8,8251,1910,0,2026-08-18T19:52:01.519704+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_03,1,1,1,judge,,open,1,0,0,high,Both files guard against the same root causes (None response_format/workspace dir) plus extra unrelated cleanups; no hiding of failures.,139.3,8251,1587,0,2026-08-18T20:59:15.434254+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_04,1,1,1,judge,,open,1,0,0,medium,"Candidate fixes the response_format dict-check and workspace None-path bugs equivalently, but omits the reference's getattr(tool_call.function,...) defensive fix in two spots.",147.9,8251,1927,0,2026-08-18T20:59:24.031858+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_05,1,1,1,judge,,open,1,1,0,high,"Both files' None-guard root causes are fixed, though cerebras.py has unrelated extra edits (removed print, request_params) not causing harm.",189.0,8251,2232,0,2026-08-18T21:00:05.166659+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_06,1,1,1,judge,,open,1,0,0,high,"Both files guard the None-workspace and dict-type response_format cases matching the reference's root cause, plus unrelated harmless cleanups.",204.7,8251,1893,0,2026-08-18T21:00:20.916124+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_07,1,1,1,judge,,open,1,0,0,high,"Both files' root causes (dict-check before subscripting response_format; None workspace dir) are fixed, plus harmless extra cleanups.",185.2,8251,1257,0,2026-08-18T21:00:01.428323+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_08,1,1,1,judge,,open,1,0,0,high,"Both files guard against None workspace dir / non-dict response_format the same way as the reference, addressing the real root causes.",217.1,8251,1922,0,2026-08-18T21:00:33.326090+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_09,1,1,0,judge,,open,0,0,0,medium,"Response_format dict-check matches reference, but candidate skips tool_call.function getattr fix and, in helpers.py, exits instead of falling back to ws_root_path when workspace key is None.",160.6,8251,2169,0,2026-08-18T20:59:36.841053+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_10,1,1,1,judge,,open,1,0,0,high,"Candidate guards both response_format dict access and workspace dir None case, addressing same root causes as reference via equivalent logic.",128.7,8251,1674,0,2026-08-18T20:59:05.028472+00:00,design,no_memory
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_01,1,1,0,judge,,open,0,0,0,high,Candidate touches unrelated Cerebras/workspace issues but never adds the RUF100 noqa fixes or the many typing/annotation lint fixes ruff's style-check requires.,124.8,21205,1574,0,2026-08-17T22:26:46.436078+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_02,1,1,1,judge,,open,1,1,0,high,"Adds the same None-guard for workspace dir and null-checks response_format, addressing the same root cause via slightly different logic.",115.8,21205,2004,0,2026-08-18T19:51:36.002497+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_03,1,1,0,judge,,open,0,0,0,medium,"Fixes response_format None/type guard and workspace None check, but omits the reference's getattr(tool_call.function, ...) safety fix in two places in cerebras.py.",113.0,21205,787,0,2026-08-18T20:58:49.167837+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_04,1,1,1,judge,,open,1,0,0,medium,"Matches the response_format dict-guard and workspace None-check fixes, but omits the tool_call.function getattr hardening and adds an unrelated, possibly-breaking self.async_client caching change.",90.8,21205,1410,0,2026-08-18T20:58:26.942073+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_05,1,1,0,judge,,open,0,0,0,medium,"Fixes response_format isinstance check and workspace None case, but omits the getattr(tool_call.function,...) hardening the reference also required for the same bug.",145.9,21205,1745,0,2026-08-18T20:59:22.088003+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_06,1,1,0,judge,,open,0,0,0,low,"Candidate fixes response_format and workspace-dir None guards but omits the getattr fallback for tool_call.function added twice in the reference, leaving that crash path unfixed.",99.9,21205,1259,0,2026-08-18T20:58:36.109296+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_07,1,1,1,judge,,open,1,0,0,medium,"Candidate mirrors reference's isinstance/None guards to avoid the response_format and joinpath(None) crashes, but omits tool_call.function getattr hardening and helpers.py's ws_root_path fallback.",148.2,21205,1715,0,2026-08-18T20:59:24.468986+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_08,1,1,1,judge,,open,1,0,0,medium,"Candidate adds the same isinstance/dict guard for response_format and a None-guard in helpers.py, but omits reference's getattr hardening for tool_call.function.",163.4,21205,1850,0,2026-08-18T20:59:39.659351+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_09,1,1,0,judge,,open,0,0,0,medium,"Candidate replicates the response_format None/dict guard and the workspace_dir None guard, but omits the reference's getattr guards for tool_call.function.name/arguments in two spots, leaving part of the fix incomplete.",96.1,21205,1649,0,2026-08-18T20:58:32.358044+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_10,1,1,0,judge,,open,0,0,0,low,Candidate fixes response_format and workspace None-check like the reference but omits the tool_call.function getattr null-safety fix present twice in cerebras.py.,107.1,21205,1558,0,2026-08-18T20:58:43.441108+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,high,"Skips the whole class conditionally on the missing optional help extra, which is the actual environmental root cause of the SwitchCoder errors.",82.3,10658,1606,0,2026-08-17T22:28:09.844720+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_02,1,1,0,judge,,open,0,0,1,low,"It skips the whole test class based on an optional dependency, masking a genuine mock/assertion bug rather than fixing it.",123.0,10658,1840,0,2026-08-18T19:52:22.379631+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_03,1,1,1,judge,,open,1,0,0,medium,"Skips TestHelp when llama_index extras aren't importable and decouples fname_to_url tests, addressing the same missing-help-extras root cause, though the ReadTimeout/ConnectionError catch (undefined name) is untested.",165.7,10658,1802,0,2026-08-18T21:07:48.301997+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_04,1,1,1,judge,,open,1,0,0,medium,"Candidate replaces the unconditional setUpClass with per-test skips gated on the missing llama_index help extra, fixing the same environment root cause without hiding a real defect.",151.7,10658,2717,0,2026-08-18T21:07:34.338407+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_05,1,1,1,judge,,open,1,0,0,medium,"Candidate conditionally skips help-extras-dependent tests when llama_index is missing, matching the reference's environment-conditional skip without hiding real defects.",103.2,10658,1515,0,2026-08-18T21:06:45.805380+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_06,1,1,1,judge,,open,1,0,0,high,"Skips help tests only when the optional llama-index extra is missing and splits out the pure-logic fname_to_url tests, addressing the same environmental cause without hiding a code defect.",130.4,10658,1971,0,2026-08-18T21:07:13.065920+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_07,1,1,1,judge,,open,1,0,0,high,"Conditionally skips help tests when optional deps are missing instead of asserting failure, a narrowly scoped environmental guard like the reference's SkipTest.",179.7,10658,2575,0,2026-08-18T21:08:02.392917+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_08,1,1,1,judge,,open,1,0,0,medium,Candidate skips TestHelp when the optional llama_index help extra is absent (the actual env cause) and isolates pure fname_to_url tests so they still run and pass.,181.0,10658,2400,0,2026-08-18T21:08:03.704895+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_09,1,1,1,judge,,open,1,0,0,medium,"Candidate narrowly skips help-dependent tests only when the optional help extra fails to init (commands.help stays None), mirroring the reference's environmental-skip approach without hiding real regressions.",166.5,10658,1720,0,2026-08-18T21:07:49.200125+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_10,1,1,1,judge,,open,1,0,0,medium,Skips help tests via proactive extras-availability check (mirrors reference's environmental skip) and removes setUpClass coupling causing unrelated test errors.,177.9,10658,2735,0,2026-08-18T21:08:00.659222+00:00,design,no_memory
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,high,"Moves setup out of failing setUpClass (which errored all class tests) into a skip-guarded test keyed on missing llama-index extras, matching the reference's environmental-skip intent.",179.2,23814,2394,0,2026-08-17T22:31:10.109777+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,"Candidate replaces the class-wide setUpClass with per-test skipUnless(HELP_EXTRAS_AVAILABLE), a narrow environmental guard that fixes both the SwitchCoder errors and collateral test_fname_to_url failures.",107.6,23814,2488,0,2026-08-18T19:53:23.660788+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_03,1,1,1,judge,,open,1,0,0,medium,"Converts fragile setUpClass into per-test methods gated by a narrow import-availability check for the optional help extras, fixing the cascading SwitchCoder failures without hiding a real defect.",132.1,23814,2601,0,2026-08-18T21:07:14.676248+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_04,1,1,1,judge,,open,1,0,0,high,"Candidate correctly skips help tests when optional help extras are missing, addressing the same environmental root cause without hiding a real defect.",122.7,23814,1714,0,2026-08-18T21:07:05.332413+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_05,1,1,1,judge,,open,1,0,0,medium,"Candidate skips help-extra-dependent tests when llama_index isn't installed, addressing the same missing-optional-deps root cause via import detection rather than exception catching.",142.5,23814,1870,0,2026-08-18T21:07:25.177007+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_06,1,1,1,judge,,open,1,0,0,medium,"Both patches conditionally skip TestHelp when the optional help extras aren't installed, a narrowly-scoped environmental guard rather than an unconditional skip.",127.5,23814,1819,0,2026-08-18T21:07:10.153382+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_07,1,1,1,judge,,open,1,0,0,medium,"Adds a narrowly-scoped skip when the optional help extras aren't importable, preventing setUpClass from raising and fixing all 5 errored tests without deleting assertions.",155.2,23814,1955,0,2026-08-18T21:07:37.798973+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_08,1,1,1,judge,,open,1,0,0,medium,"Candidate conditionally skips help tests when the optional llama_index extra is missing, addressing the same environmental root cause as the reference's conditional skip.",181.5,23814,2390,0,2026-08-18T21:08:04.140622+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_09,1,1,1,judge,,open,1,0,0,medium,"Candidate conditionally skips help tests when optional llama_index extras are missing, matching cmd_help's real non-SwitchCoder behavior in that case.",155.9,23814,2099,0,2026-08-18T21:07:38.564569+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_10,1,1,1,judge,,open,1,0,0,high,"Skips the help-extras-dependent tests conditionally while isolating the pure fname_to_url tests, addressing the same environmental root cause without hiding a genuine code defect.",127.3,23814,1908,0,2026-08-18T21:07:10.013774+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_01,1,1,0,static,,fail,,0,0,high,the agent changed no files,356.9,4548,3348,0,2026-08-17T22:52:57.570924+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_02,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,1651.2,4548,127,-1,2026-08-18T20:19:32.790152+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_03,1,1,0,static,,fail,,0,0,high,the agent changed no files,585.0,4548,3768,0,2026-08-18T21:56:26.088458+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_04,1,1,0,static,,fail,,0,0,high,the agent changed no files,442.1,4548,2684,0,2026-08-18T21:54:03.196858+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_05,1,1,0,judge,,open,0,0,1,high,"Candidate deleted almost the entire lock file instead of regenerating a valid content-hash, breaking the lock file rather than fixing it.",657.6,4548,1655,0,2026-08-18T21:57:38.658668+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_06,1,1,0,static,,fail,,0,0,high,the agent changed no files,476.9,4548,3199,0,2026-08-18T21:54:37.985169+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_07,1,1,1,judge,,open,1,0,0,high,"Candidate updates the stale content-hash like the reference, resolving the lock-file mismatch (though the hash value differs, its correctness depends on poetry's actual computation).",805.7,4548,2348,0,2026-08-18T22:00:06.769290+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_08,1,1,0,static,,fail,,0,0,high,the agent changed no files,449.5,4548,2930,0,2026-08-18T21:54:10.583150+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_09,1,1,0,judge,,open,0,0,1,high,"Candidate deletes poetry.lock entirely instead of regenerating its content-hash, breaking the lock file rather than fixing it.",464.8,4548,2301,0,2026-08-18T21:54:25.950709+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_10,1,1,0,judge,,open,0,0,1,high,"Candidate deletes the entire poetry.lock file instead of updating content-hash, which would break lock-based installs entirely.",620.9,4548,2393,0,2026-08-18T21:57:02.101396+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,medium,"Deleting poetry.lock forces Poetry to re-resolve and regenerate a fresh lock matching pyproject.toml, addressing the stale content-hash root cause, though less precisely than updating the hash.",561.4,15884,2454,0,2026-08-17T23:02:20.004945+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_02,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,1962.8,15884,2341,-1,2026-08-18T20:25:05.198554+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_03,1,1,0,judge,,open,0,0,1,high,"It deletes nearly the entire lock file instead of regenerating a valid content-hash, leaving an unparsable/broken poetry.lock.",542.8,15884,2297,0,2026-08-18T21:55:43.865228+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_04,1,1,0,static,,fail,,0,0,high,the agent changed no files,594.7,15884,2709,0,2026-08-18T21:56:35.802003+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_05,1,1,0,judge,,open,0,0,1,high,"Candidate deletes poetry.lock entirely instead of regenerating its content-hash, which breaks poetry install rather than fixing it.",465.0,15884,2287,0,2026-08-18T21:54:26.097122+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_06,1,1,0,static,,fail,,0,0,high,the agent changed no files,403.3,15884,3101,0,2026-08-18T21:53:24.372737+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_07,1,1,0,judge,,open,0,0,0,high,"Candidate deletes poetry.lock entirely instead of regenerating the content-hash, leaving the project without a lock file at all.",570.6,15884,2970,0,2026-08-18T21:56:11.663050+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_08,1,1,0,judge,,open,0,0,1,high,"Candidate deletes nearly all of poetry.lock instead of updating content-hash, leaving lock file invalid/broken rather than fixing the mismatch.",998.0,15884,2410,0,2026-08-18T22:03:19.182689+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_09,1,1,0,judge,,open,0,0,1,high,"Candidate deletes poetry.lock entirely instead of regenerating its content-hash, which would break the lock-file-based install rather than fix it.",407.1,15884,1902,0,2026-08-18T21:53:28.284855+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_10,1,1,0,judge,,open,0,0,0,high,"Candidate only adds a comment explaining the stale hash but does not update content-hash, so poetry lock error persists.",762.4,15884,2408,0,2026-08-18T21:59:23.692239+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,30361.1,4550,147,-1,2026-08-18T07:30:40.826489+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_02,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,2033.2,4550,3645,-1,2026-08-18T20:26:43.171707+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_03,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,492.4,4550,2936,0,2026-08-18T22:16:32.810117+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_04,1,1,0,static,,fail,,0,0,high,the agent changed no files,341.3,4550,2828,0,2026-08-18T22:14:01.760096+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_05,1,1,0,static,,fail,,0,0,high,the agent changed no files,328.8,4550,2975,0,2026-08-18T22:13:49.234093+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_06,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,1154.6,4550,2553,0,2026-08-18T22:27:34.984557+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_07,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,436.8,4550,2071,0,2026-08-18T22:15:37.266376+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_08,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,649.1,4550,2068,0,2026-08-18T22:19:09.531794+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_09,1,1,0,static,,fail,,0,0,high,the agent changed no files,673.5,4550,3749,0,2026-08-18T22:19:33.917871+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_10,1,1,0,static,,fail,,0,0,high,the agent changed no files,962.6,4550,3465,0,2026-08-18T22:24:23.062166+00:00,design,no_memory
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,49399.5,15886,2000,-1,2026-08-18T12:55:34.767244+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_02,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,1765.9,15886,2685,-1,2026-08-18T20:22:49.648822+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_03,1,1,0,static,,fail,,0,0,high,the agent changed no files,868.7,15886,3017,0,2026-08-18T22:22:49.132154+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_04,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,385.5,15886,2024,0,2026-08-18T22:14:45.937978+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_05,1,1,0,static,,fail,,0,0,high,the agent changed no files,432.4,15886,2268,0,2026-08-18T22:15:32.835089+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_06,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,513.3,15886,2642,0,2026-08-18T22:16:53.683779+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_07,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,574.8,15886,2113,0,2026-08-18T22:17:55.178735+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_08,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,342.9,15886,2021,0,2026-08-18T22:14:03.360859+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_09,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,595.2,15886,2540,0,2026-08-18T22:18:15.663195+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_10,1,1,0,static,,fail,,0,0,high,the agent changed no files,631.7,15886,2534,0,2026-08-18T22:18:52.180169+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,high,"Candidate makes the identical max_attempts 1→2 edit as the reference, plus an explanatory comment.",177.9,4992,1298,0,2026-08-17T23:07:37.672526+00:00,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,high,"Candidate makes the identical numeric change (max_attempts 1→2) as the reference, just with an added comment.",309.3,4992,1258,0,2026-08-18T20:24:42.343162+00:00,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,high,"total_max_attempts=2 correctly yields one retry, matching the reference's max_attempts=2 fix for the same root cause.",383.1,13734,1294,0,2026-08-17T23:11:02.926283+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,"Candidate changes max_attempts from 1 to 2, identical to the reference patch, just with an added comment.",233.4,13734,1846,0,2026-08-18T20:26:43.059440+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,high,"Candidate guards fetchone() None result in _ensure_host_id (and read_host_id) before subscripting, same root cause as reference.",53.5,14070,1447,0,2026-08-17T23:08:31.196507+00:00,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,high,"Candidate guards cur.fetchone() being None before indexing, same root cause as reference, and also hardens read_host_id similarly.",61.2,14070,978,0,2026-08-18T20:25:10.454292+00:00,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,high,"Candidate guards against fetchone() returning None before subscripting, resolving the same root cause as the reference patch.",63.4,22972,846,0,2026-08-17T23:09:34.628821+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,"Candidate guards against fetchone() returning None, avoiding the same subscript TypeError as the reference patch, skipping insert safely.",74.0,22972,858,0,2026-08-18T20:25:32.670410+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,medium,"Candidate adds torch 2.8/2.9 branches with matching xformers pins in both files, addressing the same resolver conflict as the reference, though exact pin choices differ.",82.8,15817,1090,0,2026-08-17T23:10:57.512688+00:00,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,medium,"Candidate adds torch>=2.8/2.9 branches pinning compatible xformers versions in both files, same approach as reference, though exact version strings differ slightly.",89.7,15817,1218,0,2026-08-18T20:26:12.069122+00:00,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_01,1,1,0,static,,fail,,0,0,high,the agent changed no files,4.1,25164,159,1,2026-08-17T23:11:01.661345+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,"Adds the missing 2.8/2.9 torch branches in setup.py fixing that resolver conflict, but leaves the identical dynamic-dependencies file unpatched.",67.0,25164,1108,0,2026-08-18T20:26:12.291477+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_01,1,1,0,static,,fail,,0,0,high,the agent changed no files,3.6,15902,159,1,2026-08-17T23:11:05.324822+00:00,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,high,"Adds dataset_num_proc field and wires it from cfg.dataset_processes, matching reference's root-cause fix; getattr fallback preserves safety.",98.9,15902,1342,0,2026-08-18T20:26:49.375090+00:00,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,high,"Candidate adds the missing dataset_num_proc field and guards its use, directly resolving the AttributeError like the reference patch.",111.7,23902,1184,0,2026-08-17T23:12:54.614760+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,"Adds dataset_num_proc field directly to AxolotlTrainingArguments (matching the AttributeError class) instead of the shared mixin, resolving the same root cause.",173.9,23902,1820,0,2026-08-18T20:28:26.602009+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_01,1,1,0,judge,,open,0,0,1,medium,"Reference fixes missing windows-64 bundle install; candidate instead blanket-suppresses CVEs/packages in grype config, hiding rather than fixing the vulnerable deps.",196.1,13860,2092,0,2026-08-17T23:14:21.460709+00:00,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,high,"Moves grype's install dir outside the scanned SW tree and adds pinned ignores for node/ffmpeg/Python CVEs, fixing the same root cause differently.",151.9,13860,2060,0,2026-08-18T20:28:44.020342+00:00,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_01,1,1,0,judge,,open,0,0,0,medium,"Candidate suppresses bundled node/python/ffmpeg CVEs and relocates grype, but never adds the missing WINDOWS_BUNDLE install/scan that the reference patch actually adds.",194.8,26305,1955,0,2026-08-17T23:14:42.854035+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,"Both address vulnerable bundled binaries via grype ignore config, plus fixes grype's own dir being scanned; missing Windows bundle install is unaddressed but unrelated to this root cause.",195.9,26305,1879,0,2026-08-18T20:29:28.200998+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,49330.5,13987,1464,-1,2026-08-18T12:55:05.156813+00:00,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,medium,Relocates grype out of the scanned dir (fixing Go stdlib self-detection) and waives exactly the pinned node/Python/FFmpeg CVEs from the log via package-scoped ignore rules.,315.5,13987,1863,0,2026-08-18T20:31:58.590491+00:00,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,49241.9,25121,1341,-1,2026-08-18T12:55:03.453267+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,medium,"Candidate ignores the specific bundled third-party pkg/version CVEs (pinned, so ignore lapses on rebuild) and stops grype self-scanning, addressing the same unfixable-bundled-binary root cause via a different, narrowly-scoped mechanism.",180.5,25121,2227,0,2026-08-18T20:29:43.753228+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,29766.1,8539,890,-1,2026-08-18T07:30:48.937991+00:00,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,high,"Candidate makes the identical edit as the reference, extracting the f-string nested-quote expression into a variable, fixing the SyntaxError.",58.9,8539,1032,0,2026-08-18T20:27:48.344401+00:00,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,19342.6,19023,117,-1,2026-08-18T12:53:03.506725+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,Candidate makes the identical fix to the f-string syntax error that caused the only failure shown in the log.,75.3,19023,1301,0,2026-08-18T20:29:03.690342+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,19339.0,9936,0,-1,2026-08-18T12:53:07.970950+00:00,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_02,1,1,1,judge,,open,1,0,0,medium,"Candidate converts stringified list_only correctly (e.g. 'False'->False), fixing the same root cause as reference, though falsy-string set differs slightly.",62.3,9936,1237,0,2026-08-18T20:29:28.998357+00:00,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,medium,search.py and meson fixes match reference's root-cause fix; conftest.py skip is unconditional rather than CI-scoped but doesn't hide the logged failures.,138.5,21715,1567,0,2026-08-18T12:55:22.251883+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,"search.py correctly coerces string 'False' to boolean, fixing the list_only bug behind all the visible list/search test failures; other files match reference closely.",85.5,21715,2259,0,2026-08-18T20:30:09.604315+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,medium,"Candidate captures the executor before the invalidating call and asserts is_valid() semantics instead of ex is None, addressing the same invalidation-cleanup root cause without hiding the test.",259.8,6700,2090,0,2026-08-18T12:57:27.839641+00:00,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_02,1,1,0,judge,,open,0,0,0,low,"Candidate guesses new loop/result constants hoping a second post-invalidation trace reproduces the same guard/validity opcode pattern, which the reference's own fix implies is no longer producible.",261.6,6700,1813,0,2026-08-18T20:33:25.379148+00:00,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_01,1,1,0,judge,,open,0,0,0,medium,"Candidate tweaks trigger index/expected value but keeps assertIsNotNone(ex); real cause is ex now legitimately becomes None after invalidation, so test likely still fails.",158.2,13878,1137,0,2026-08-18T12:57:41.640613+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,medium,"Candidate adjusts index/expected value to keep original assertions instead of relaxing them like reference, plausibly fixing the guard removal cause.",128.0,13878,1563,0,2026-08-18T20:31:36.227184+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,2365.5,6844,3014,-1,2026-08-18T20:24:09.172614+00:00,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_02,1,1,0,judge,,open,0,0,0,high,"Candidate removes an unrelated x.copy() call elsewhere in core.py instead of changing ones_like to zeros_like in apply_infer_dtype, the actual root cause.",549.4,6844,2194,0,2026-08-18T20:38:38.455752+00:00,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_01,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,2374.9,18251,0,-1,2026-08-18T20:24:18.564562+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_02,1,0,0,none,,,,0,0,low,the agent was killed by the timeout,900.3,18251,0,-1,2026-08-18T20:44:44.175294+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_01,1,1,0,judge,,open,0,0,0,medium,"Unconditionally importing the real single_file module still pulls in transformers-only code inside it, so the import fails again without transformers installed.",100.3,8631,923,0,2026-08-18T19:41:19.741713+00:00,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,high,"Unconditionally adds FromSingleFileMixin to torch-available branch, resolving the missing import without needing transformers.",163.3,17590,1159,0,2026-08-18T19:42:22.692754+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,high,"Candidate is identical to the reference patch, only reformatting the assertNumQueries call for pre-commit formatting compliance.",35.4,3506,414,0,2026-08-18T19:40:14.843001+00:00,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,high,Candidate applies the identical formatting fix (multi-line assertNumQueries call) as the reference patch.,55.8,12766,718,0,2026-08-18T19:40:35.204405+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_01,1,1,0,judge,,open,0,0,0,medium,"Candidate leaves _ensure_connection's `if not self._col` check untouched, so the pymongo Collection truthiness bug the reference patch fixes still exists.",175.9,9113,2271,0,2026-08-18T19:43:10.851562+00:00,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_01,1,1,0,judge,,open,0,0,0,high,"Root cause is missing pytest module in CI env; candidate only edits todo_list.py logic, doesn't install/reference pytest.",137.3,18427,2328,0,2026-08-18T19:42:52.514938+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_01,1,1,0,judge,,open,0,0,0,medium,"Candidate asserts repr starts with 'SSLContext(' but actual format per reference is '<SSLContext [verify=...]>', so the new test would fail.",140.1,8333,800,0,2026-08-18T19:43:39.913067+00:00,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_01,1,1,0,judge,,open,0,0,0,high,"Candidate guesses repr format 'SSLContext(...)' but actual format is '<SSLContext [verify=False]>', so new tests likely fail and never hit the uncovered verify=False branch.",150.2,14115,1645,0,2026-08-18T19:47:13.849886+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_01,1,1,0,judge,,open,0,0,0,medium,"Candidate never touches bypy/sources.json; the brotli naming issue causing the WARN (artifact ID mis-derivation) that the reference fixes remains, and candidate instead patches unrelated grype/Python CVE handling in ci.py.",146.2,14837,2109,0,2026-08-18T19:45:18.734399+00:00,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_01,1,1,0,judge,,open,0,0,0,high,"Doesn't fix the mislabeled brotli/libbrotli sources.json entry, which is the reference patch's actual root cause; ignore list addresses different CVEs.",107.1,26053,1375,0,2026-08-18T19:44:58.004197+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_01,1,1,0,judge,,open,0,0,1,high,"Candidate deletes the thinking->extra_body logic entirely rather than fixing it, leaving the assertion failure unresolved.",59.6,8091,910,0,2026-08-18T19:44:39.517365+00:00,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,medium,"Removing the extra_body nesting makes the failing map_openai_params assertion pass, but unlike the reference it drops the extra_body handling entirely instead of relocating it to transform_request, likely dropping 'thinking' from real requests.",97.1,16976,1130,0,2026-08-18T19:46:20.810191+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,high,"Candidate patch is identical to the reference patch, replacing List[str] with SequenceNotStr[str] in all four stop param signatures.",63.6,6351,1024,0,2026-08-18T19:46:01.629950+00:00,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,high,"Candidate patch is identical to the reference patch, replacing List[str] with SequenceNotStr[str] in all four stop param signatures.",60.2,15468,860,0,2026-08-18T19:45:43.880417+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,medium,"Upgrading apispec-webframeworks avoids the pkg_resources import, addressing the same root cause via a different mechanism than vendoring FlaskPlugin.",73.2,12264,1322,0,2026-08-18T19:46:57.062605+00:00,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_01,1,1,1,judge,,open,1,0,0,high,"Pins setuptools<81 restoring pkg_resources, fixing the import error, but leaves apispec_webframeworks dependency (root pandas/apispec issue) unaddressed differently than reference.",40.6,25219,728,0,2026-08-18T19:46:26.817823+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_01,1,1,0,judge,,open,0,0,1,high,Candidate adds an unrelated test instead of fixing the localhost URL/IPv6 assertion mismatch the reference patch addresses.,389.1,9990,1701,0,2026-08-18T19:52:49.999862+00:00,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_01,1,1,0,judge,,open,0,0,1,high,Adds an unrelated test instead of fixing the localhost/twine root cause; original failing assertions untouched.,165.8,19128,1300,0,2026-08-18T19:49:12.647550+00:00,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+claude-code,claude-code,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_01,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.3,14324,1227,,2026-09-06T09:34:03.840Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_02,1,1,0,judge,,open,0,0,1,high,Root cause was mcp import error; candidate instead gutted rag_store_test.py and never touched the mcp/import issue.,3.4,14324,1771,,2026-09-06T09:34:18.367Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_03,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,1.3,14324,586,,2026-09-06T09:34:31.127Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_04,1,1,0,judge,,open,0,0,1,high,"Candidate rewrites the test file into unrelated fabricated tests, never touching the mcp import ImportError that is the actual root cause.",3.1,14324,1638,,2026-09-06T09:34:45.743Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_05,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.5,14324,1392,,2026-09-06T09:35:06.409Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_06,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.3,14324,1293,,2026-09-06T09:35:15.136Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_07,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.5,14324,1364,,2026-09-06T09:35:24.569Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_08,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.6,14324,1313,,2026-09-06T09:35:34.330Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_09,1,1,0,judge,,open,0,0,0,high,"Adds a runtime monkeypatch for mcp import attempted only when this unrelated module loads, not a scoped fix; doesn't address the actual failing import path reliably.",27.4,14324,7013,,2026-09-06T09:55:52.420Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,no_memory,0,run_10,1,1,0,judge,,open,0,0,0,high,Ignores actual failing tests (mcp import error) entirely; rewrites unrelated test file with stub mocks instead of skipping on Windows.,42.3,14324,13020,,2026-09-06T09:57:12.201Z,design,no_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_01,1,1,0,judge,,open,0,0,0,high,"Root cause is an mcp import error in _http_stateless_client.py; candidate only rewrote rag_store_test.py, leaving the ImportError unresolved.",2.8,28060,1514,,2026-09-06T09:34:08.708Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_02,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,3.0,28060,1625,,2026-09-06T09:34:23.442Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_03,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.8,28060,1610,,2026-09-06T09:34:35.997Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_04,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.7,28060,1594,,2026-09-06T09:34:50.501Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_05,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.4,28060,1333,,2026-09-06T09:35:10.812Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_06,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,2.9,28060,1660,,2026-09-06T09:35:20.073Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_07,1,1,0,static,,fail,0,0,0,high,changed file does not parse: tests/rag_store_test.py,3.1,28060,1868,,2026-09-06T09:35:29.705Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_08,1,1,0,judge,,open,0,0,0,high,Root cause is unrelated mcp package import error; candidate only refactors MilvusLiteStore without adding the Windows skip or touching mcp import.,36.2,28060,6284,,2026-09-06T09:55:23.012Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_09,1,1,0,judge,,open,0,0,0,high,"Root cause was an unrelated mcp package import error; candidate only refactored MilvusLiteStore, leaving the actual failure untouched.",33.4,28060,6505,,2026-09-06T09:56:27.879Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,with_memory,3,run_10,1,1,0,judge,,open,0,0,0,high,Root cause is an mcp library import error; candidate only refactors milvuslite_store.py and never touches that import.,33.2,28060,6734,,2026-09-06T09:57:47.452Z,legacy,memory_k3
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,foreign_memory,3,run_01,1,1,0,static,,fail,,0,0,high,changed file does not parse: tests/rag_store_test.py,3.2,27773,1103,,2026-09-06T09:33:59.561Z,control,foreign_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,foreign_memory,3,run_02,1,1,0,static,,fail,,0,0,high,changed file does not parse: tests/rag_store_test.py,2.2,27773,1026,,2026-09-06T09:34:12.941Z,control,foreign_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,foreign_memory,3,run_03,1,1,0,static,,fail,,0,0,high,changed file does not parse: tests/rag_store_test.py,2.2,27773,1029,,2026-09-06T09:34:27.730Z,control,foreign_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,foreign_memory,3,run_04,1,1,0,static,,fail,,0,0,high,changed file does not parse: tests/rag_store_test.py,2.5,27773,1197,,2026-09-06T09:34:40.581Z,control,foreign_memory
+copilot,copilot,,crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,foreign_memory,3,run_05,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,9.4,27773,6719,,2026-09-06T09:35:01.914Z,control,foreign_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_agno_180,agno,,Syntax Error|Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_372,aisuite,,Package Installation Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aisuite_373,aisuite,,Package Installation Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_144,aws-cli,,Test Failure,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_459,axolotl,,Package Installation Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_axolotl_475,axolotl,,Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_232,calibre,,Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_calibre_233,calibre,,Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_542,conan,,Syntax Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_conan_549,conan,,Test Failure|Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_cpython_213,cpython,,Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_httpx_41,httpx,,Test Failure,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_kitty_313,kitty,,Dependency Issues|Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_litellm_396,litellm,,Assertion Error|Runtime Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_openai-python_230,openai-python,,Assertion Error|Environment Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_taipy_439,taipy,,Dependency Issues,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,no_memory,0,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,design,no_memory
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_01,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_02,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_03,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_04,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_05,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_06,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_07,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_08,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_09,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot,copilot,,crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,with_memory,3,run_10,0,0,0,none,,,,0,0,low,no agent ran in this cell,,,,,,legacy,memory_k3
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_01,1,1,1,judge,,open,1,0,0,high,"Both catch SwitchCoder/other errors and skip tests instead of asserting SwitchCoder was raised, resolving the same root cause.",19.6,10939,7781,,2026-09-06T10:41:41.448Z,design,no_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_02,1,1,1,judge,,open,1,1,0,high,"Candidate removes the same assert-false-on-no-exception branch as reference, letting the test pass when SwitchCoder isn't raised.",17.8,10939,6794,,2026-09-06T10:42:49.678Z,design,no_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_03,1,1,0,judge,,open,0,0,0,high,"Candidate is behaviorally identical to original (assert False vs raise AssertionError), still fails on non-SwitchCoder exceptions or missed calls.",18.4,10939,7419,,2026-09-06T10:43:58.434Z,design,no_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_04,1,1,0,static,,fail,,0,0,high,the agent changed no files,8.9,10939,2595,,2026-09-06T10:44:53.418Z,design,no_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,no_memory,0,run_05,1,1,1,judge,,open,1,0,0,high,"Removes the hard-coded 'must raise SwitchCoder' assertion and adds a conditional skip via setUp when help setup fails, matching the reference's environmental-skip approach.",18.1,10939,7270,,2026-09-06T10:45:37.994Z,design,no_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_01,1,1,1,judge,,open,1,1,0,high,"Both wrap SwitchCoder handling so no exception forces failure and guard the final assertion behind success, addressing the same root cause without unconditional skip.",23.4,24388,8238,,2026-09-06T10:42:06.883Z,legacy,memory_k3
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_02,1,1,1,judge,,open,1,0,0,high,"Removes the assert-False-on-no-exception cause and adds a narrowly-scoped skip on unexpected init failure, without hiding the expected-path assertion.",21.6,24388,7966,,2026-09-06T10:43:13.274Z,legacy,memory_k3
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_03,1,1,0,static,,fail,,0,0,high,the agent changed no files,20.6,24388,7673,,2026-09-06T10:44:21.044Z,legacy,memory_k3
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_04,1,1,0,static,,fail,,0,0,high,the agent changed no files,10.2,24388,3100,,2026-09-06T10:45:05.634Z,legacy,memory_k3
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,with_memory,3,run_05,1,1,1,judge,,open,1,0,0,high,"Removes the false-failure assertion and swallows retry errors, letting the test pass without hiding a real code defect.",19.6,24388,7137,,2026-09-06T10:45:59.589Z,legacy,memory_k3
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,foreign_memory,3,run_01,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,21.3,24194,7498,,2026-09-06T10:41:19.856Z,control,foreign_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,foreign_memory,3,run_02,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,20.9,24194,7712,,2026-09-06T10:42:29.852Z,control,foreign_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,foreign_memory,3,run_03,1,1,0,static,,fail,,0,0,high,the agent changed no files,22.7,24194,8148,,2026-09-06T10:43:38.002Z,control,foreign_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,foreign_memory,3,run_04,1,0,0,none,,open,,0,0,low,no oracle reached a verdict for this run,19.4,24194,7023,,2026-09-06T10:44:42.458Z,control,foreign_memory
+copilot-claude-fable-5.1,copilot,claude-fable-5.1,crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,foreign_memory,3,run_05,1,1,0,static,,fail,,0,0,high,the agent changed no files,10.2,24194,3223,,2026-09-06T10:45:17.841Z,control,foreign_memory

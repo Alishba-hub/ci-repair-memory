@@ -39,6 +39,9 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 # filtering means exactly the same thing here as it does when a script is called directly.
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
+from ci_memory_agents import design
+from ci_memory_agents.prompt_builder import CONDITIONS
+
 TASK_SOURCE = "ci-repair-bench"
 
 # ANSI, disabled when the terminal will not render it.
@@ -396,7 +399,7 @@ def command_pick(args) -> int:
     print(dim("   These agents expose no temperature, so repeating a task is the only way to"))
     print(dim("   see how consistent it is. Tasks run once contribute a coin flip, not a rate;"))
     print(dim("   3 or more is where a task starts to have a repair rate at all."))
-    args.runs = _ask_int("Runs per condition (1-20)", 10, 1, 20)
+    args.runs = _ask_int("Runs per condition (1-20)", design.RUNS_PER_CONDITION, 1, 20)
 
 
     # 5. speed
@@ -404,7 +407,7 @@ def command_pick(args) -> int:
 
     # 6. confirm
     chosen = selected_tasks(args)
-    arms = 2
+    arms = len(CONDITIONS)
     planned = len(chosen) * arms * args.runs
     conditions = ("no_memory", "with_memory")
     already = sum(
@@ -546,7 +549,10 @@ def command_status(args) -> int:
     s = survey(args.agent)
     heading(f"Progress for {s['agent']}")
     planned = s["cells"] or 1
-    print(f"  cells laid out    {s['cells']:>4}          {dim(str(s['tasks']) + ' tasks x 2 conditions x N runs')}")
+    print(
+        f"  cells laid out    {s['cells']:>4}          "
+        + dim(f"{s['tasks']} tasks x {len(CONDITIONS)} conditions x N runs")
+    )
     print(f"  agent has run     {s['attempted']:>4} / {s['cells']:<5} {bar(s['attempted'], planned)}")
     print(f"  judged            {s['judged']:>4} / {s['attempted']:<5} {bar(s['judged'], s['attempted'] or 1)}")
     if s["timed_out"]:
@@ -599,7 +605,7 @@ def command_run(args) -> int:
         print(bad("\nNo tasks match those filters.  python run.py tasks"))
         return 1
     total = len(list((REPO_ROOT / "tasks").glob("crb_*")))
-    arms = 2
+    arms = len(CONDITIONS)
     planned = len(chosen) * arms * args.runs
 
     conditions = ("no_memory", "with_memory")
@@ -1134,7 +1140,12 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--agent", default="claude-code", help="which agent (default: claude-code)")
-    parser.add_argument("--runs", type=int, default=10, help="repeated runs per condition (default: 10)")
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=design.RUNS_PER_CONDITION,
+        help=f"repeated runs per condition (default: {design.RUNS_PER_CONDITION})",
+    )
     parser.add_argument("--parallel", type=int, default=6, help="runs at once (default: 6)")
     parser.add_argument("--timeout", type=int, default=900, help="seconds per run (default: 900)")
     parser.add_argument("--exe", default=None, help="path to the agent binary; found automatically if omitted")

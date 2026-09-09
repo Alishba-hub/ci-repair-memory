@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from ci_memory_agents import design
 from ci_memory_agents.dashboard_state import is_edited
 from ci_memory_agents.prompt_builder import CONDITIONS
 from ci_memory_agents.response_parser import parse_files, write_files
@@ -112,7 +113,8 @@ def pending_runs(
 
 
 def run_one(
-    run_dir: Path, command: list[str], mode: str, timeout: int, use_stdin: bool = False
+    run_dir: Path, command: list[str], mode: str, timeout: int, use_stdin: bool = False,
+    model: str = ""
 ) -> dict:
     prompt = (run_dir / "prompt.md").read_text(encoding="utf-8")
     workspace = run_dir / "workspace"
@@ -182,6 +184,11 @@ def run_one(
         # results into a folder named for a different one, and nothing downstream can
         # tell unless the run says what made it. That happened once already.
         "model_id": Path(str(command[0])).stem if command else "unknown",
+        # The LLM behind the harness, which `model_id` does not capture: `claude.exe`
+        # is the scaffold, not the model, and two runs of the same binary against
+        # different models are two different conditions. Blank when the operator did
+        # not say, which the CSV shows as an empty column rather than by guessing.
+        "model": model,
         "exit_code": result.returncode,
         "prompt_chars": len(prompt),
         "reply_chars": len(reply),
@@ -207,7 +214,16 @@ def main() -> int:
         choices=("inplace", "text"),
         help="inplace: the agent edits the workspace. text: parse its stdout for '=== path ===' blocks.",
     )
-    parser.add_argument("--agent", default="copilot", help="runs/<agent> folder to fill")
+    parser.add_argument("--agent", default=design.AGENT_NAMES[0], help="runs/<agent> folder to fill")
+    parser.add_argument(
+        "--model",
+        default=None,
+        help=(
+            "LLM behind the harness, recorded in each run's agent_meta.json. Defaults to "
+            "whatever ci_memory_agents.design registers for --agent, so the registered "
+            "cells need no flag."
+        ),
+    )
     parser.add_argument("--runs-root", default=str(REPO_ROOT / "runs"))
     parser.add_argument("--tasks-root", default=str(REPO_ROOT / "tasks"))
     parser.add_argument("--task-id", default=None, help="One task id, or a comma-separated list")
@@ -248,6 +264,18 @@ def main() -> int:
     if args.exe:
         command[0] = args.exe
 
+    # Explicit flag first, then whatever the design registers for this agent name. An
+    # unregistered agent with no --model records an empty model rather than inheriting
+    # another cell's, because a wrong attribution is worse than a missing one.
+    model = args.model if args.model is not None else design.agent_config(args.agent)["model"]
+    if model:
+        print(f"Recording model: {model}")
+    else:
+        print(
+            f"No model recorded for {args.agent!r}. Pass --model so the runs can be "
+            f"attributed to an LLM, or add the cell to ci_memory_agents.design.AGENTS."
+        )
+
     pending, protected = pending_runs(
         Path(args.runs_root), Path(args.tasks_root), args.agent, args.task_id, args.project
     )
@@ -278,7 +306,7 @@ def main() -> int:
         index, run_dir = item
         label = "/".join(run_dir.parts[-3:])
         try:
-            meta = run_one(run_dir, command, mode, args.timeout, use_stdin)
+            meta = run_one(run_dir, command, mode, args.timeout, use_stdin, model=model)
             (run_dir / "agent_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
             detail = ", ".join(meta["files_written"]) or "agent edited in place"
             return True, f"[{index}/{len(pending)}] ok   {label} ({meta['duration_ms'] // 1000}s) {detail}"

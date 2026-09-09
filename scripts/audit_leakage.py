@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from ci_memory_agents.loader import list_tasks
-from ci_memory_agents.prompt_builder import CONDITIONS, build_prompt
+from ci_memory_agents.prompt_builder import CONDITIONS, PAIR, build_prompt, condition_k
 
 WHITESPACE = re.compile(r"\s+")
 
@@ -148,23 +148,27 @@ def main() -> int:
     audited = sorted({c for r in reports for c in r["conditions"]}, key=CONDITIONS.index)
     print(f"Audited {len(tasks)} tasks x {len(audited)} conditions: {', '.join(audited)}\n")
 
+    # One column per audited arm. The largest K is the arm most able to leak -- it
+    # shows the most history -- so auditing only `with_memory` would have checked the
+    # least exposed memory arm and passed the study on it.
+    widest = max(audited, key=condition_k)
     print("Content overlap -- share of the gold patch's added lines visible in the prompt")
-    print(f"{'task':<32}{'gold':>6}{'no_mem':>9}{'with_mem':>10}")
+    print(f"{'task':<32}{'gold':>6}" + "".join(f"{c:>12}" for c in audited))
     failures = []
-    for report in sorted(reports, key=lambda r: -r["conditions"]["with_memory"]["ratio"]):
+    for report in sorted(reports, key=lambda r: -r["conditions"][widest]["ratio"]):
         ratios = {c: report["conditions"][c]["ratio"] for c in report["conditions"]}
         over = [c for c, ratio in ratios.items() if ratio > args.max_overlap]
         if over:
             failures.append(report)
         if any(ratios.values()):
-            cells = "".join(
-                f"{ratios.get(c, 0):>{w}.0%}"
-                for c, w in (("no_memory", 9), ("with_memory", 10))
-            )
+            cells = "".join(f"{ratios.get(c, 0):>12.0%}" for c in audited)
             flag = f" <-- over threshold in {', '.join(over)}" if over else ""
             print(f"{report['task_id']:<32}{report['gold_lines']:>6}{cells}{flag}")
 
-    contaminated = [r for r in reports if r["conditions"]["with_memory"]["ratio"] > 0]
+    contaminated = [
+        r for r in reports
+        if any(r["conditions"][c]["ratio"] > 0 for c in audited if condition_k(c))
+    ]
     print(
         f"\n{len(contaminated)}/{len(reports)} tasks show any residual overlap; "
         f"{len(failures)} exceed the {args.max_overlap:.0%} threshold"

@@ -1,0 +1,9 @@
+agent,error_group,condition,k,n_tasks,runs,solved,rate,ci_low,ci_high
+claude-code,unknown,no_memory,0,24,68,42,0.6176,0.4988,0.7239
+claude-code,unknown,memory_k3,3,23,67,38,0.5672,0.4481,0.679
+copilot,unknown,no_memory,0,1,10,0,0.0,0.0,0.2775
+copilot,unknown,memory_k3,3,1,10,0,0.0,0.0,0.2775
+copilot,unknown,foreign_memory,3,1,4,0,0.0,0.0,0.4899
+copilot-claude-fable-5.1,unknown,no_memory,0,1,5,3,0.6,0.2307,0.8824
+copilot-claude-fable-5.1,unknown,memory_k3,3,1,5,3,0.6,0.2307,0.8824
+copilot-claude-fable-5.1,unknown,foreign_memory,3,1,2,0,0.0,0.0,0.6576

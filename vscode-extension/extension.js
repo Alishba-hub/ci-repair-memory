@@ -8,7 +8,18 @@ const EXTENSION_VERSION = "0.3.5";
 // actually exist is read from disk by conditionsOn(), because run_experiment.py can lay
 // out arms this list does not know about, and a hardcoded list once silently skipped
 // one -- the cells were created, the extension never ran them, and nothing said so.
-const KNOWN_CONDITIONS = ["no_memory", "with_memory"];
+// Ordered so a partial batch is a balanced sample: control first, then the memory arms
+// by increasing K. `conditionsOn` still runs anything else it finds on disk, so this
+// list controls order, never membership -- membership is what a hardcoded list got
+// wrong before, when cells were created and then silently never run.
+const KNOWN_CONDITIONS = [
+  "no_memory",
+  "memory_k1",
+  "memory_k3",
+  "memory_k5",
+  "with_memory",
+  "foreign_memory",
+];
 const FILE_HEADER = /^===\s*(.+?)\s*===$/;
 
 function config() {
@@ -382,7 +393,11 @@ async function runBatch(taskFilter) {
             path.join(item.runDir, "agent_meta.json"),
             JSON.stringify(
               {
-                model_id: model.id,
+                // `model` is the field the Python side reads to attribute a run to an
+                // LLM. It is the family rather than the id, because the id carries a
+                // build suffix that changes under us while the family is what the
+                // experiment pins and what `design.AGENTS` names.
+                model: model.family,
                 model_id: model.id,
                 model_family: model.family,
                 model_vendor: model.vendor,

@@ -9,9 +9,16 @@
     --bg: #0f1115; --panel: #171a21; --panel2: #1e222b; --line: #2a2f3a;
     --text: #e6e9ef; --dim: #939aa8; --accent: #5b9dff; --ok: #3fb950;
     --warn: #d29922; --bad: #f85149; --mem: #a371f7;
-    /* Chart slots, validated against the #171a21 panel surface: all three clear the
-       lightness band, the chroma floor, all-pairs CVD separation and 3:1 contrast. */
-    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+    /* Chart slots, validated against the #171a21 panel surface: each clears the
+       lightness band, the chroma floor and 3:1 contrast.
+       1 is the control arm. 2-4 are the memory arms in K order and are deliberately a
+       sequential warm ramp rather than four unrelated hues: K is ordered, and giving
+       an ordered variable categorical colours hides the ordering the chart exists to
+       show. 5 is the placebo arm, off the ramp in hue because it is not a point on it.
+       Categorical separation is therefore required across {1, ramp, 5}, not within the
+       ramp, where lightness carries the distinction. */
+    --series-1: #3987e5; --series-2: #e0a163; --series-3: #d95926;
+    --series-4: #b0421f; --series-5: #199e70;
     --grid: #252a33; --axis: #333a47; --good: #0ca30c;
     font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
   }
@@ -176,9 +183,9 @@
     <div class="card">
       <h2>All tasks</h2>
       <table>
-        <thead><tr>
+        <thead><tr id="thead-row">
           <th>Task</th><th>Failure type</th>
-          <th>Without memory</th><th>With memory</th><th></th>
+          <th></th>
         </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -283,6 +290,7 @@ async function load() {
   const res = await fetch("/api/tasks" + q());
   DATA = await res.json();
   AGENT = DATA.agent;
+  if (DATA.design && DATA.design.pair) PAIR_IDS = DATA.design.pair;
   const sel = $("agentsel");
   if (sel.options.length !== (DATA.agents || []).length) {
     sel.innerHTML = (DATA.agents || []).map(a => `<option value="${a}">${a}</option>`).join("");
@@ -296,11 +304,58 @@ function switchAgent() {
   showList();
 }
 
+/* Every arm this page should show, in K order.
+ *
+ * Read from the payload rather than written here. Nine places in this file used to
+ * hardcode ["no_memory", "with_memory"], and each was a place an arm that existed on
+ * disk could silently vanish from the UI -- the same failure this project has already
+ * had in the scorer and in the VS Code extension. `design.conditions` is the four
+ * planned arms; `extra_conditions` are the renamed and placebo arms, shown only when a
+ * task actually has runs in them so the common case stays a four-column table.
+ */
+function arms(task) {
+  const design = (DATA.design && DATA.design.conditions) || [];
+  const extra = (DATA.design && DATA.design.extra_conditions) || [];
+  const present = extra.filter(
+    (c) => task === undefined
+      ? DATA.tasks.some((t) => (t.conditions[c.id] || {}).total)
+      : (task.conditions[c.id] || {}).total
+  );
+  return [...design, ...present].filter((c) => task === undefined || task.conditions[c.id]);
+}
+
+/* The two arms of the RQ1 contrast, refreshed from the payload on every load.
+ * A module-level default keeps the page renderable before the first fetch returns. */
+let PAIR_IDS = { control: "no_memory", memory: "memory_k3" };
+
+/* One "solved/runs" cell for an arm that may be absent from a stratified row. Reading
+ * `e.with_memory.solved` on a row where that arm has no runs threw and took the whole
+ * table with it; a missing arm is a dash, not a crash. */
+function cell(entry, armId, field) {
+  const arm = entry[armId];
+  return arm && arm.runs ? `${arm[field]}/${arm.runs}` : "—";
+}
+
+function armLabel(id) {
+  const all = [...((DATA.design || {}).conditions || []), ...((DATA.design || {}).extra_conditions || [])];
+  const found = all.find((c) => c.id === id);
+  return found ? found.label : id;
+}
+
+/* True for any arm that shows the agent earlier failures, which is what the "mem"
+ * pill styling marks. Testing `=== "with_memory"` stopped being that question when
+ * the memory arm was renamed and three of them appeared. */
+function hasMemory(id) {
+  const all = [...((DATA.design || {}).conditions || []), ...((DATA.design || {}).extra_conditions || [])];
+  const found = all.find((c) => c.id === id);
+  return found ? found.k > 0 : false;
+}
+
 function totals() {
   let done = 0, total = 0;
   for (const t of DATA.tasks)
-    for (const c of ["no_memory", "with_memory"]) {
-      done += t.conditions[c].done; total += t.conditions[c].total;
+    for (const c of arms(t)) {
+      done += t.conditions[c.id].done; total += t.conditions[c.id].total;
     }
   return { done, total };
 }
@@ -313,9 +368,9 @@ function dots(cond) {
 
 function nextUndone() {
   for (const t of DATA.tasks)
-    for (const c of ["no_memory", "with_memory"])
-      for (const r of t.conditions[c].runs)
-        if (!r.done) return { task: t, condition: c, run: r.run };
+    for (const c of arms(t))
+      for (const r of t.conditions[c.id].runs)
+        if (!r.done) return { task: t, condition: c.id, run: r.run };
   return null;
 }
 
@@ -328,8 +383,8 @@ function render() {
   $("nextbody").innerHTML = next
     ? `<div class="row">
          <div><strong>${next.task.repo}</strong>
-           <span class="pill ${next.condition === "with_memory" ? "mem" : ""}">
-             ${next.condition === "with_memory" ? "with memory" : "without memory"}</span>
+           <span class="pill ${hasMemory(next.condition) ? "mem" : ""}">
+             ${armLabel(next.condition)}</span>
            <span class="pill">${next.run}</span>
            <div class="muted">${next.task.error_type.join(", ") || "unknown"}</div>
          </div>
@@ -339,22 +394,34 @@ function render() {
        </div>`
     : `<div class="banner ok">All runs are finished. Open Results.</div>`;
 
+  // Header and body are built from the same arm list in the same order, so a column
+  // can never be labelled as one arm and filled from another.
+  const columns = arms();
+  const head = $("thead-row");
+  if (head) {
+    head.innerHTML =
+      `<th>Task</th><th>Failure type</th>` +
+      columns.map(c => `<th>${c.label}</th>`).join("") +
+      `<th></th>`;
+  }
+
   $("tbody").innerHTML = DATA.tasks.map(t => `
     <tr>
       <td><strong>${t.repo}</strong><div class="muted">${t.task_id}</div></td>
       <td class="muted">${t.error_type.join(", ") || "-"}</td>
-      <td>${dots(t.conditions.no_memory)}</td>
-      <td>${dots(t.conditions.with_memory)}</td>
+      ${columns.map(c => `<td>${t.conditions[c.id] ? dots(t.conditions[c.id]) : '<span class="muted">-</span>'}</td>`).join("")}
       <td><button onclick="openFirst('${t.task_id}')">Open</button></td>
     </tr>`).join("");
 }
 
 function openFirst(taskId) {
   const t = DATA.tasks.find(x => x.task_id === taskId);
-  for (const c of ["no_memory", "with_memory"])
-    for (const r of t.conditions[c].runs)
-      if (!r.done) return openRun(taskId, c, r.run);
-  openRun(taskId, "no_memory", t.conditions.no_memory.runs[0]?.run || "run_01");
+  const list = arms(t);
+  for (const c of list)
+    for (const r of t.conditions[c.id].runs)
+      if (!r.done) return openRun(taskId, c.id, r.run);
+  const first = list[0];
+  if (first) openRun(taskId, first.id, t.conditions[first.id].runs[0]?.run || "run_01");
 }
 
 async function openRun(task, condition, run, fromHistory) {
@@ -362,11 +429,17 @@ async function openRun(task, condition, run, fromHistory) {
   CURRENT = { task, condition, run };
   const t = DATA.tasks.find(x => x.task_id === task);
   $("runtitle").textContent = t.repo + "  ·  " + run;
-  $("runpill").innerHTML = `<span class="pill ${condition === "with_memory" ? "mem" : ""}">` +
-    (condition === "with_memory" ? "WITH memory" : "WITHOUT memory") + `</span>`;
-  $("runsub").textContent = condition === "with_memory"
-    ? `Copilot also sees ${t.memory_count} earlier CI failures from this project.`
-    : `Copilot sees only the broken code and the current error.`;
+  const arm = [...((DATA.design || {}).conditions || []), ...((DATA.design || {}).extra_conditions || [])]
+    .find(c => c.id === condition) || { id: condition, label: condition, k: 0, kind: "design" };
+  $("runpill").innerHTML = `<span class="pill ${arm.k ? "mem" : ""}">${arm.label.toUpperCase()}</span>`;
+  // The subtitle states the dose, because the whole point of the K arms is that "with
+  // memory" is no longer one condition and an operator running these by hand needs to
+  // see which one this cell is.
+  $("runsub").textContent = arm.k === 0
+    ? `The agent sees only the broken code and the current error.`
+    : arm.kind === "control"
+      ? `The agent also sees ${arm.k} earlier CI failures from a DIFFERENT project (placebo arm).`
+      : `The agent also sees the ${arm.k} most recent earlier CI failures from this project.`;
   $("scorebox").innerHTML = "";
   $("promptbox").classList.add("hide");
   ["s1", "s2", "s4"].forEach(s => $(s).classList.remove("done"));
@@ -448,30 +521,60 @@ async function scoreThis() {
 }
 
 /* ======================= chart primitives ======================= */
-// Every arm the harness can produce, with the label and colour it gets when present.
-// `COND` is then narrowed per agent to the arms that actually have runs, so a control
-// arm that was never run does not occupy a column of dashes.
-const ALL_COND = [
-  ["no_memory", "Without memory", "var(--series-1)"],
-  ["with_memory", "With memory", "var(--series-2)"],
-  ["foreign_memory", "Foreign memory", "var(--series-3, #b07fd4)"],
+// Colours by position in the design order: control, then increasing K. Warm intensity
+// rises with K so the dose is legible from the chart alone; the placebo arm is given a
+// distinct hue rather than a step on that ramp, because it is not a point on it.
+const SERIES_COLOURS = [
+  "var(--series-1)",
+  "var(--series-2, #f0a35a)",
+  "var(--series-3, #eb6834)",
+  "var(--series-4, #b83a1e)",
 ];
-let COND = ALL_COND.slice(0, 2);
+const CONTROL_COLOUR = "var(--series-5, #b07fd4)";
+
+// Built from the payload's design block on every load, so adding a K to the sweep
+// needs no edit here. The list used to be written out by hand, which is why an arm
+// could exist on disk and be missing from every chart on this page.
+let ALL_COND = [];
+let COND = [];
+
+function buildCondPalette(data) {
+  const design = (data.design || {}).conditions || [];
+  const extra = (data.design || {}).extra_conditions || [];
+  ALL_COND = [
+    ...design.map((c, i) => [c.id, c.label, SERIES_COLOURS[i % SERIES_COLOURS.length]]),
+    ...extra.map((c) => [
+      c.id,
+      c.label,
+      c.kind === "legacy" ? SERIES_COLOURS[design.findIndex(d => d.k === c.k)] || CONTROL_COLOUR
+                          : CONTROL_COLOUR,
+    ]),
+  ];
+}
 
 function tuneConditions(data) {
+  buildCondPalette(data);
   // An arm counts as present if any task has laid out a cell for it. Keyed off the
   // task list rather than the summary, so the column appears as soon as the cells
   // exist and does not wait for the first result.
+  // Canonicalised: a task whose cells are on disk as `with_memory` contributes the
+  // `memory_k3` column, which is where its results are summarised. Adding the raw id
+  // instead would draw a column the summary has no entry for -- a column of blanks
+  // sitting next to the one holding the same runs.
+  const fold = {};
+  for (const c of (data.design || {}).extra_conditions || []) fold[c.id] = c.canonical || c.id;
   const seen = new Set();
   for (const t of data.tasks || []) {
     for (const key of Object.keys(t.conditions || {})) {
-      if ((t.conditions[key] || {}).total) seen.add(key);
+      if ((t.conditions[key] || {}).total) seen.add(fold[key] || key);
     }
   }
   const present = ALL_COND.filter(([k]) => seen.has(k));
-  // Never fall below the comparison pair: an agent with no runs at all should still
-  // show the two columns it is going to fill.
-  COND = present.length >= 2 ? present : ALL_COND.slice(0, 2);
+  // Never fall below the RQ1 comparison pair: an agent with no runs at all should
+  // still show the two columns it is going to fill.
+  const pair = (data.design || {}).pair || {};
+  const fallback = ALL_COND.filter(([k]) => k === pair.control || k === pair.memory);
+  COND = present.length >= 2 ? present : (fallback.length === 2 ? fallback : ALL_COND.slice(0, 2));
 }
 const esc = s => String(s ?? "").replace(/[&<>"]/g,
   c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -668,6 +771,68 @@ async function showResults(fromHistory) {
   }
 }
 
+/* RQ3: Pass@K against the number of memory items.
+ *
+ * A column per K rather than a line, because K takes four fixed values rather than
+ * varying continuously -- a line between K=1 and K=3 would draw a K=2 that was never
+ * run. The K=0 control is the leftmost column and the reference every delta is against,
+ * so "does more history help" is answered by reading left to right.
+ */
+function memorySizePanel(s) {
+  const curve = s.memory_size_curve || [];
+  if (curve.length < 2) {
+    return `<div class="banner info">The K sweep needs at least two memory sizes with
+      scored runs. Lay out the arms with <span class="mono">run_experiment.py --mode prompts</span>
+      and run them; only ${curve.length} arm(s) have results so far.</div>`;
+  }
+
+  const W = 860, H = 250, L = 52, R = 18, T = 16, B = 46;
+  const plotW = W - L - R, plotH = H - T - B;
+  const band = plotW / curve.length;
+  const colW = Math.min(64, band - 26);
+  const py = v => T + (1 - Math.max(0, Math.min(1, v))) * plotH;
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Pass@K by memory size">`;
+  for (let t = 0; t <= 4; t++) {
+    const v = t / 4, y = py(v);
+    svg += `<line x1="${L}" y1="${y}" x2="${W - R}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>` +
+           `<text x="${L - 8}" y="${y + 4}" fill="var(--dim)" font-size="11" text-anchor="end">${Math.round(v * 100)}%</text>`;
+  }
+
+  curve.forEach((point, i) => {
+    const cx = L + band * i + band / 2;
+    const y = py(point.pass_at_k);
+    const colour = (ALL_COND.find(c => c[0] === point.condition) || [])[2] || "var(--series-1)";
+    svg += `<path d="${barPath(cx - colW / 2, y, colW, T + plotH - y)}" fill="${colour}">` +
+           `<title>${esc(point.label)}: Pass@${s.k} = ${pc1(point.pass_at_k)} over ${point.tasks} paired task(s)</title></path>` +
+           `<text x="${cx}" y="${y - 6}" fill="var(--text, #e6e9ef)" font-size="12" text-anchor="middle">${pc1(point.pass_at_k)}</text>` +
+           `<text x="${cx}" y="${H - B + 18}" fill="var(--dim)" font-size="12" text-anchor="middle">K = ${point.k}</text>` +
+           `<text x="${cx}" y="${H - B + 33}" fill="var(--dim)" font-size="10.5" text-anchor="middle">${point.tasks} tasks</text>`;
+  });
+  svg += `</svg>`;
+
+  const base = curve.find(p => p.k === 0);
+  const rows = curve.map(point => {
+    const delta = base ? point.pass_at_k - base.pass_at_k : null;
+    const sign = delta == null || point.k === 0 ? "—"
+      : `${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(1)} pts`;
+    return `<tr><td>${esc(point.label)}</td><td class="num">${point.k}</td>
+      <td class="num">${pc1(point.pass_at_k)}</td><td class="num">${sign}</td>
+      <td class="num">${point.tasks}</td></tr>`;
+  }).join("");
+
+  return fig("Pass@" + s.k + " by number of memory items (K)",
+    "Each arm shows the agent the K most recent earlier failures from the same project, " +
+    "as nested sets: the K=1 item is the first of K=3, which is the first three of K=5. " +
+    "A difference between two columns is therefore the extra history and not a different " +
+    "selection of it. Deltas are against the K=0 control.",
+    svg) +
+    `<table style="margin-top:8px"><thead><tr>
+      <th>Arm</th><th class="num">K</th><th class="num">Pass@${s.k}</th>
+      <th class="num">vs K=0</th><th class="num">Paired tasks</th>
+     </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
 function renderResults(data) {
   tuneConditions(data);
   const s = data.summary, a = s.analysis, cov = s.coverage || {};
@@ -676,7 +841,11 @@ function renderResults(data) {
       `<div class="banner info">No runs have finished yet. Run the agent first.</div>`;
     return;
   }
-  const c = s.conditions, A = c.no_memory, B = c.with_memory;
+  // The two arms of the RQ1 contrast, named by the backend. Reading `c.with_memory`
+  // returned undefined the moment the memory arm was renamed, which would have left
+  // these tiles blank rather than wrong -- silent either way.
+  const pair = s.pair || { control: "no_memory", memory: "memory_k3" };
+  const c = s.conditions, A = c[pair.control], B = c[pair.memory];
   const effect = a.n_tasks ? (a.rate_with_memory - a.rate_no_memory) : null;
   const headline = a.discordant === 0
     ? "No difference detected"
@@ -693,7 +862,7 @@ function renderResults(data) {
     <div class="sect">1 · How much has actually run</div>
     <div class="tiles">
       ${tile("Runs planned", cov.planned ?? "—",
-             `${(s.by_task || []).length} task(s) × 2 conditions`)}
+             `${(s.by_task || []).length} task(s) × ${COND.length} condition(s)`)}
       ${tile("Runs scored", cov.scored ?? "—", `${pc0((cov.scored || 0) / (cov.planned || 1))} of the plan`)}
       ${tile("Timed out", cov.timed_out ?? 0, "excluded: partial answers")}
       ${tile("Finished, changed nothing", cov.no_edit ?? 0, "excluded: nothing to score")}
@@ -715,7 +884,10 @@ function renderResults(data) {
         "The lower measures are means over scored runs, not proportions of tasks.",
         hbars(accuracyRows(s), { title: "Accuracy by condition" }))}
 
-    <div class="sect">4 · Consistency across retries</div>
+    <div class="sect">4 · How much history helps (RQ3)</div>
+    ${memorySizePanel(s)}
+
+    <div class="sect">5 · Consistency across retries</div>
     ${fig("Pass@K — chance a task is solved within K attempts",
         "Pass@1 is single-shot accuracy; the curve's right end is what the agent reaches if " +
         "allowed to retry. A task enters at a given K only when both conditions have K runs, " +
@@ -729,14 +901,14 @@ function renderResults(data) {
         linechart(s.pass_at_k_curve?.k || [], s.pass_at_k_curve?.series || {},
                   s.pass_at_k_curve?.tasks_at_k))}
 
-    <div class="sect">5 · Where runs fall out</div>
+    <div class="sect">6 · Where runs fall out</div>
     ${fig("Repair funnel",
         "Repair is finding the right files and then writing the right change. Splitting them " +
         "says whether a failure was &ldquo;looked in the wrong place&rdquo; or &ldquo;right " +
         "place, wrong edit&rdquo;, which one accuracy number cannot.",
         hbars(funnelRows(s.funnel || []), { labelW: 220, title: "Repair funnel" }))}
 
-    <div class="sect">6 · By failure type</div>
+    <div class="sect">7 · By failure type</div>
     <p class="cap">Project precedent should plausibly help on dependency and environment
       failures and not on syntax errors, so a single pooled number can hide opposite effects.</p>
     ${fig("Runs that repaired the failure, by CI failure category",
@@ -751,17 +923,17 @@ function renderResults(data) {
         })), { labelW: 230 }))}
     ${errorTable(s.by_error_type || [])}
 
-    <div class="sect">7 · How close the misses were</div>
+    <div class="sect">8 · How close the misses were</div>
     ${fig("Distribution of file recall over scored runs",
         "The share of files the real fix touched that the agent also edited. A mean near 100% " +
         "with a long left tail is a different story from every run landing at 90%.",
         columns(s.recall_histogram?.labels || [], s.recall_histogram?.series || {},
                 { title: "File recall distribution" }))}
 
-    <div class="sect">8 · What each condition cost</div>
+    <div class="sect">9 · What each condition cost</div>
     ${costTable(A, B)}
 
-    <div class="sect">9 · Statistical analysis</div>
+    <div class="sect">10 · Statistical analysis</div>
     ${statsBlock(s)}
 
     <p class="muted" style="margin-top:22px">
@@ -846,14 +1018,23 @@ function accuracyRows(s) {
   });
   const rows = [];
   if (a.n_tasks) {
+    // The paired analysis describes exactly two arms -- the RQ1 contrast -- so this
+    // row is filled only for those two. Deriving it for a K arm from `a` would print
+    // the memory arm's count under the K=1 and K=5 columns as well, which is not a
+    // rounding problem but three columns showing the same wrong number.
+    const pairIds = (s.pair || {});
     rows.push({
       label: "Task solved (any run)",
       values: COND.map(([k]) => {
-        const solved = k === "no_memory"
+        if (k !== pairIds.control && k !== pairIds.memory) {
+          return { v: null, text: "", title: "Not part of the paired RQ1 contrast" };
+        }
+        const isControl = k === pairIds.control;
+        const solved = isControl
           ? a.both_solved + a.only_no_memory : a.both_solved + a.only_with_memory;
         return {
           v: solved / a.n_tasks,
-          ci: k === "no_memory" ? a.ci_no_memory : a.ci_with_memory,
+          ci: isControl ? a.ci_no_memory : a.ci_with_memory,
           text: `${solved}/${a.n_tasks}`,
           title: `${solved} of ${a.n_tasks} paired tasks solved in at least one run`,
         };
@@ -909,10 +1090,10 @@ function errorTable(rows) {
       <th class="num">Located without</th><th class="num">Located with</th>
       <th class="num">Runs</th></tr></thead><tbody>` +
     rows.map(e => `<tr><td>${esc(e.error_type)}</td>
-      <td class="num">${e.no_memory.solved}/${e.no_memory.runs}</td>
-      <td class="num">${e.with_memory.solved}/${e.with_memory.runs}</td>
-      <td class="num">${e.no_memory.localized}/${e.no_memory.runs}</td>
-      <td class="num">${e.with_memory.localized}/${e.with_memory.runs}</td>
+      <td class="num">${cell(e, PAIR_IDS.control, "solved")}</td>
+      <td class="num">${cell(e, PAIR_IDS.memory, "solved")}</td>
+      <td class="num">${cell(e, PAIR_IDS.control, "localized")}</td>
+      <td class="num">${cell(e, PAIR_IDS.memory, "localized")}</td>
       <td class="num">${e.total_runs}</td></tr>`).join("") + `</tbody></table>`;
 }
 
@@ -945,7 +1126,8 @@ function costTable(A, B) {
 function taskCards(byTask) {
   if (!byTask.length) return `<div class="banner info">No scored runs yet.</div>`;
   return byTask.map(t => {
-    const A = t.no_memory, B = t.with_memory;
+    const A = t[PAIR_IDS.control] || { runs: 0, solved: 0, runs_detail: [] };
+    const B = t[PAIR_IDS.memory] || { runs: 0, solved: 0, runs_detail: [] };
     const solvedA = A.solved > 0, solvedB = B.solved > 0;
     let verdict = "neither fixed it", colour = "var(--dim)";
     if (!A.runs || !B.runs) { verdict = "still running"; }
@@ -992,7 +1174,7 @@ function taskCards(byTask) {
           <tbody>${rows.map(({ key, name, r }) => `
             <tr class="${r.disagrees ? "disagree" : ""}" title="${r.disagrees ? "The judge and real CI disagree about this run." : ""}">
               <td class="mono">${esc(r.run)}</td>
-              <td><span class="pill ${key === "with_memory" ? "mem" : ""}">${name.replace(" memory", "")}</span></td>
+              <td><span class="pill ${hasMemory(key) ? "mem" : ""}">${esc(name)}</span></td>
               <td class="${r.solved ? "f" : ""}">${r.solved ? (r.exact ? "fixed (exact)" : "fixed") : "not fixed"}</td>
               <td class="${r.ci && r.ci.decided ? (r.ci.passed ? "ci-pass" : "ci-fail") : "ci-none"}"
                   title="${esc((r.ci && r.ci.detail) || "workflow never re-executed for this run")}">${
@@ -1073,8 +1255,7 @@ function renderRunSheet() {
     <div class="row">
       <div>
         <strong style="font-size:16px">${esc(d.repo)}</strong>
-        <span class="pill ${d.condition === "with_memory" ? "mem" : ""}">
-          ${d.condition === "with_memory" ? "with memory" : "without memory"}</span>
+        <span class="pill ${hasMemory(d.condition) ? "mem" : ""}">${esc(armLabel(d.condition))}</span>
         <span class="pill">${esc(d.run)}</span>
         <div class="muted mono">${esc(d.task_id)}</div>
       </div>
@@ -1166,7 +1347,7 @@ function statsBlock(s) {
         <tr><th>Exact McNemar test</th>
             <td class="num">p = ${a.p_value}${a.significant ? " (significant)" : " (not significant)"}</td></tr>
         <tr><th>Pass@1 over paired tasks</th>
-            <td class="num">${pc1(s.pass_at_k?.no_memory)} without · ${pc1(s.pass_at_k?.with_memory)} with</td></tr>
+            <td class="num">${pc1(s.pass_at_k?.[PAIR_IDS.control])} without · ${pc1(s.pass_at_k?.[PAIR_IDS.memory])} with</td></tr>
       </tbody>
     </table>
     <div class="banner info" style="margin-top:12px">${esc(a.interpretation)}</div>

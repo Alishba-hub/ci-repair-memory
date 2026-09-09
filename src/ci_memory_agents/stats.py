@@ -72,20 +72,37 @@ def paired_bootstrap_difference(
     return Interval(round(low, 4), round(high, 4))
 
 
-def paired_analysis(per_task: dict[str, dict[str, bool]]) -> dict:
+def paired_analysis(
+    per_task: dict[str, dict[str, bool]], pair: tuple[str, str] | None = None
+) -> dict:
     """Compare two conditions over tasks measured in both.
 
-    `per_task` maps task id to {"no_memory": solved, "with_memory": solved}.
+    `per_task` maps task id to {<control arm>: solved, <memory arm>: solved}.
+
+    `pair` names the two arms. It defaults to `prompt_builder.PAIR`, which is the RQ1
+    contrast; pass an explicit pair to test any other two arms against each other, for
+    instance K=1 against K=5. The arms used to be hardcoded here, which was correct
+    while exactly two existed and became a silent bug the moment the K sweep added
+    more: the memory arm is now `memory_k3`, and a lookup for `with_memory` would have
+    found nothing and reported every task as unpaired.
+
+    The output keys keep their historical `..._no_memory` / `..._with_memory` spelling
+    whatever arms are passed. They name the *roles* in the contrast -- control and
+    memory -- and the report, dashboard and LaTeX table all read them; renaming them to
+    match the arm would rename a column in three places to say what `arms` already says.
     """
+    from .prompt_builder import PAIR
+
+    control, memory = pair or PAIR
     paired = {
         task: outcome
         for task, outcome in per_task.items()
-        if "no_memory" in outcome and "with_memory" in outcome
+        if control in outcome and memory in outcome
     }
-    both = sum(1 for o in paired.values() if o["no_memory"] and o["with_memory"])
-    neither = sum(1 for o in paired.values() if not o["no_memory"] and not o["with_memory"])
-    only_no_memory = sum(1 for o in paired.values() if o["no_memory"] and not o["with_memory"])
-    only_with_memory = sum(1 for o in paired.values() if o["with_memory"] and not o["no_memory"])
+    both = sum(1 for o in paired.values() if o[control] and o[memory])
+    neither = sum(1 for o in paired.values() if not o[control] and not o[memory])
+    only_no_memory = sum(1 for o in paired.values() if o[control] and not o[memory])
+    only_with_memory = sum(1 for o in paired.values() if o[memory] and not o[control])
 
     n = len(paired)
     solved_no = both + only_no_memory
@@ -105,10 +122,14 @@ def paired_analysis(per_task: dict[str, dict[str, bool]]) -> dict:
         "ci_with_memory": wilson_interval(solved_with, n).as_dict(),
         "difference": round((solved_with - solved_no) / n, 4) if n else None,
         "ci_difference": paired_bootstrap_difference(
-            [(o["no_memory"], o["with_memory"]) for o in paired.values()]
+            [(o[control], o[memory]) for o in paired.values()]
         ).as_dict(),
         "p_value": p_value,
         "significant": p_value < 0.05,
+        # Which two arms produced the numbers above. Without this the table is
+        # ambiguous once more than two arms exist, and a reader cannot tell an RQ1
+        # contrast from a K=1-against-K=5 one.
+        "arms": {"control": control, "memory": memory},
         "interpretation": _interpret(n, only_no_memory, only_with_memory, p_value),
     }
 
@@ -163,6 +184,7 @@ def paired_rate_analysis(
     per_task: dict[str, dict[str, list[bool]]],
     iterations: int = 10000,
     seed: int = 0,
+    pair: tuple[str, str] | None = None,
 ) -> dict:
     """Compare conditions when each task was run several times.
 
@@ -180,14 +202,20 @@ def paired_rate_analysis(
     number of tasks, and repeated runs reduce the noise in each task's estimate rather
     than adding observations.
 
-    `per_task` maps task id to {"no_memory": [bool, ...], "with_memory": [bool, ...]}.
+    `per_task` maps task id to {<control arm>: [bool, ...], <memory arm>: [bool, ...]}.
+    `pair` names the two arms and defaults to `prompt_builder.PAIR`, the RQ1 contrast.
+    As in `paired_analysis`, the output keys keep their `..._no_memory` /
+    `..._with_memory` spelling because they name the roles rather than the arms.
     """
     import random
 
+    from .prompt_builder import PAIR
+
+    control, memory = pair or PAIR
     paired = {
         task: outcome
         for task, outcome in per_task.items()
-        if outcome.get("no_memory") and outcome.get("with_memory")
+        if outcome.get(control) and outcome.get(memory)
     }
     if not paired:
         return {"n_tasks": 0, "interpretation": "No task was completed under both conditions."}
@@ -200,11 +228,11 @@ def paired_rate_analysis(
         }
         for task, outcome in paired.items()
     }
-    differences = [r["with_memory"] - r["no_memory"] for r in rates.values()]
+    differences = [r[memory] - r[control] for r in rates.values()]
     n = len(differences)
 
-    mean_no = sum(r["no_memory"] for r in rates.values()) / n
-    mean_with = sum(r["with_memory"] for r in rates.values()) / n
+    mean_no = sum(r[control] for r in rates.values()) / n
+    mean_with = sum(r[memory] for r in rates.values()) / n
     observed = mean_with - mean_no
 
     rng = random.Random(seed)
@@ -213,7 +241,7 @@ def paired_rate_analysis(
     for _ in range(iterations):
         drawn = [rates[task_ids[rng.randrange(n)]] for _ in range(n)]
         samples.append(
-            sum(r["with_memory"] for r in drawn) / n - sum(r["no_memory"] for r in drawn) / n
+            sum(r[memory] for r in drawn) / n - sum(r[control] for r in drawn) / n
         )
     samples.sort()
 
@@ -224,7 +252,7 @@ def paired_rate_analysis(
     return {
         "n_tasks": n,
         "runs_per_task": round(
-            sum(len(o["no_memory"]) + len(o["with_memory"]) for o in paired.values()) / (2 * n), 2
+            sum(len(o[control]) + len(o[memory]) for o in paired.values()) / (2 * n), 2
         ),
         "rate_no_memory": round(mean_no, 4),
         "rate_with_memory": round(mean_with, 4),
@@ -237,7 +265,8 @@ def paired_rate_analysis(
         "tasks_worsened": worsened,
         "tasks_unchanged": unchanged,
         "sign_test_p": mcnemar_exact(worsened, improved),
-        "per_task_difference": {task: round(r["with_memory"] - r["no_memory"], 4)
+        "arms": {"control": control, "memory": memory},
+        "per_task_difference": {task: round(r[memory] - r[control], 4)
                                 for task, r in sorted(rates.items())},
         "interpretation": _interpret_rates(n, observed, samples, improved, worsened),
     }

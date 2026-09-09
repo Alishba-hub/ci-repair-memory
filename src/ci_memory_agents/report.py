@@ -7,19 +7,37 @@ from pathlib import Path
 
 from .dashboard_state import score_task
 from .loader import list_tasks
-from .prompt_builder import CONDITIONS
+from .prompt_builder import CONDITIONS, PAIR, canonical_condition, condition_label
 
-LABEL = {"no_memory": "Without memory", "with_memory": "With memory"}
-SLOT = {"no_memory": "1", "with_memory": "2"}
+#: Display name per arm, derived rather than written out, so adding a K to the sweep
+#: does not need an edit here. The hardcoded two-entry version raised KeyError on
+#: `memory_k1` the moment the sweep existed -- in the middle of rendering the report,
+#: after the runs had already been paid for.
+LABEL = {condition: condition_label(condition) for condition in CONDITIONS}
+
+#: Which `--series-N` colour each arm draws in, 1-based in design order.
+SLOT = {condition: str(index) for index, condition in enumerate(CONDITIONS, start=1)}
+
+
+def label_of(condition: str) -> str:
+    """Display name for any arm on disk, design or not.
+
+    `LABEL` covers the design arms; anything else -- the renamed arm, the placebo --
+    still appears in the per-run detail table and needs a name rather than a KeyError
+    that aborts the whole report after the runs have been paid for.
+    """
+    return LABEL.get(condition) or condition_label(condition)
 
 
 def collect(tasks_root: Path, runs_root: Path, agent: str) -> dict:
     data = score_task(tasks_root, runs_root, agent, None)
     meta = {t.task_id: t for t in list_tasks(tasks_root)}
 
+    # Canonical arm, so runs collected under the old `with_memory` name are drawn in
+    # the `memory_k3` column they belong to rather than in a column of their own.
     per_task: dict[str, dict[str, list[dict]]] = defaultdict(lambda: defaultdict(list))
     for row in data["results"]:
-        per_task[row["task_id"]][row["condition"]].append(row)
+        per_task[row["task_id"]][canonical_condition(row["condition"])].append(row)
     for task in per_task:
         for condition in per_task[task]:
             per_task[task][condition].sort(key=lambda r: r["run"])
@@ -137,7 +155,7 @@ def detail_table(results: list[dict]) -> str:
         fixed = "yes" if r["normalized_match"] else "no"
         cls = "yes" if r["normalized_match"] else ""
         rows.append(
-            f'<tr><td>{html.escape(r["task_id"])}</td><td>{LABEL[r["condition"]]}</td>'
+            f'<tr><td>{html.escape(r["task_id"])}</td><td>{label_of(r["condition"])}</td>'
             f'<td>{r["run"]}</td><td class="{cls}">{fixed}</td>'
             f'<td class="num">{r["file_recall"]:.0%}</td>'
             f'<td class="num">{r["file_precision"]:.0%}</td>'
@@ -170,7 +188,10 @@ def build(agent: str, tasks_root: Path, runs_root: Path) -> str:
     ]
 
     recall = {
-        c: statistics.mean([r["file_recall"] for r in data["results"] if r["condition"] == c] or [0])
+        c: statistics.mean(
+            [r["file_recall"] for r in data["results"] if canonical_condition(r["condition"]) == c]
+            or [0]
+        )
         for c in CONDITIONS
     }
     total_runs = len(data["results"])
@@ -192,14 +213,16 @@ def build(agent: str, tasks_root: Path, runs_root: Path) -> str:
     color-scheme: light;
     --surface-1: #fcfcfb; --surface-2: #f4f3f0; --border: #dedcd6;
     --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #7c7a74;
-    --grid: #e7e5df; --series-1: #2a78d6; --series-2: #eb6834; --good: #1baf7a;
+    --grid: #e7e5df; --series-1: #2a78d6; --series-2: #f0a35a; --series-3: #eb6834;
+    --series-4: #b83a1e; --good: #1baf7a;
   }}
   @media (prefers-color-scheme: dark) {{
     :root:where(:not([data-theme="light"])) .viz-root {{
       color-scheme: dark;
       --surface-1: #1a1a19; --surface-2: #232322; --border: #3a3a37;
       --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #97968c;
-      --grid: #33332f; --series-1: #3987e5; --series-2: #d95926; --good: #199e70;
+      --grid: #33332f; --series-1: #3987e5; --series-2: #e0a163; --series-3: #d95926;
+      --series-4: #b0421f; --good: #199e70;
     }}
   }}
   :root[data-theme="dark"] .viz-root {{
@@ -253,6 +276,8 @@ def build(agent: str, tasks_root: Path, runs_root: Path) -> str:
   .cell.off {{ background: transparent; border:1.5px solid var(--border); }}
   .cell.on.s1 {{ background: var(--series-1); }}
   .cell.on.s2 {{ background: var(--series-2); }}
+  .cell.on.s3 {{ background: var(--series-3); }}
+  .cell.on.s4 {{ background: var(--series-4); }}
   .callout {{ border-left:3px solid var(--series-1); background:var(--surface-2);
               padding:12px 16px; border-radius:0 8px 8px 0; margin:14px 0; }}
 </style>
@@ -308,7 +333,7 @@ def build(agent: str, tasks_root: Path, runs_root: Path) -> str:
   <tr><th>Solved with memory</th><td class="num">{pc(analysis['rate_with_memory'])} &nbsp;<span class="muted">95% CI {ci(analysis['ci_with_memory'])}</span></td></tr>
   <tr><th>Discordant pairs</th><td class="num">{analysis['discordant']} &nbsp;<span class="muted">{analysis['only_no_memory']} without-only + {analysis['only_with_memory']} with-only</span></td></tr>
   <tr><th>Exact McNemar (two-sided)</th><td class="num">p = {analysis['p_value']} ({'significant' if analysis['significant'] else 'not significant'})</td></tr>
-  <tr><th>Mean files correctly located</th><td class="num">{recall['no_memory']:.0%} without · {recall['with_memory']:.0%} with</td></tr>
+  <tr><th>Mean files correctly located</th><td class="num">{recall[PAIR[0]]:.0%} without · {recall[PAIR[1]]:.0%} with</td></tr>
   <tr><th>Runs matching the real fix</th><td class="num">{solved_runs}/{total_runs} ({solved_runs / total_runs:.0%})</td></tr>
  </tbody>
 </table>

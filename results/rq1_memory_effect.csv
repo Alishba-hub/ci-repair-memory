@@ -1,0 +1,4 @@
+agent,control_arm,memory_arm,n_paired_tasks,solved_control,solved_memory,rate_control,rate_memory,difference,both_solved,neither_solved,only_control,only_memory,discordant,p_value,significant,interpretation
+claude-code,no_memory,memory_k3,23,16,18,0.6957,0.7826,0.087,16,5,0,2,2,0.5,0,"Only 2 tasks differ between conditions. Exact McNemar cannot reach p<0.05 with fewer than 6 discordant pairs, so this is underpowered by construction rather than merely non-significant."
+copilot,no_memory,memory_k3,1,0,0,0.0,0.0,0.0,0,1,0,0,0,1.0,0,Only 1 paired tasks. Too few to test; report as a pilot and state the sample size as a limitation.
+copilot-claude-fable-5.1,no_memory,memory_k3,1,1,1,1.0,1.0,0.0,1,0,0,0,0,1.0,0,Only 1 paired tasks. Too few to test; report as a pilot and state the sample size as a limitation.

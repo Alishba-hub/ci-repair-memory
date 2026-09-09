@@ -11,14 +11,24 @@ from .agreement import by_condition, judge_vs_execution
 from .ci_outcome import outcome_path, read_outcome
 from .judge import read_verdict
 from .loader import list_tasks
-from .prompt_builder import ALL_CONDITIONS, CONDITIONS, build_prompt
+from .prompt_builder import (
+    ALL_CONDITIONS,
+    CONDITIONS,
+    PAIR,
+    build_prompt,
+    canonical_condition,
+    condition_k,
+    condition_label,
+)
 
-# The two arms the hypothesis compares. `ALL_CONDITIONS` is whatever the harness can
-# produce; they are the same today. Kept distinct because the pairing requirement and
-# the enumeration of arms are different questions, and conflating them is what once let
-# an arm's completed runs vanish from the scorer.
-PAIR = CONDITIONS
 from .stats import minimum_discordant_for_significance, paired_analysis, wilson_interval
+
+# `PAIR` is the two arms RQ1 compares, `CONDITIONS` the four the design lays out, and
+# `ALL_CONDITIONS` everything that can appear on disk including the renamed and placebo
+# arms. They were the same tuple while there were only two arms; keeping the three
+# questions -- what is compared, what is planned, what exists -- separate is what stops
+# an arm's completed runs from vanishing out of the scorer, which has happened here
+# before.
 
 # Per-run measures averaged per condition. Keeping one list means the summary, the
 # CSV and the UI can never drift apart on what "the metrics" are.
@@ -61,6 +71,53 @@ def _files(root: Path) -> dict[str, str]:
 def is_edited(workspace: Path, repo_before: Path) -> bool:
     """A run counts as done once its workspace differs from the untouched snapshot."""
     return _files(workspace) != _files(repo_before)
+
+
+def describe_design() -> dict:
+    """The arm list and study targets, for the UI to render itself from.
+
+    The dashboard used to hardcode `["no_memory", "with_memory"]` in nine places. Every
+    one of them was a place the page could silently stop showing an arm that existed on
+    disk -- which is the failure this project has already had twice, once in the scorer
+    and once in the VS Code extension. Sending the design to the page means adding a K
+    changes this function and nothing in the HTML.
+    """
+    from . import design
+
+    return {
+        "conditions": [
+            {
+                "id": condition,
+                "label": condition_label(condition),
+                "k": condition_k(condition),
+                "kind": "design",
+            }
+            for condition in CONDITIONS
+        ],
+        "extra_conditions": [
+            {
+                "id": condition,
+                "label": condition_label(condition),
+                "k": condition_k(condition),
+                "kind": "legacy" if canonical_condition(condition) != condition else "control",
+                # The design arm this one is analysed as. Charts group by it; the task
+                # list and run links keep the raw id, because that is the directory on
+                # disk and folding it there would break navigation.
+                "canonical": canonical_condition(condition),
+            }
+            for condition in ALL_CONDITIONS
+            if condition not in CONDITIONS
+        ],
+        "pair": {"control": PAIR[0], "memory": PAIR[1]},
+        "k_values": list(design.K_VALUES),
+        "runs_per_condition": design.RUNS_PER_CONDITION,
+        "n_tasks": design.N_TASKS,
+        "n_repos": design.N_REPOS,
+        "tasks_per_repo": design.TASKS_PER_REPO,
+        "error_groups": list(design.GROUP_NAMES),
+        "agents": [dict(agent) for agent in design.AGENTS],
+        "planned_runs_per_agent": design.planned_runs_per_agent(),
+    }
 
 
 def collect(tasks_root: Path, runs_root: Path, agent: str) -> list[dict]:
@@ -384,7 +441,7 @@ def summarize(results: list[dict], k: int = 1) -> dict:
     """Per-condition means plus Pass@K, computed only over runs that were attempted."""
     summary: dict = {"conditions": {}, "attempted": len(results)}
     for condition in ALL_CONDITIONS:
-        rows = [r for r in results if r["condition"] == condition]
+        rows = [r for r in results if canonical_condition(r["condition"]) == condition]
         if not rows:
             summary["conditions"][condition] = None
             continue
@@ -410,17 +467,22 @@ def summarize(results: list[dict], k: int = 1) -> dict:
         entry["telemetry"] = _telemetry_summary(rows)
         summary["conditions"][condition] = entry
 
+    # Keyed on the *canonical* arm, so runs collected under the old `with_memory` name
+    # count toward `memory_k3`, which is the same treatment. The per-condition table
+    # above stays keyed on the raw arm, because a reader looking at coverage wants to
+    # see what is actually on disk; only the comparisons fold the two together.
     by_task: dict[tuple[str, str], list[dict]] = {}
     for row in results:
-        by_task.setdefault((row["task_id"], row["condition"]), []).append(row)
+        by_task.setdefault((row["task_id"], canonical_condition(row["condition"])), []).append(row)
 
-    # Compare only tasks finished in BOTH conditions. A half-finished task would
-    # otherwise contribute its score to one side and nothing to the other, which
+    # Compare only tasks finished in BOTH arms of the contrast. A half-finished task
+    # would otherwise contribute its score to one side and nothing to the other, which
     # invents a memory effect out of scheduling order rather than out of the data.
+    control, memory_arm = PAIR
     task_ids = {task for task, _ in by_task}
     paired = sorted(
         task for task in task_ids
-        if (task, "no_memory") in by_task and (task, "with_memory") in by_task
+        if (task, control) in by_task and (task, memory_arm) in by_task
     )
     summary["paired_tasks"] = len(paired)
     summary["unpaired_tasks"] = sorted(task_ids - set(paired))
@@ -450,12 +512,33 @@ def summarize(results: list[dict], k: int = 1) -> dict:
     summary["pass_at_k_curve"] = _pass_at_k_curve(by_task, paired)
     summary["funnel"] = _funnel(results)
     summary["recall_histogram"] = _histogram(results, "file_recall")
-    if len(summary["pass_at_k"]) == 2 and paired:
+
+    # RQ1's headline number, always the same named contrast. The previous rule -- "if
+    # exactly two arms are present" -- silently became wrong once four were: with the K
+    # sweep it would either report nothing, or report whichever two arms happened to
+    # have data as though they were the memory effect.
+    summary["pair"] = {"control": control, "memory": memory_arm}
+    if control in summary["pass_at_k"] and memory_arm in summary["pass_at_k"] and paired:
         summary["memory_effect"] = (
-            summary["pass_at_k"]["with_memory"] - summary["pass_at_k"]["no_memory"]
+            summary["pass_at_k"][memory_arm] - summary["pass_at_k"][control]
         )
     else:
         summary["memory_effect"] = None
+
+    # RQ3: Pass@K at every memory size, ordered by K, for the dose-response chart. Only
+    # design arms -- the placebo's items were never this project's history, so it is not
+    # a point on this curve, though it stays in the per-condition table above.
+    summary["memory_size_curve"] = [
+        {
+            "condition": condition,
+            "k": condition_k(condition),
+            "label": condition_label(condition),
+            "pass_at_k": round(summary["pass_at_k"][condition], 4),
+            "tasks": len(scores[condition]),
+        }
+        for condition in sorted(summary["pass_at_k"], key=condition_k)
+        if condition in CONDITIONS
+    ]
     return summary
 
 
@@ -495,7 +578,8 @@ def _by_task_table(results: list[dict], paired: list[str]) -> list[dict]:
     """One row per task: runs, fixes and near-misses under each condition."""
     grouped: dict[str, dict[str, list[dict]]] = {}
     for row in results:
-        grouped.setdefault(row["task_id"], {}).setdefault(row["condition"], []).append(row)
+        arm = canonical_condition(row["condition"])
+        grouped.setdefault(row["task_id"], {}).setdefault(arm, []).append(row)
 
     table = []
     for task_id in sorted(grouped):
@@ -670,7 +754,7 @@ def _histogram(results: list[dict], metric: str, bins: int = 5) -> dict:
     for condition in ALL_CONDITIONS:
         counts = [0] * bins
         for row in results:
-            if row["condition"] != condition:
+            if canonical_condition(row["condition"]) != condition:
                 continue
             index = min(bins - 1, int(float(row[metric]) * bins))
             counts[index] += 1
@@ -686,8 +770,9 @@ def _by_error_type(results: list[dict]) -> list[dict]:
     """
     buckets: dict[str, dict[str, list[dict]]] = {}
     for row in results:
+        arm = canonical_condition(row["condition"])
         for error in row.get("error_type") or ["unknown"]:
-            buckets.setdefault(error, {}).setdefault(row["condition"], []).append(row)
+            buckets.setdefault(error, {}).setdefault(arm, []).append(row)
 
     table = []
     for error, conditions in sorted(buckets.items()):
@@ -854,7 +939,8 @@ def export_latex(tasks_root: Path, runs_root: Path, agent: str) -> str:
 
     per_task: dict[str, dict[str, list[dict]]] = {}
     for row in data["results"]:
-        per_task.setdefault(row["task_id"], {}).setdefault(row["condition"], []).append(row)
+        arm = canonical_condition(row["condition"])
+        per_task.setdefault(row["task_id"], {}).setdefault(arm, []).append(row)
 
     solved_no = analysis["both_solved"] + analysis["only_no_memory"]
     solved_with = analysis["both_solved"] + analysis["only_with_memory"]
@@ -873,8 +959,12 @@ def export_latex(tasks_root: Path, runs_root: Path, agent: str) -> str:
 
     for task in sorted(per_task):
         conditions = per_task[task]
+        # The two arms of the RQ1 contrast, in that order -- this table has exactly two
+        # columns. Iterating every arm on disk and then taking the first two by position
+        # would fill them with no_memory and memory_k1 the moment the K sweep was added,
+        # under a header that still said "With memory".
         cells, rates = [], {}
-        for condition in ALL_CONDITIONS:
+        for condition in PAIR:
             rows = conditions.get(condition, [])
             if rows:
                 solved = sum(1 for r in rows if r["solved"])
@@ -883,7 +973,7 @@ def export_latex(tasks_root: Path, runs_root: Path, agent: str) -> str:
             else:
                 cells.append("--")
                 rates[condition] = None
-        before, after = rates["no_memory"], rates["with_memory"]
+        before, after = rates[PAIR[0]], rates[PAIR[1]]
         if before is None or after is None:
             outcome = "incomplete"
         elif before == after:

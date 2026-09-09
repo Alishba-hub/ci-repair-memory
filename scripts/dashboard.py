@@ -10,8 +10,10 @@ from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from ci_memory_agents import design
 from ci_memory_agents.dashboard_state import (
     collect,
+    describe_design,
     export_csv,
     export_latex,
     list_agents,
@@ -41,7 +43,7 @@ background:color-mix(in srgb, Canvas 88%%, transparent)}</style>
 class Handler(BaseHTTPRequestHandler):
     tasks_root = REPO_ROOT / "tasks"
     runs_root = REPO_ROOT / "runs"
-    agent = "copilot"
+    agent = design.AGENT_NAMES[0]
 
     def log_message(self, *args) -> None:  # keep the console quiet
         pass
@@ -79,6 +81,10 @@ class Handler(BaseHTTPRequestHandler):
                     {
                         "agent": agent,
                         "agents": list_agents(self.runs_root),
+                        # The page renders its arm columns, labels and colours from
+                        # this rather than from a list written into the HTML, so an
+                        # arm can never exist on disk and be invisible in the UI.
+                        "design": describe_design(),
                         "tasks": collect(self.tasks_root, self.runs_root, agent),
                     }
                 )
@@ -158,7 +164,7 @@ class Handler(BaseHTTPRequestHandler):
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the experiment from a browser")
     parser.add_argument("--port", type=int, default=8000)
-    parser.add_argument("--agent", default="copilot")
+    parser.add_argument("--agent", default=design.AGENT_NAMES[0])
     parser.add_argument("--tasks-root", default=str(REPO_ROOT / "tasks"))
     parser.add_argument("--runs-root", default=str(REPO_ROOT / "runs"))
     parser.add_argument("--no-browser", action="store_true")

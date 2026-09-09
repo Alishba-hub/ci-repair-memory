@@ -10,6 +10,7 @@ import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import design
 from .log_compressor import compress_logs
 
 RAW_URL = "https://raw.githubusercontent.com/{owner}/{repo}/{sha}/{path}"
@@ -168,8 +169,16 @@ def _write_task_files(row: dict, memory_rows: list[dict], task_dir: Path, log_bu
         "sha_success": row["sha_success"],
         "commit_date": row["commit_date"],
         "error_type": list(row["error_type"] or []),
+        # Which of the three problem groups this task counts toward. Written at import
+        # time rather than derived when reporting: the grouping is part of how the
+        # population was chosen, so a later edit to `design.ERROR_GROUPS` must not
+        # silently re-label tasks that were selected under the old one.
+        "error_group": design.error_group(row["error_type"]),
         "workflow_path": row["workflow_path"],
         "target_files": diff_paths(row["diff"]),
+        # The largest K this task can serve. The K arms take prefixes of `memory`, so
+        # any arm above this number would be rendered short.
+        "memory_size": len(memory_index),
         "memory": memory_index,
     }
     (task_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")

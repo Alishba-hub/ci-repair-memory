@@ -10,9 +10,18 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from ci_memory_agents import design
 from ci_memory_agents.evaluator import evaluate_submission, pass_at_k
 from ci_memory_agents.loader import list_tasks
-from ci_memory_agents.prompt_builder import CONDITIONS, build_prompt
+from ci_memory_agents.prompt_builder import (
+    ALL_CONDITIONS,
+    CONDITIONS,
+    NO_MEMORY,
+    PAIR,
+    build_prompt,
+    condition_k,
+    condition_label,
+)
 
 
 def _is_stale(workspace: Path, repo_before: Path) -> bool:
@@ -31,6 +40,25 @@ def command_prompts(args, tasks_root: Path, runs_root: Path) -> int:
     tasks = _select(tasks_root, args)
     refreshed: list[Path] = []
     conditions = CONDITIONS
+
+    # A task that cannot fill every arm is dropped from the layout entirely, not just
+    # from the arms it cannot fill. Laying out its no_memory and memory_k1 cells would
+    # put it in the denominator of some arms and not others, and every paired comparison
+    # downstream -- RQ1's McNemar test, RQ3's K curve -- assumes the arms share one
+    # population. Tasks imported before the K sweep carry three memory items and land
+    # here; re-import them with scripts/import_ci_repair_bench.py.
+    needed = max(condition_k(c) for c in conditions)
+    short = [task for task in tasks if not task.supports(needed)]
+    tasks = [task for task in tasks if task.supports(needed)]
+    if short:
+        print(f"Skipping {len(short)} task(s) with fewer than {needed} memory items:")
+        for task in short:
+            print(f"  {task.task_id}: has {task.memory_size}")
+        print("  Re-import them with: python scripts/import_ci_repair_bench.py\n")
+    if not tasks:
+        print("No task can fill every arm. Nothing laid out.")
+        return 1
+
     for task in tasks:
         for condition in conditions:
             for run in range(1, args.runs + 1):
@@ -85,12 +113,16 @@ def command_score(args, tasks_root: Path, runs_root: Path) -> int:
         print(f"No runs found at {agent_root}. Generate prompts first.")
         return 1
 
+    # `ALL_CONDITIONS`, not `CONDITIONS`: arms collected before the K sweep still hold
+    # real runs, and a scorer that enumerates only the current design would drop them
+    # without saying so. That exact bug once removed a whole arm from the results.
+    config = design.agent_config(args.agent)
     results = []
     for task_dir in sorted(agent_root.iterdir()):
         task = tasks.get(task_dir.name)
         if task is None:
             continue
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             condition_dir = task_dir / condition
             if not condition_dir.exists():
                 continue
@@ -104,7 +136,17 @@ def command_score(args, tasks_root: Path, runs_root: Path) -> int:
                 payload = result.as_dict()
                 payload["run"] = run_dir.name
                 payload["agent"] = args.agent
+                # Harness and model travel separately. "copilot" alone stopped
+                # identifying a condition once the same harness was driven by more than
+                # one model, and two models' results would otherwise pool into a single
+                # row with nothing left in the record to separate them again.
+                payload["harness"] = config["harness"]
+                payload["model"] = config["model"]
+                payload["k"] = condition_k(condition)
+                payload["repo"] = task.repo_name
                 payload["error_type"] = task.error_type
+                payload["error_group"] = task.error_group
+                payload["memory_available"] = task.memory_size
                 results.append(payload)
 
     if not results:
@@ -115,9 +157,67 @@ def command_score(args, tasks_root: Path, runs_root: Path) -> int:
     with results_path.open("w", encoding="utf-8") as handle:
         for payload in results:
             handle.write(json.dumps(payload) + "\n")
-    print(f"Wrote {len(results)} results to {results_path}\n")
+    print(f"Wrote {len(results)} results to {results_path}")
+
+    # The CSV is written on every scoring pass rather than on request. The point of
+    # persisting results is that a later analysis need not re-run the agents, and an
+    # export that has to be remembered is one that gets skipped on the run that mattered.
+    csv_path = write_runs_csv(results, runs_root / "csv" / f"runs_{args.agent}.csv")
+    print(f"Wrote {len(results)} rows to {csv_path}\n")
     _summarize(results, args.k)
     return 0
+
+
+#: Columns of the per-run CSV, in order. One row per (agent, task, condition, run) --
+#: the long format every downstream analysis wants, and the level at which RQ2's
+#: run-to-run variance is still visible. Aggregating before writing would make
+#: consistency across repeats unrecoverable from the file.
+CSV_COLUMNS = (
+    "agent",
+    "harness",
+    "model",
+    "task_id",
+    "repo",
+    "error_group",
+    "error_type",
+    "condition",
+    "k",
+    "run",
+    "solved",
+    "exact_match",
+    "normalized_match",
+    "localized",
+    "touched_any_gold",
+    "files_matched",
+    "files_expected",
+    "file_recall",
+    "file_precision",
+    "file_f1",
+    "file_iou",
+    "line_deviation_ratio",
+    "memory_available",
+)
+
+
+def write_runs_csv(results: list[dict], path: Path) -> Path:
+    import csv
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(CSV_COLUMNS)
+        for payload in sorted(results, key=lambda r: (r["task_id"], r["condition"], r["run"])):
+            writer.writerow([_csv_cell(payload.get(name)) for name in CSV_COLUMNS])
+    return path
+
+
+def _csv_cell(value):
+    """Booleans as 0/1, lists pipe-joined, so pandas and R read the column as-is."""
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, (list, tuple)):
+        return "|".join(str(item) for item in value)
+    return "" if value is None else value
 
 
 def _summarize(results: list[dict], k: int) -> None:
@@ -125,8 +225,14 @@ def _summarize(results: list[dict], k: int) -> None:
     for payload in results:
         by_condition[payload["condition"]].append(payload)
 
+    # Ordered by K rather than alphabetically, so the table reads as the dose-response
+    # curve RQ3 asks for instead of putting memory_k1 next to memory_k3 next to
+    # memory_k5 next to no_memory in an order that means nothing.
+    ordered = sorted(by_condition, key=lambda c: (condition_k(c), c))
+
     print(f"{'condition':<14}{'runs':>6}{'exact':>8}{'norm':>8}{'IoU':>8}{'recall':>8}{'linedev':>9}")
-    for condition, payloads in sorted(by_condition.items()):
+    for condition in ordered:
+        payloads = by_condition[condition]
         print(
             f"{condition:<14}{len(payloads):>6}"
             f"{_rate(payloads, 'exact_match'):>8.2f}"
@@ -146,11 +252,35 @@ def _summarize(results: list[dict], k: int) -> None:
         correct = sum(1 for p in payloads if p["normalized_match"])
         if total >= k:
             scores[condition].append(pass_at_k(total, correct, k))
-    for condition, values in sorted(scores.items()):
-        print(f"  {condition:<14}{statistics.mean(values):.3f}  over {len(values)} tasks")
-    if len(scores) == 2:
-        delta = statistics.mean(scores["with_memory"]) - statistics.mean(scores["no_memory"])
-        print(f"\n  memory effect: {delta:+.3f}")
+    for condition in sorted(scores, key=lambda c: (condition_k(c), c)):
+        values = scores[condition]
+        print(
+            f"  {condition:<14}{statistics.mean(values):.3f}  over {len(values)} tasks"
+            f"   ({condition_label(condition)})"
+        )
+
+    # RQ1: one named contrast, always the same two arms. Taking whichever two arms
+    # happen to be present -- which is what `len(scores) == 2` used to do -- reports a
+    # different comparison depending on how much of the grid has been filled, and would
+    # silently start calling K=1 vs K=5 "the memory effect" once four arms existed.
+    control, memory_arm = PAIR
+    if control in scores and memory_arm in scores:
+        delta = statistics.mean(scores[memory_arm]) - statistics.mean(scores[control])
+        print(f"\n  RQ1 memory effect ({control} -> {memory_arm}): {delta:+.3f}")
+
+    # RQ3: the same number at every K, so the reader can see whether more history helps
+    # monotonically, plateaus, or reverses.
+    curve = [
+        (condition_k(c), statistics.mean(scores[c]))
+        for c in scores
+        if condition_k(c) and c in CONDITIONS
+    ]
+    if len(curve) > 1:
+        print("\n  RQ3 memory size curve (Pass@%d vs K)" % k)
+        baseline = statistics.mean(scores[control]) if control in scores else None
+        for size, value in sorted(curve):
+            against = f"  {value - baseline:+.3f} vs K=0" if baseline is not None else ""
+            print(f"    K={size:<3}{value:.3f}{against}")
 
 
 def _rate(payloads: list[dict], key: str) -> float:
@@ -224,7 +354,15 @@ def main() -> int:
     parser.add_argument("--mode", choices=("prompts", "score"), default="prompts")
     parser.add_argument("--tasks-root", default=str(repo_root / "tasks"))
     parser.add_argument("--runs-root", default=str(repo_root / "runs"))
-    parser.add_argument("--agent", default="copilot", help="Agent under evaluation")
+    parser.add_argument(
+        "--agent",
+        default=design.AGENT_NAMES[0],
+        help=(
+            "Agent cell under evaluation. Registered cells: "
+            + ", ".join(design.AGENT_NAMES)
+            + ". Any other name works too but carries no model attribution."
+        ),
+    )
     parser.add_argument("--task-id", default=None, help="One task id, or a comma-separated list")
     parser.add_argument(
         "--project",
@@ -239,7 +377,15 @@ def main() -> int:
         help="Use at most this many tasks, spread across projects rather than taken in order",
     )
     parser.add_argument("--source", default=None, help="Filter tasks by source, e.g. ci-repair-bench")
-    parser.add_argument("--runs", type=int, default=10, help="Repeated runs per condition")
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=design.RUNS_PER_CONDITION,
+        help=(
+            f"Repeated runs per condition (RQ2). Default {design.RUNS_PER_CONDITION}, "
+            "from ci_memory_agents.design"
+        ),
+    )
     parser.add_argument("--k", type=int, default=1, help="k for Pass@K")
     parser.add_argument(
         "--refresh-workspaces",

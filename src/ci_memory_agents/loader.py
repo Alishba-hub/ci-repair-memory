@@ -36,7 +36,18 @@ class Task:
     commit_date: str = ""
     repo_name: str = ""
     sha_fail: str = ""
+    #: Which of the three problem groups this task was selected under, as recorded at
+    #: import time. Empty for tasks imported before the groups existed.
+    error_group: str = ""
     memory: list[MemoryItem] = field(default_factory=list)
+
+    @property
+    def memory_size(self) -> int:
+        """The largest K this task can serve, since the arms take prefixes of `memory`."""
+        return len(self.memory)
+
+    def supports(self, k: int) -> bool:
+        return k <= len(self.memory)
 
     @property
     def failing_log(self) -> str:
@@ -87,6 +98,7 @@ def load_task(task_dir: Path) -> Task:
         commit_date=metadata.get("commit_date", ""),
         repo_name=metadata.get("repo_name", ""),
         sha_fail=metadata.get("sha_fail", ""),
+        error_group=metadata.get("error_group") or "",
         memory=memory,
     )
 

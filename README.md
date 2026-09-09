@@ -63,10 +63,40 @@ would pass.
 | Condition | Repo at the break | Failing log | Memory block |
 |---|---|---|---|
 | `no_memory` | yes | yes | none |
-| `with_memory` | yes | yes | 3 earlier failures from **this** project |
+| `memory_k1` | yes | yes | the 1 most recent earlier failure from **this** project |
+| `memory_k3` | yes | yes | the 3 most recent earlier failures from **this** project |
+| `memory_k5` | yes | yes | the 5 most recent earlier failures from **this** project |
 
-The failing log is in both conditions because it is the problem statement, not memory.
-The only thing that varies is the memory block.
+Each memory item is one (failure log, gold patch) pair. The failing log of the *target*
+is in every condition because it is the problem statement, not memory. The only thing
+that varies is the memory block.
+
+The K sets are nested: the K=1 item is the first item of K=3, which is the first three of
+K=5. A difference between two arms is therefore the additional history and not a
+different draw from it — without that, "more memory" would be confounded with "different
+memory" and RQ3 would be unanswerable.
+
+`no_memory` against `memory_k3` is the RQ1 contrast; the sweep across all four is RQ3.
+Two further arms may appear in `runs/`: `with_memory`, the name `memory_k3` was collected
+under before the sweep and analysed as the same treatment, and `foreign_memory`, a
+placebo showing the same number of failures drawn from a *different* project. All six are
+defined in `src/ci_memory_agents/prompt_builder.py`.
+
+## The design
+
+Everything the three research questions depend on lives in
+`src/ci_memory_agents/design.py`, so no script can quietly run a different study:
+
+| | |
+|---|---|
+| Tasks | 30 — 10 repositories x 3 tasks |
+| Problem groups | 3 — test/assertion, code/runtime, dependency/environment |
+| Runs per condition | 5 (RQ2) |
+| Memory sizes | K = 1, 3, 5 (RQ3) |
+| Cells per agent | 30 tasks x 4 arms x 5 runs = 600 |
+
+Task selection is deterministic — no sampling, no seed — so the same parquet yields the
+same 30 tasks on any machine.
 
 The project explicitly audits whether the memory block contains the answer, and audits
 localisation leakage — a prior fix touching the same file as the target's — separately,

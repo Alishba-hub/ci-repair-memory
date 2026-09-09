@@ -44,7 +44,13 @@ from ci_memory_agents.oracle import (
     run_attempted,
     write_verdicts,
 )
-from ci_memory_agents.prompt_builder import ALL_CONDITIONS, CONDITIONS
+from ci_memory_agents.prompt_builder import (
+    ALL_CONDITIONS,
+    CONDITIONS,
+    PAIR,
+    canonical_condition,
+    condition_k,
+)
 from ci_memory_agents.tokens import (
     Usage,
     estimate_tokens,
@@ -490,10 +496,16 @@ def command_report(args, runs_root: Path, tasks_root: Path) -> int:
 
     _report_scope_split(attempted, tasks_root, args)
 
+    # Keyed on the canonical arm: runs collected as `with_memory` are the same
+    # treatment as `memory_k3` and belong in the same column. Keying on the raw name
+    # left every task looking unpaired -- the analysis reported "no task was completed
+    # under both conditions" over a set where every task was.
+    control, memory_arm = PAIR
     per_task: dict[str, dict[str, list[bool]]] = defaultdict(lambda: defaultdict(list))
     for row in attempted:
         if args.strict or row["decided"]:
-            per_task[row["task_id"]][row["condition"]].append(bool(row["solved"]))
+            arm = canonical_condition(row["condition"])
+            per_task[row["task_id"]][arm].append(bool(row["solved"]))
 
     analysis = paired_rate_analysis({t: dict(c) for t, c in per_task.items()})
     print("\nPaired analysis over tasks (the unit of independence, not runs)")
@@ -501,8 +513,8 @@ def command_report(args, runs_root: Path, tasks_root: Path) -> int:
         print("  " + analysis["interpretation"])
     else:
         print(f"  tasks              {analysis['n_tasks']}   ({analysis['runs_per_task']} runs each)")
-        print(f"  no_memory          {analysis['rate_no_memory']:.1%}")
-        print(f"  with_memory        {analysis['rate_with_memory']:.1%}")
+        print(f"  {control:<18} {analysis['rate_no_memory']:.1%}")
+        print(f"  {memory_arm:<18} {analysis['rate_with_memory']:.1%}")
         ci = analysis["ci_difference"]
         print(f"  difference         {analysis['difference']:+.1%}  95% CI [{ci['low']:+.1%}, {ci['high']:+.1%}]")
         print(f"  tasks improved     {analysis['tasks_improved']} / worse {analysis['tasks_worsened']} / same {analysis['tasks_unchanged']}")
@@ -525,10 +537,10 @@ def command_report(args, runs_root: Path, tasks_root: Path) -> int:
         # says how much of the difference rests on tasks with too few runs to have a rate
         # at all.
         thin = {t: c for t, c in per_task.items()
-                if min(len(c.get("no_memory", [])), len(c.get("with_memory", []))) < 3
-                and c.get("no_memory") and c.get("with_memory")}
+                if min(len(c.get(control, [])), len(c.get(memory_arm, []))) < 3
+                and c.get(control) and c.get(memory_arm)}
         thick = {t: c for t, c in per_task.items()
-                 if t not in thin and c.get("no_memory") and c.get("with_memory")}
+                 if t not in thin and c.get(control) and c.get(memory_arm)}
         if thin and thick:
             print(f"\n  Run balance: {len(thin)} paired tasks have <3 runs in an arm, {len(thick)} have 3+.")
             for label, subset in (("<3 runs/arm", thin), ("3+ runs/arm", thick)):
@@ -536,7 +548,7 @@ def command_report(args, runs_root: Path, tasks_root: Path) -> int:
                 if sub["n_tasks"]:
                     print(
                         f"    {label:<13} n={sub['n_tasks']:<3} "
-                        f"no_memory {sub['rate_no_memory']:.1%}  with_memory {sub['rate_with_memory']:.1%}  "
+                        f"{control} {sub['rate_no_memory']:.1%}  {memory_arm} {sub['rate_with_memory']:.1%}  "
                         f"difference {sub['difference']:+.1%}"
                     )
             print(
@@ -548,14 +560,17 @@ def command_report(args, runs_root: Path, tasks_root: Path) -> int:
     print(f"\nPass@{args.k} over tasks finished in both conditions")
     scores: dict[str, list[float]] = defaultdict(list)
     for task, conditions in per_task.items():
-        # Pairing is required on the comparison arms only, so an arm present on disk
-        # but never run cannot suppress the comparison that was.
-        if not all(conditions.get(c) for c in CONDITIONS):
+        # Pairing is required on the two comparison arms only, so an arm present on
+        # disk but never run cannot suppress the comparison that was. `CONDITIONS` was
+        # the right set while it held exactly those two; with the K sweep it demands
+        # all four and would report nothing until the whole grid was filled.
+        if not all(conditions.get(c) for c in PAIR):
             continue
         for condition, group in conditions.items():
             if len(group) >= args.k:
                 scores[condition].append(pass_at_k(len(group), sum(group), args.k))
-    for condition, values in sorted(scores.items()):
+    for condition in sorted(scores, key=lambda c: (condition_k(c), c)):
+        values = scores[condition]
         print(f"  {condition:<14}{statistics.mean(values):.3f}  over {len(values)} tasks")
 
     # Every task is listed, including those with no attempted run and those whose runs

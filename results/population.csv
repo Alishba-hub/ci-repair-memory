@@ -1,0 +1,28 @@
+task_id,repo,error_group,error_type,source,commit_date,memory_available,supports_max_k,gold_files
+crb_agentscope_342,agentscope,,Dependency Issues|Test Failure,ci-repair-bench,2025-10-21T04:17:00Z,3,0,src/agentscope/rag/_store/_milvuslite_store.py|tests/rag_store_test.py
+crb_agno_180,agno,,Syntax Error|Dependency Issues,ci-repair-bench,2025-05-07T18:22:24Z,3,0,libs/agno/agno/models/cerebras/cerebras.py|libs/agno/agno/workspace/helpers.py
+crb_aider_97,aider,,Assertion Error|Package Installation Error|Syntax Error,ci-repair-bench,2025-05-08T19:14:41Z,3,0,tests/help/test_help.py
+crb_aisuite_372,aisuite,,Package Installation Error,ci-repair-bench,2025-11-11T13:32:33Z,3,0,poetry.lock
+crb_aisuite_373,aisuite,,Package Installation Error,ci-repair-bench,2025-11-10T20:37:40Z,3,0,poetry.lock
+crb_aws-cli_144,aws-cli,,Test Failure,ci-repair-bench,2025-07-14T17:14:11Z,3,0,tests/functional/botocore/test_s3.py
+crb_aws-cli_146,aws-cli,,Runtime Error|Test Failure,ci-repair-bench,2025-06-27T14:56:34Z,3,0,awscli/telemetry.py
+crb_axolotl_459,axolotl,,Package Installation Error,ci-repair-bench,2025-07-13T11:55:46Z,3,0,setup.py|src/setuptools_axolotl_dynamic_dependencies.py
+crb_axolotl_475,axolotl,,Dependency Issues,ci-repair-bench,2025-06-09T16:26:01Z,3,0,src/axolotl/core/builders/causal.py|src/axolotl/core/trainers/base.py|src/axolotl/core/training_args.py
+crb_calibre_232,calibre,,Dependency Issues,ci-repair-bench,2025-09-24T04:43:55Z,3,0,setup/unix-ci.py
+crb_calibre_233,calibre,,Dependency Issues,ci-repair-bench,2025-10-10T01:47:06Z,3,0,setup/unix-ci.py
+crb_conan_542,conan,,Syntax Error,ci-repair-bench,2025-05-28T17:57:23Z,3,0,test/conftest.py|test/functional/toolchains/meson/_base.py|test/integration/remote/test_local_recipes_index.py
+crb_conan_549,conan,,Test Failure|Runtime Error,ci-repair-bench,2025-06-01T18:24:57Z,3,0,test/functional/toolchains/meson/_base.py|conans/server/rest/controller/v2/search.py|test/conftest.py
+crb_cpython_213,cpython,,Runtime Error,ci-repair-bench,2025-10-25T23:57:30Z,3,0,Lib/test/test_capi/test_opt.py
+crb_dask_300,dask,,Test Failure|Runtime Error|Dependency Issues,ci-repair-bench,2025-10-03T18:13:00Z,3,0,dask/array/core.py|dask/array/tests/test_routines.py
+crb_diffusers_22,diffusers,,Dependency Issues|Runtime Error,ci-repair-bench,2024-01-19T09:08:23Z,3,0,src/diffusers/loaders/__init__.py
+crb_django-import-export_29,django-import-export,,Code Formatting|Test Failure,ci-repair-bench,2023-12-14T10:20:37Z,3,0,tests/core/tests/test_admin_integration.py
+crb_docsgpt_426,docsgpt,,Package Installation Error|Dependency Issues,ci-repair-bench,2025-10-07T16:15:56Z,3,0,application/agents/tools/todo_list.py
+crb_httpx_41,httpx,,Test Failure,ci-repair-bench,2024-01-16T05:40:47Z,3,0,tests/test_config.py
+crb_kitty_313,kitty,,Dependency Issues|Runtime Error,ci-repair-bench,2025-09-24T07:20:06Z,3,0,.github/workflows/ci.py|bypy/sources.json
+crb_litellm_396,litellm,,Assertion Error|Runtime Error,ci-repair-bench,2025-06-25T04:14:39Z,3,0,litellm/llms/volcengine.py|tests/test_litellm/test_main.py
+crb_openai-python_230,openai-python,,Assertion Error|Environment Error,ci-repair-bench,2025-09-02T16:46:20Z,3,0,src/openai/resources/chat/completions/completions.py
+crb_taipy_439,taipy,,Dependency Issues,ci-repair-bench,2025-10-02T10:25:40Z,3,0,Pipfile|taipy/rest/commons/apispec.py
+crb_uvicorn_305,uvicorn,,Test Failure|Environment Error,ci-repair-bench,2025-11-09T19:11:51Z,3,0,tests/test_main.py
+demo_issue_001,,,,local,,0,0,app.py
+demo_issue_002,,,,local,,0,0,slug.py
+demo_issue_003,,,,local,,0,0,.github/workflows/ci.yml

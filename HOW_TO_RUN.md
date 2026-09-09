@@ -27,7 +27,7 @@ That is the whole thing. It asks what to run, then runs it:
    Enter numbers (3), lists (3,7,9), ranges (3-6), a name, or all
   Projects [all]: agno, httpx
 
-  Runs per condition (1-20) [10]: 5
+  Runs per condition (1-20) [5]: 5
   How many runs at once (1-12) [6]: 4
 ```
 
@@ -39,12 +39,12 @@ Here is what will happen
   tasks                  2 of 24
                            crb_agno_180
                            crb_httpx_41
-  conditions             no_memory, with_memory
+  conditions             no_memory, memory_k1, memory_k3, memory_k5
   runs per condition     5
-  cells in total         20
+  cells in total         40
   already run            12
-  the agent will run     8
-  roughly 7 minutes at 4 at a time
+  the agent will run     28
+  roughly 25 minutes at 4 at a time
 
   Same thing without the questions next time:
   python run.py --project agno --project httpx --runs 5 --parallel 4
@@ -90,7 +90,7 @@ running and scoring always act on the same set.
 | Six tasks, spread across projects | `python run.py --tasks 6` |
 | One task from one project | `python run.py --project conan --tasks 1` |
 | One exact task | `python run.py --task-id crb_aider_97` |
-| Fewer repeats per condition | `python run.py --tasks 6 --runs 5` |
+| Fewer repeats per condition | `python run.py --tasks 6 --runs 3` |
 | See what would happen first | `python run.py --tasks 6 --dry-run` |
 
 `--tasks N` spreads across projects rather than taking the first N in order. Taking them
@@ -106,7 +106,7 @@ Running 2 of 24 tasks
   crb_httpx_41
   crb_kitty_313                   2 runs already done
 
-  2 tasks x 2 conditions x 10 runs = 40 cells
+  2 tasks x 4 conditions x 5 runs = 40 cells
 
 Dry run -- nothing was changed
 ------------------------------
@@ -133,7 +133,7 @@ Dry run -- nothing was changed
 | `python run.py tokens` | What it has cost, what the reductions saved, what the full study would cost |
 | `python run.py clean` | Delete cells no agent has run; runs with results are never touched |
 
-Useful options: `--runs N` (repeats per condition, default 10), `--parallel N` (default 6),
+Useful options: `--runs N` (repeats per condition, default 5), `--parallel N` (default 6),
 `--timeout N` (seconds per run, default 900), `--agent copilot`, `--exe <path>` if the
 agent binary is not found automatically, `--quick` for a two-run smoke test on one task.
 
@@ -169,6 +169,46 @@ Three things to actually read:
 
 ---
 
+## Saving the results as CSV
+
+Every number the three research questions need, written to files, so a later analysis
+never has to re-run an agent:
+
+```
+python scripts/export_results.py
+```
+
+It reads `runs/verdicts_<agent>.jsonl` for every agent with runs on disk and writes
+seven files into `results/`:
+
+| File | What it holds |
+|---|---|
+| `runs.csv` | one row per run — the long-format table everything else is derived from |
+| `rq1_memory_effect.csv` | RQ1: memory vs no memory, paired per task, per agent, with McNemar |
+| `rq2_consistency.csv` | RQ2: solved-runs out of runs for every cell, plus its spread |
+| `rq3_memory_size.csv` | RQ3: success rate and Pass@1 at each K, and the delta against K=0 |
+| `by_error_group.csv` | RQ1 split across the three problem groups |
+| `by_repo.csv` | RQ1 split across the ten repositories |
+| `population.csv` | which tasks were studied, and what each one is |
+
+Run it after `score_runs.py --mode report`, which is what produces the verdicts. If an
+agent has no verdicts file the script names it and carries on with the rest rather than
+failing.
+
+Two columns in `runs.csv` deserve attention. `oracle` says how each run was decided —
+`execution` (the workflow was re-run), `static` (a deterministic check), or `judge` (a
+model's opinion). A rate whose provenance is mostly `judge` is a weaker claim than the
+same rate from execution, and pooling them without saying so is how the two get quoted
+as though they were one number. `analysis_condition` is the arm the row is *analysed*
+as, next to the raw on-disk `condition`: runs collected under the old `with_memory` name
+are folded onto `memory_k3`, the same treatment. Pass `--strict-arms` to drop them
+instead, at the cost of a much smaller sample.
+
+Rates in every file except `runs.csv` are over runs an oracle actually decided.
+Unattempted cells are excluded rather than scored as failures — the harness materialises
+a prompt and a pristine workspace for every *planned* run, and counting those is the
+defect that once moved this project's reported rate from 57% to 17%.
+
 ## What it costs
 
 ```powershell
@@ -178,7 +218,9 @@ python run.py tokens
 ```
   condition     what       calls     input   output      cost  source
   no_memory     agent         79    195.4k    40.7k     $1.20  estimated
-  with_memory   agent         79    440.1k    38.1k     $1.89  estimated
+  memory_k1     agent         79    305.2k    39.4k     $1.51  estimated
+  memory_k3     agent         79    440.1k    38.1k     $1.89  estimated
+  memory_k5     agent         79    588.7k    38.9k     $2.31  estimated
   TOTAL                      158    635.5k    78.7k     $3.09  estimated
 
   design                                    runs   projected
@@ -186,8 +228,10 @@ python run.py tokens
   5 pp at 80% power, 5 episodes             3630      $70.93
 ```
 
-Reported per condition because memory is not free: the `with_memory` prompt is 2.25x the
-`no_memory` one, and it costs 2.25x as much per run. A benefit claimed without its cost
+Reported per condition because memory is not free: the `memory_k3` prompt is 2.25x the
+`no_memory` one and `memory_k5` is roughly 3x, and each costs proportionally more per
+run. The cost is the reason RQ3 matters: if K=1 buys most of the benefit of K=5, the
+study's recommendation is K=1. A benefit claimed without its cost
 beside it invites the reader to assume there was none.
 
 Figures marked `estimated` come from character counts, not from the CLI. They are
@@ -251,7 +295,7 @@ python run.py verify
 That validates each instance is red unpatched and green with the gold patch, re-executes
 CI with each candidate patch, and reports Cohen's κ between the judge and real CI. Read
 the **per-condition** column: a judge wrong by the same amount in both arms shifts both
-rates and leaves their difference intact; one wrong only under `with_memory` manufactures
+rates and leaves their difference intact; one wrong only under `memory_k3` manufactures
 the effect. Target **κ ≥ 0.6 on ≥ 50 runs** before quoting any judge-derived number.
 
 Offline, for clusters that forbid Docker: `python run.py verify --backend local`. It

@@ -31,7 +31,13 @@ from ci_memory_agents.judge import (
     workspace_diff,
 )
 from ci_memory_agents.loader import list_tasks
-from ci_memory_agents.prompt_builder import CONDITIONS
+from ci_memory_agents.prompt_builder import (
+    ALL_CONDITIONS,
+    CONDITIONS,
+    PAIR,
+    canonical_condition,
+    condition_k,
+)
 
 
 def _safe(text: str) -> str:
@@ -79,7 +85,7 @@ def collect_runs(runs_root: Path, tasks_root: Path, agent: str, args) -> list[tu
         task = tasks.get(task_dir.name)
         if task is None:
             continue
-        for condition in CONDITIONS:
+        for condition in ALL_CONDITIONS:
             if args.condition and condition != args.condition:
                 continue
             condition_dir = task_dir / condition
@@ -211,40 +217,47 @@ def command_report(args, runs_root: Path, tasks_root: Path) -> int:
 
     by_task: dict[tuple[str, str], list[dict]] = defaultdict(list)
     for row in rows:
-        by_task[(row["task_id"], row["condition"])].append(row)
+        # Canonical arm, so the renamed `with_memory` runs pair against `no_memory`
+        # instead of forming an arm nothing compares to.
+        by_task[(row["task_id"], canonical_condition(row["condition"]))].append(row)
 
     # Only tasks finished under both conditions. A half-finished task would otherwise
     # contribute to one arm and nothing to the other, inventing an effect out of
     # scheduling order.
+    control, memory_arm = PAIR
     tasks_seen = {task for task, _ in by_task}
     paired = sorted(
         t for t in tasks_seen
-        if (t, "no_memory") in by_task and (t, "with_memory") in by_task
+        if (t, control) in by_task and (t, memory_arm) in by_task
     )
     print(f"\nPass@{args.k} over {len(paired)} task(s) finished in both conditions")
     scores: dict[str, list[float]] = defaultdict(list)
     for task in paired:
-        for condition in CONDITIONS:
-            group = by_task[(task, condition)]
+        for condition in ALL_CONDITIONS:
+            group = by_task.get((task, condition), [])
             if len(group) >= args.k:
                 correct = sum(1 for r in group if r["solved"])
                 scores[condition].append(pass_at_k(len(group), correct, args.k))
-    for condition, values in sorted(scores.items()):
-        print(f"  {condition:<14}{statistics.mean(values):.3f}")
-    if len(scores) == 2:
-        delta = statistics.mean(scores["with_memory"]) - statistics.mean(scores["no_memory"])
-        print(f"\n  memory effect: {delta:+.3f}")
+    # Ordered by K, so the arms read as the dose-response sequence they are.
+    for condition in sorted(scores, key=lambda c: (condition_k(c), c)):
+        print(f"  {condition:<14}{statistics.mean(scores[condition]):.3f}")
+    # The named RQ1 contrast, not "whichever two arms turned up". With four arms the
+    # old `len(scores) == 2` rule reported nothing, and with two of the wrong ones it
+    # would have called the K=1-vs-K=5 gap the memory effect.
+    if control in scores and memory_arm in scores:
+        delta = statistics.mean(scores[memory_arm]) - statistics.mean(scores[control])
+        print(f"\n  memory effect ({control} -> {memory_arm}): {delta:+.3f}")
 
     print("\nPer task (fixed / judged)")
-    print(f"{'task':<26}{'no_memory':>12}{'with_memory':>14}")
+    print(f"{'task':<26}{control:>14}{memory_arm:>16}")
     for task in sorted(tasks_seen):
         cells = []
-        for condition in CONDITIONS:
+        for condition in PAIR:
             group = by_task.get((task, condition), [])
             cells.append(
                 f"{sum(1 for r in group if r['solved'])}/{len(group)}" if group else "--"
             )
-        print(f"{task:<26}{cells[0]:>12}{cells[1]:>14}")
+        print(f"{task:<26}{cells[0]:>14}{cells[1]:>16}")
 
     mechanisms = defaultdict(int)
     for row in rows:
@@ -318,7 +331,7 @@ def main() -> int:
     parser.add_argument("--runs-root", default=str(REPO_ROOT / "runs"))
     parser.add_argument("--tasks-root", default=str(REPO_ROOT / "tasks"))
     parser.add_argument("--task-id", default=None)
-    parser.add_argument("--condition", choices=CONDITIONS, default=None)
+    parser.add_argument("--condition", choices=ALL_CONDITIONS, default=None)
     parser.add_argument("--exe", default=None, help="Full path to the judging CLI binary")
     parser.add_argument("--model", default=None, help="Model for the judge, e.g. sonnet")
     parser.add_argument(
