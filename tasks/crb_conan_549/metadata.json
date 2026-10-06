@@ -12,12 +12,15 @@
     "Test Failure",
     "Runtime Error"
   ],
+  "error_group": "test_assertion",
   "workflow_path": ".github/workflows/main.yml",
   "target_files": [
     "test/functional/toolchains/meson/_base.py",
     "conans/server/rest/controller/v2/search.py",
     "test/conftest.py"
   ],
+  "patch_strategy": "git apply",
+  "memory_size": 5,
   "memory": [
     {
       "instance_id": "542",
@@ -70,6 +73,40 @@
       ],
       "log_file": "memory/prior_02_530.log",
       "diff_file": "memory/prior_02_530.diff"
+    },
+    {
+      "instance_id": "550",
+      "commit_date": "2025-05-13T08:03:43Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/meson/test_test.py"
+      ],
+      "log_file": "memory/prior_03_550.log",
+      "diff_file": "memory/prior_03_550.diff"
+    },
+    {
+      "instance_id": "534",
+      "commit_date": "2025-05-13T07:59:22Z",
+      "error_type": [
+        "Dependency Issues",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "conan/internal/api/detect/detect_api.py",
+        "conan/internal/api/profile/detect.py",
+        "test/conftest.py",
+        "test/functional/command/profile_test.py",
+        "test/functional/toolchains/meson/_base.py"
+      ],
+      "log_file": "memory/prior_04_534.log",
+      "diff_file": "memory/prior_04_534.diff"
     }
   ]
 }

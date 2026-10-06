@@ -1,0 +1,18 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "failure"
+  ],
+  "run_url": "https://github.com/Alishba-hub/litellm/actions/runs/37320210679",
+  "commit": "fbdac593ccac4e68e68f9f8694d500e0a082e703",
+  "branch": "cirepair/crb_litellm_381/baseline",
+  "failed_jobs": [
+    "test"
+  ],
+  "detail": "",
+  "polled_seconds": 965,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T14:08:47.335567+00:00"
+}

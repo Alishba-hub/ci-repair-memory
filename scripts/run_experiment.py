@@ -79,10 +79,14 @@ def command_prompts(args, tasks_root: Path, runs_root: Path) -> int:
             for run in range(1, args.runs + 1):
                 run_dir = runs_root / args.agent / task.task_id / condition / f"run_{run:02d}"
                 run_dir.mkdir(parents=True, exist_ok=True)
-                (run_dir / "prompt.md").write_text(
-                    build_prompt(task, condition, output_mode=args.output_mode),
-                    encoding="utf-8",
-                )
+                # The prompt of a cell an agent has run is part of its result: it is what
+                # that agent was actually given. Rewriting it after a format change would
+                # make the record claim an input the run never saw.
+                if not (run_dir / "agent_meta.json").exists():
+                    (run_dir / "prompt.md").write_text(
+                        build_prompt(task, condition, output_mode=args.output_mode),
+                        encoding="utf-8",
+                    )
                 workspace = run_dir / "workspace"
                 # A workspace is rebuilt only when it is missing, or when it is stale and
                 # nothing has been run against it. `agent_meta.json` is the line: a cell

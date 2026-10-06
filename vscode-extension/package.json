@@ -2,7 +2,7 @@
   "name": "ci-memory-agents-runner",
   "displayName": "CI Memory Agents Runner",
   "description": "Runs the CI memory experiment automatically through GitHub Copilot",
-  "version": "0.3.5",
+  "version": "0.4.1",
   "publisher": "ci-memory-agents",
   "engines": {
     "vscode": "^1.90.0"
@@ -13,7 +13,8 @@
   "activationEvents": [
     "onCommand:ciMemory.runAll",
     "onCommand:ciMemory.runOne",
-    "onCommand:ciMemory.listModels"
+    "onCommand:ciMemory.listModels",
+    "onUri"
   ],
   "main": "./extension.js",
   "contributes": {
@@ -44,13 +45,15 @@
         },
         "ciMemory.agent": {
           "type": "string",
-          "default": "copilot",
-          "description": "Name of the runs/<agent> folder to fill in"
+          "enum": ["copilot-gpt-5.4", "copilot-claude-fable-5.1"],
+          "default": "copilot-gpt-5.4",
+          "description": "The runs/<agent> folder to fill in. Only the two Copilot cells are accepted, and each must be run with its own model (see modelFamily)."
         },
         "ciMemory.modelFamily": {
           "type": "string",
-          "default": "",
-          "description": "Copilot model family. Run 'CI Memory: List Available Copilot Models' and copy a `family:` value verbatim -- not the `id:`, which is a different field. Empty picks the first available, which must not be left empty when collecting real results: comparing conditions across different models would confound the experiment."
+          "enum": ["gpt-5.4", "claude-fable-5.1"],
+          "default": "gpt-5.4",
+          "description": "Copilot model family, and it must match the agent: copilot-gpt-5.4 needs gpt-5.4, copilot-claude-fable-5.1 needs claude-fable-5.1. A mismatch is refused before any request is sent."
         },
         "ciMemory.delaySeconds": {
           "type": "number",

@@ -1,0 +1,21 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "failure",
+    "success",
+    "failure"
+  ],
+  "run_url": "https://github.com/Alishba-hub/browser-use/actions/runs/37317544212",
+  "commit": "019b976baaaf87bd3527b7a2bb733c6fc1046ea3",
+  "branch": "cirepair/crb_browser-use_504/baseline",
+  "failed_jobs": [
+    "type-checker",
+    "code-style"
+  ],
+  "detail": "",
+  "polled_seconds": 142,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T13:34:26.169358+00:00"
+}

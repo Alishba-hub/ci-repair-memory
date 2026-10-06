@@ -922,8 +922,6 @@ def command_verify(args) -> int:
     return 0
 
 
-
-
 def command_tokens(args) -> int:
     """What this has cost, what the reductions saved, and what the full study would cost."""
     return call("scripts/score_runs.py", "--agent", args.agent, "--mode", "tokens", quiet=False)
@@ -1102,10 +1100,9 @@ def command_setup(args) -> int:
     }
     if args.model:
         settings["ciMemory.modelFamily"] = args.model
-        # A family whose id is "auto" is Copilot's router. Allowed, because sometimes it
-        # is the only capable model, but every run records what it actually got and
-        # `results` reports whether that varied.
-        settings["ciMemory.allowRouterModel"] = True
+        # Never allow Copilot's "auto" router in a controlled experiment. If no pinned
+        # model is available for this family, the extension must stop before any run.
+        settings["ciMemory.allowRouterModel"] = False
 
     okay, detail = write_vscode_settings(settings)
     print(f"  {(ok('OK') if okay else bad('NO')):<6} settings   {dim(detail)}")
@@ -1218,7 +1215,11 @@ def main() -> int:
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--agent", default="claude-code", help="which agent (default: claude-code)")
+    parser.add_argument(
+        "--agent",
+        default=None,
+        help=f"which agent (default: claude-code; {design.DASHBOARD_AGENT} for `dashboard`)",
+    )
     parser.add_argument(
         "--runs",
         type=int,
@@ -1276,6 +1277,10 @@ def main() -> int:
         help="what to do (default: run)",
     )
     args = parser.parse_args()
+    # The dashboard opens the current design's cell; every other command keeps the
+    # pilot's agent, which is where their stored results live.
+    if args.agent is None:
+        args.agent = design.DASHBOARD_AGENT if args.command == "dashboard" else "claude-code"
 
     if args.quick:
         args.runs = 2

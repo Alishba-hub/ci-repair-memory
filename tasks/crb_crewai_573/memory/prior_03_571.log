@@ -1,0 +1,21 @@
+--- step: lint ---
+[command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/11fb89b0-b505-4d26-8d03-ebeaf6342cbc -f /home/runner/work/_temp/db016a43-02a7-4a70-975a-50c1d9fe2f81
+Added /home/runner/.local/bin to the path
+Added /opt/hostedtoolcache/uv/0.8.4/x86_64 to the path
+Set UV_PYTHON to 3.11
+Set UV_CACHE_DIR to /home/runner/work/_temp/setup-uv-cache
+Successfully installed uv version 0.8.4
+uv sync --all-groups --all-extras --no-install-project
+shell: /usr/bin/bash -e {0}
+env:
+  TARGET_BRANCH: RabeyaMuna__diff__id_571
+  UV_PYTHON: 3.11
+  UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+error: Failed to download https://github.com/astral-sh/python-build-standalone/releases/download/20250723/cpython-3.11.13%2B20250723-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz
+  Caused by: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20250723/cpython-3.11.13%2B20250723-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz)
+  Caused by: client error (SendRequest)
+  Caused by: http2 error
+  Caused by: stream error received: refused stream before processing any application logic
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://github.com/.extraheader

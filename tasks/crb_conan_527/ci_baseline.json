@@ -1,0 +1,22 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "success",
+    "success",
+    "failure",
+    "success",
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/conan/actions/runs/37317541015",
+  "commit": "dc263bb184ae763aaf426543b9637bfb5db4dc2f",
+  "branch": "cirepair/crb_conan_527/baseline",
+  "failed_jobs": [
+    "Linux Functional (3.10)"
+  ],
+  "detail": "",
+  "polled_seconds": 417,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T13:39:00.119309+00:00"
+}

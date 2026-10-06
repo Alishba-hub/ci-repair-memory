@@ -64,9 +64,54 @@ next start resumes from where it stopped.
 ## Settings
 
 `ciMemory.repoRoot`, `ciMemory.agent`, `ciMemory.modelFamily`, `ciMemory.delaySeconds`,
-`ciMemory.maxRuns`. Set `modelFamily` to pin one model, otherwise the first available is
-used. **Pin it before collecting real results** — comparing conditions across different
-models would confound the experiment.
+`ciMemory.maxRuns`.
+
+Only two Copilot cells are accepted, and each must run with its own model:
+
+| `ciMemory.agent` | `ciMemory.modelFamily` |
+|---|---|
+| `copilot-gpt-5.4` | `gpt-5.4` |
+| `copilot-claude-fable-5.1` | `claude-fable-5.1` |
+
+Any other agent, or a model that does not match the agent, is refused before a request is
+sent, so one model's answers can never be filed under another's name.
+
+## Starting a run from cmd or the dashboard
+
+On the dashboard, each task has **▶ No mem / ▶ K1 / ▶ K3 / ▶ K5** buttons, in the task
+list and on the run page. A button opens a command window running:
+
+```
+python scripts/run_copilot.py --agent copilot-gpt-5.4 --task-id crb_agno_129 --condition memory_k3
+```
+
+which you can also type yourself. Copilot has no command-line agent, so the script hands
+the request to this extension through a
+`vscode://ci-memory-agents.ci-memory-agents-runner/run?...` link. The extension runs that
+task's pending runs in that arm, and the command window prints its progress until the
+batch ends.
+
+- VS Code must be open and signed in to Copilot. The first time, VS Code asks whether to
+  open the link; choose **Open**.
+- Only one batch runs at a time. A second request while one is running is refused, and
+  its window says so.
+- Progress files are written to `.ci_batches/` in the repository root.
+
+## When something goes wrong
+
+Every failure gets a message: a pop-up, a line in the **CI Memory Agents** output channel
+with what to do, and an `agent_error.json` in the run folder that the dashboard shows on
+the run. A failed run gets no `agent_meta.json`, so it stays pending and the next batch
+retries it.
+
+| Problem | What the batch does |
+|---|---|
+| **Out of Copilot quota** | Stops, with a button to open your Copilot usage page |
+| **Rate limited** / **network error** | Waits 60 s and retries, 3 attempts; stops if it still fails |
+| **Prompt too long for this model** | Checked before sending; skips that run and continues |
+| **Request blocked** / **empty reply** / unexpected error | Skips that run; stops after 3 in a row |
+| **Copilot access not granted** / **model not available** | Stops |
+| **Cancelled** | Stops; finished runs are kept |
 
 ## What it writes per run
 

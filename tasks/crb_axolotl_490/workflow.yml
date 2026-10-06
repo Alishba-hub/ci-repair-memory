@@ -1,0 +1,104 @@
+name: Tests
+
+on: push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  TRANSFORMERS_IS_CI: yes
+
+jobs:
+  pre-commit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - uses: pre-commit/action@v3.0.1
+        env:
+          SKIP: no-commit-to-branch
+
+  pytest:
+    name: PyTest
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ["3.11"]
+        pytorch_version: [2.7.1, 2.8.0, 2.9.0]
+
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: pip
+
+      - name: Upgrade pip
+        run: |
+          pip3 install --upgrade pip
+          pip3 install --upgrade packaging==23.2 setuptools==75.8.0 wheel
+
+      - name: Install PyTorch
+        run: |
+          pip3 install --no-cache-dir torch==${{ matrix.pytorch_version }} torchvision
+
+      - name: Install dependencies
+        run: |
+          pip3 show torch
+          pip3 install --no-cache-dir --no-build-isolation -U -e .
+          python scripts/unsloth_install.py | sh
+          python scripts/cutcrossentropy_install.py | sh
+          pip3 install -r requirements-dev.txt -r requirements-tests.txt
+
+      - name: Make sure PyTorch version wasn't clobbered
+        run: |
+          python -c "import torch; assert '${{ matrix.pytorch_version }}' in torch.__version__"
+
+      - name: Ensure axolotl CLI was installed
+        run: |
+          axolotl --help
+
+      - name: Pre-Download dataset fixture
+        run: |
+          huggingface-cli download --repo-type=dataset axolotl-ai-internal/axolotl-oss-dataset-fixtures
+
+      - name: Run tests
+        run: |
+          pytest -v --durations=10 -n8 --dist loadfile \
+            --ignore=tests/e2e/ \
+            --ignore=tests/patched/ \
+            --ignore=tests/cli/ \
+            --ignore=tests/monkeypatch/ \
+            tests/ \
+            --cov=axolotl \
+            --cov-report=xml
+
+          pytest -v --durations=10 tests/monkeypatch/ \
+            --cov=axolotl \
+            --cov-append \
+            --cov-report=xml
+
+          pytest -v --durations=10 tests/patched/ \
+            --cov=axolotl \
+            --cov-append \
+            --cov-report=xml
+
+          pytest -v --durations=10 tests/cli/ \
+            --cov=axolotl \
+            --cov-append \
+            --cov-report=xml

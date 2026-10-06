@@ -1,0 +1,37 @@
+--- step: tests (3.12) ---
+ERROR tests/memory/user_memory_test.py - NameError: name 'Optional' is not defined
+ERROR tests/project_test.py - NameError: name 'Optional' is not defined
+ERROR tests/security/test_deterministic_fingerprints.py - NameError: name 'Optional' is not defined
+ERROR tests/security/test_examples.py - NameError: name 'Optional' is not defined
+ERROR tests/security/test_fingerprint.py - NameError: name 'Optional' is not defined
+ERROR tests/security/test_integration.py - NameError: name 'Optional' is not defined
+ERROR tests/security/test_security_config.py - NameError: name 'Optional' is not defined
+ERROR tests/storage/test_mem0_storage.py - NameError: name 'Optional' is not defined
+ERROR tests/task_test.py - NameError: name 'Optional' is not defined
+ERROR tests/telemetry/test_telemetry.py - NameError: name 'Optional' is not defined
+ERROR tests/telemetry/test_telemetry_disable.py - NameError: name 'Optional' is not defined
+ERROR tests/test_agent_inject_date.py - NameError: name 'Optional' is not defined
+ERROR tests/test_flow_default_override.py - NameError: name 'Optional' is not defined
+ERROR tests/test_flow_persistence.py - NameError: name 'Optional' is not defined
+ERROR tests/test_hallucination_guardrail.py - NameError: name 'Optional' is not defined
+ERROR tests/test_lite_agent.py - NameError: name 'Optional' is not defined
+ERROR tests/test_markdown_task.py - NameError: name 'Optional' is not defined
+ERROR tests/test_multimodal_validation.py - NameError: name 'Optional' is not defined
+ERROR tests/test_task_guardrails.py - NameError: name 'Optional' is not defined
+ERROR tests/tools/agent_tools/agent_tools_test.py - NameError: name 'Optional' is not defined
+ERROR tests/tools/test_base_tool.py - NameError: name 'Optional' is not defined
+ERROR tests/tools/test_tool_usage.py - NameError: name 'Optional' is not defined
+ERROR tests/tools/test_tool_usage_limit.py - NameError: name 'Optional' is not defined
+ERROR tests/utilities/evaluators/test_crew_evaluator_handler.py - NameError: name 'Optional' is not defined
+ERROR tests/utilities/evaluators/test_task_evaluator.py - NameError: name 'Optional' is not defined
+ERROR tests/utilities/events/test_crewai_event_bus.py - NameError: name 'Optional' is not defined
+ERROR tests/utilities/test_converter.py - NameError: name 'Optional' is not defined
+ERROR tests/utilities/test_events.py - NameError: name 'Optional' is not defined
+ERROR tests/utilities/test_knowledge_planning.py - NameError: name 'Optional' is not defined
+ERROR tests/utilities/test_llm_utils.py - NameError: name 'Optional' is not defined
+ERROR tests/utilities/test_planning_handler.py - NameError: name 'Optional' is not defined
+!!!!!!!!!!!!!!!!!!! Interrupted: 57 errors during collection !!!!!!!!!!!!!!!!!!!
+============================== 57 errors in 8.58s ==============================
+##[error]Process completed with exit code 2.
+Post job cleanup.
+http.https://github.com/.extraheader

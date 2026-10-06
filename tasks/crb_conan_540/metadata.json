@@ -1,0 +1,115 @@
+{
+  "task_id": "crb_conan_540",
+  "name": "CI failure in conan (Environment Error, Test Failure)",
+  "source": "ci-repair-bench",
+  "instance_id": "540",
+  "repo_name": "conan",
+  "repo_owner": "conan-io",
+  "sha_fail": "b41c3a617f8b67bd12b40558e6ce45fcfe18be16",
+  "sha_success": "53580089f55c3f10643c7334ded2ed47849d5b62",
+  "commit_date": "2025-06-18T13:26:16Z",
+  "error_type": [
+    "Environment Error",
+    "Test Failure"
+  ],
+  "error_group": "test_assertion",
+  "workflow_path": ".github/workflows/main.yml",
+  "target_files": [
+    "test/conftest.py",
+    "test/functional/toolchains/meson/_base.py",
+    "test/functional/toolchains/meson/test_meson.py",
+    "test/functional/toolchains/meson/test_pkg_config_reuse.py",
+    "test/functional/toolchains/meson/test_test.py"
+  ],
+  "patch_strategy": "git apply",
+  "memory_size": 5,
+  "memory": [
+    {
+      "instance_id": "536",
+      "commit_date": "2025-06-13T09:34:50Z",
+      "error_type": [
+        "Environment Error",
+        "Runtime Error",
+        "Syntax Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "conan/tools/sbom/cyclonedx.py",
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py"
+      ],
+      "log_file": "memory/prior_00_536.log",
+      "diff_file": "memory/prior_00_536.diff"
+    },
+    {
+      "instance_id": "526",
+      "commit_date": "2025-06-10T10:44:59Z",
+      "error_type": [
+        "Environment Error",
+        "Test Failure"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/functional/toolchains/meson/_base.py",
+        "test/functional/toolchains/google/test_bazel.py",
+        "test/functional/tools_versions_test.py",
+        "conan/internal/api/new/bazel_7_exe.py",
+        "test/functional/toolchains/cmake/test_cmake.py",
+        "conan/internal/api/new/bazel_exe.py",
+        "conan/internal/api/new/bazel_lib.py",
+        "test/conftest.py",
+        "test/unittests/test_tool_detection.py",
+        "conan/internal/api/new/bazel_7_lib.py",
+        "test/integration/command/test_new.py"
+      ],
+      "log_file": "memory/prior_01_526.log",
+      "diff_file": "memory/prior_01_526.diff"
+    },
+    {
+      "instance_id": "543",
+      "commit_date": "2025-06-06T14:45:51Z",
+      "error_type": [
+        "Dependency Issues"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "conan/tools/google/bazeldeps.py",
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py"
+      ],
+      "log_file": "memory/prior_02_543.log",
+      "diff_file": "memory/prior_02_543.diff"
+    },
+    {
+      "instance_id": "549",
+      "commit_date": "2025-06-01T18:24:57Z",
+      "error_type": [
+        "Test Failure",
+        "Runtime Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/functional/toolchains/meson/_base.py",
+        "conans/server/rest/controller/v2/search.py",
+        "test/conftest.py"
+      ],
+      "log_file": "memory/prior_03_549.log",
+      "diff_file": "memory/prior_03_549.diff"
+    },
+    {
+      "instance_id": "542",
+      "commit_date": "2025-05-28T17:57:23Z",
+      "error_type": [
+        "Syntax Error"
+      ],
+      "workflow_filename": "main.yml",
+      "changed_files": [
+        "test/conftest.py",
+        "test/functional/toolchains/meson/_base.py",
+        "test/integration/remote/test_local_recipes_index.py"
+      ],
+      "log_file": "memory/prior_04_542.log",
+      "diff_file": "memory/prior_04_542.diff"
+    }
+  ]
+}

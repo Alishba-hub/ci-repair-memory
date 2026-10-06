@@ -38,14 +38,9 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from ci_memory_agents.ci_outcome import CIOutcome, read_outcome, write_outcome
 from ci_memory_agents.loader import list_tasks
-from ci_memory_agents.oracle import baseline_path
+from ci_memory_agents.oracle import baseline_path, gold_path
+from ci_memory_agents.oracle import classify_instance as _classify
 from ci_memory_agents.oracle_github import GitHubConfig, OracleError, ensure_fork, run_ci
-
-GOLD_FILE = "ci_gold.json"
-
-
-def gold_path(task_root: Path) -> Path:
-    return task_root / GOLD_FILE
 
 
 def _metadata(task) -> dict:
@@ -137,28 +132,6 @@ def command_validate(args, tasks) -> int:
 
     print("\nDone. Summarise with --mode report.")
     return 0
-
-
-def _classify(baseline: CIOutcome | None, gold: CIOutcome | None) -> str:
-    """Why an instance is or is not a usable repair task."""
-    if baseline is None or gold is None:
-        return "unvalidated"
-    if not baseline.decided:
-        return "no-baseline"
-    if baseline.passed:
-        # Nothing to repair. With `deselect_tests` set this is also the guard against a
-        # deselect list that swallowed the instance's own failure: exclude the target
-        # test and the unpatched commit goes green, which would make every candidate
-        # look like a repair. Rejecting here means the list is wrong, not the agent.
-        return "already-green"
-    if not gold.decided:
-        return "gold-unknown"
-    if not gold.passed:
-        # The maintainer's own patch does not turn the workflow green here. Either the
-        # standardization changed the semantics, or the failure needed something outside
-        # the commit. Nothing an agent produces could be scored fairly on this instance.
-        return "gold-red"
-    return "usable"
 
 
 def command_report(args, tasks) -> int:

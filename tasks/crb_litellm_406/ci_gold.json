@@ -1,0 +1,18 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "failure"
+  ],
+  "run_url": "https://github.com/Alishba-hub/litellm/actions/runs/37322384521",
+  "commit": "7d092bf92303db6df2f8fa0fbefb6976fedc7d70",
+  "branch": "cirepair/crb_litellm_406/gold",
+  "failed_jobs": [
+    "test"
+  ],
+  "detail": "",
+  "polled_seconds": 233,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T14:13:00.182671+00:00"
+}

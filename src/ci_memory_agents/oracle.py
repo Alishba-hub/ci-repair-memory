@@ -93,6 +93,37 @@ def read_baseline(task_root: Path) -> CIOutcome | None:
     return read_outcome(baseline_path(task_root))
 
 
+GOLD_FILE = "ci_gold.json"
+
+
+def gold_path(task_root: Path) -> Path:
+    """Where the golden-patch run's outcome is cached: the failing commit plus only the
+    maintainers' patch. Written by scripts/validate_instances.py and the dashboard."""
+    return task_root / GOLD_FILE
+
+
+def classify_instance(baseline: CIOutcome | None, gold: CIOutcome | None) -> str:
+    """Why an instance is or is not a usable repair task, from its two reference builds."""
+    if baseline is None or gold is None:
+        return "unvalidated"
+    if not baseline.decided:
+        return "no-baseline"
+    if baseline.passed:
+        # Nothing to repair. With `deselect_tests` set this is also the guard against a
+        # deselect list that swallowed the instance's own failure: exclude the target
+        # test and the unpatched commit goes green, which would make every candidate
+        # look like a repair. Rejecting here means the list is wrong, not the agent.
+        return "already-green"
+    if not gold.decided:
+        return "gold-unknown"
+    if not gold.passed:
+        # The maintainer's own patch does not turn the workflow green here. Either the
+        # standardization changed the semantics, or the failure needed something outside
+        # the commit. Nothing an agent produces could be scored fairly on this instance.
+        return "gold-red"
+    return "usable"
+
+
 def instance_is_usable(task_root: Path) -> tuple[bool, str]:
     """Whether an instance has been shown to fail before any repair is attempted.
 

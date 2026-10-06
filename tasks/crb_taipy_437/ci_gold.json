@@ -1,0 +1,51 @@
+{
+  "conclusion": "success",
+  "raw_conclusions": [
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "failure",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/taipy/actions/runs/37327316723",
+  "commit": "70ad4025fca69a352156c7d486b512a6bbb11939",
+  "branch": "cirepair/crb_taipy_437/gold",
+  "failed_jobs": [],
+  "detail": "flaky job 'intermittent-tests (3.11, orchestrator_dispatcher, max)' failed test_blocked_submittable on attempt 1; re-run of failed jobs passed",
+  "polled_seconds": 2394,
+  "source": "github",
+  "steps": [],
+  "passed": true,
+  "recorded_at": "2026-10-05T15:40:07.645832+00:00",
+  "first_attempt": {
+    "conclusion": "failure",
+    "failed_jobs": [
+      "intermittent-tests (3.11, ubuntu-latest, orchestrator_dispatcher, max)"
+    ]
+  }
+}

@@ -5,6 +5,8 @@ runs/
 tasks/*/repo_before/.git/
 tasks/usable_instances.json
 runs/_repos/
+# Progress files the VS Code extension writes for scripts/run_copilot.py.
+.ci_batches/
 
 # GitHub credentials for the execution oracle. Never commit.
 .secrets.json

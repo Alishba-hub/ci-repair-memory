@@ -1,0 +1,49 @@
+--- step: tests (3.10) ---
+    mod = import_path(
+.venv/lib/python3.10/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+../../../.local/share/uv/python/cpython-3.10-linux-x86_64-gnu/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1050: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1027: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1006: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:688: in _load_unlocked
+    ???
+.venv/lib/python3.10/site-packages/_pytest/assertion/rewrite.py:186: in exec_module
+    exec(co, module.__dict__)
+tests/utilities/test_embedding_configuration.py:5: in <module>
+    from crewai.utilities.embedding_configurator import EmbeddingConfigurator
+E   ModuleNotFoundError: No module named 'crewai.utilities.embedding_configurator'
+=============================== warnings summary ===============================
+.venv/lib/python3.10/site-packages/click/core.py:1440
+.venv/lib/python3.10/site-packages/click/core.py:1440
+  /home/runner/work/crewAI/crewAI/.venv/lib/python3.10/site-packages/click/core.py:1440: PytestCollectionWarning: cannot collect 'test' because it is not a function.
+    def __call__(self, *args: t.Any, **kwargs: t.Any) -> t.Any:
+tests/llm_test.py:422
+tests/llm_test.py:422
+  /home/runner/work/crewAI/crewAI/tests/llm_test.py:422: PytestRemovedIn9Warning: Marks applied to fixtures have no effect
+  See docs: https://docs.pytest.org/en/stable/deprecations.html#applying-a-mark-to-a-fixture-function
+    def anthropic_llm():
+tests/test_flow_persistence.py:14
+tests/test_flow_persistence.py:14
+... (204 lines omitted)
+============================= slowest 10 durations =============================
+2.22s call     tests/agent_test.py::test_agent_from_repository
+1.60s call     tests/agent_test.py::test_agent_from_repository_override_attributes
+1.05s call     tests/utilities/test_converter.py::test_convert_with_instructions
+0.98s call     tests/test_lite_agent.py::test_lite_agent_created_with_correct_parameters[True]
+0.97s call     tests/utilities/test_converter.py::test_converter_with_nested_model
+0.53s call     tests/agent_test.py::test_disabling_cache_for_agent
+0.38s call     tests/agent_test.py::test_agent_with_knowledge_sources_generate_search_query
+0.34s call     tests/agent_test.py::test_get_knowledge_search_query
+0.33s call     tests/agent_test.py::test_agent_repeated_tool_usage_check_even_with_disabled_cache
+0.32s call     tests/agent_test.py::test_agent_with_knowledge_sources_with_query_limit_and_score_threshold
+=========================== short test summary info ============================
+ERROR tests/utilities/test_embedding_configuration.py
+================= 128 passed, 173 warnings, 1 error in 30.20s ==================
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

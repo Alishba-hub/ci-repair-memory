@@ -176,6 +176,19 @@ AGENTS: tuple[dict[str, str], ...] = (
 
 AGENT_NAMES: tuple[str, ...] = tuple(agent["name"] for agent in AGENTS)
 
+#: The Copilot cells the VS Code runner accepts, each with the one model family it must
+#: run with. Mirrors ALLOWED_AGENTS in vscode-extension/extension.js; the dashboard's
+#: run buttons and scripts/run_copilot.py read it from here.
+RUNNER_AGENTS: dict[str, str] = {
+    "copilot-gpt-5.4": "gpt-5.4",
+    "copilot-claude-fable-5.1": "claude-fable-5.1",
+}
+
+#: What the dashboard opens when no agent is named: the cell laid out under the current
+#: design (4 arms x RUNS_PER_CONDITION runs). `claude-code` is the 10-run, two-arm pilot
+#: and showing it by default made the current design look like it had not been applied.
+DASHBOARD_AGENT: str = "copilot-gpt-5.4"
+
 
 def agent_config(name: str) -> dict[str, str]:
     """The registered cell called `name`, or a bare record for an unregistered one.

@@ -1,0 +1,12 @@
+diff --git a/tests/test_pydantic_compatibility.py b/tests/test_pydantic_compatibility.py
+index 7b01db1086..fc0fedc15a 100644
+--- a/tests/test_pydantic_compatibility.py
++++ b/tests/test_pydantic_compatibility.py
+@@ -8,7 +8,7 @@
+ from crewai.flow import Flow
+ 
+ 
+-class TestFlowTrackable(BaseModel, FlowTrackable):
++class TestFlowTrackable(FlowTrackable):
+     """Test class that inherits from FlowTrackable for testing."""
+     name: str = "test"

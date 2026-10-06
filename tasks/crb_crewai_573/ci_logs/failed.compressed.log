@@ -1,0 +1,29 @@
+--- step: tests (3.10) ---
+      self._target(*self._args, **self._kwargs)
+    File "/home/runner/work/crewAI/crewAI/.venv/lib/python3.10/site-packages/agentops/helpers.py", line 131, in check_agentops_update
+      conn = http.client.HTTPSConnection("pypi.org")
+    File "/home/runner/work/crewAI/crewAI/.venv/lib/python3.10/site-packages/vcr/stubs/__init__.py", line 345, in __init__
+      self.real_connection = self._baseclass(*args, **kwargs)
+    File "/home/runner/.local/share/uv/python/cpython-3.10-linux-x86_64-gnu/lib/python3.10/http/client.py", line 1430, in __init__
+      super(HTTPSConnection, self).__init__(host, port, timeout,
+  TypeError: super(type, obj): obj must be an instance or subtype of type
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+tests/tools/test_base_tool.py::test_default_cache_function_is_true
+  /home/runner/work/crewAI/crewAI/.venv/lib/python3.10/site-packages/pydantic/_internal/_core_utils.py:197: RuntimeWarning: coroutine 'AsyncTool._run' was never awaited
+    return f(schema, self._walk)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+tests/utilities/test_converter.py::test_converter_with_llama3_1_model
+tests/utilities/test_converter.py::test_converter_with_llama3_1_model
+  /home/runner/work/crewAI/crewAI/.venv/lib/python3.10/site-packages/httpx/_content.py:204: DeprecationWarning: Use 'content=<...>' to upload raw bytes/text content.
+    warnings.warn(message, DeprecationWarning)
+tests/test_lite_agent.py::test_lite_agent_structured_output
+  /home/runner/work/crewAI/crewAI/.venv/lib/python3.10/site-packages/_pytest/python.py:163: PytestReturnNotNoneWarning: Expected None, but tests/test_lite_agent.py::test_lite_agent_structured_output returned LiteAgentOutput(raw='{\n  "summary": "The population of Tokyo is approximately 14 million in the city proper, and around 37 million in the greater Tokyo area.",\n  "confidence": 90\n}', pydantic=SimpleOutput(summary='The population of Tokyo is approximately 14 million in the city proper, and around 37 million in the greater Tokyo area.', confidence=90), agent_role='Info Gatherer', usage_metrics={'total_tokens': 399, 'prompt_tokens': 286, 'cached_prompt_tokens': 0, 'completion_tokens': 113, 'successful_requests': 1}), which will be an error in a future version of pytest.  Did you mean to use `assert` instead of `return`?
+    warnings.warn(
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_task_context_type_annotation.py::TestTaskContextTypeAnnotation::test_task_context_validation_rejects_invalid_types - AttributeError: 'str' object has no attribute 'get'
+======= 1 failed, 913 passed, 4 skipped, 45 warnings in 68.61s (0:01:08) =======
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.c

@@ -82,6 +82,13 @@
   .banner.ok { background: #10251a; border: 1px solid #1d3b23; color: #7ee787; }
   .banner.err { background: #2a1215; border: 1px solid #4a1f24; color: #ff9d95; }
   .banner.info { background: #101c2e; border: 1px solid #1d3350; color: #a8ccff; }
+  .cilinks { display: grid; gap: 4px; margin-top: 8px; font-size: 13px; }
+  .cilinks a { color: var(--accent); word-break: break-all; }
+  .ciarm { border-top: 1px solid var(--line); padding: 12px 0; }
+  .ciarm .lab { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+  .ciarm.cur .lab { color: var(--accent); }
+  .cirun { border-left: 2px solid var(--line); padding: 6px 0 6px 12px; margin: 6px 0; }
+  .cirun.cur { border-left-color: var(--accent); }
   .big-num { font-size: 27px; font-weight: 650; font-variant-numeric: tabular-nums; }
   .kpi { display: flex; gap: 26px; flex-wrap: wrap; }
   .kpi div span { display: block; font-size: 12px; color: var(--dim); }
@@ -235,6 +242,8 @@
             In the new window open Copilot Chat, switch to <strong>Agent mode</strong>,
             paste the prompt, and let it edit the files. Then save with Ctrl+S.
           </div>
+          <div class="d" style="margin-top:10px">Or run this task automatically through Copilot, one arm at a time:</div>
+          <div class="row" id="runarms"></div>
         </div>
       </div>
 
@@ -248,6 +257,15 @@
             <button onclick="resetThis()">Undo this run</button>
           </div>
           <div id="scorebox" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <div class="step" id="s5">
+        <div class="n">5</div>
+        <div class="body">
+          <div class="t">Check it on real CI</div>
+          <div class="d">Builds each arm's patch for this task and run (no memory, K=1, K=3, K=5) on GitHub Actions from a clean checkout of the failing commit.</div>
+          <div id="cibox"></div>
         </div>
       </div>
     </div>
@@ -276,6 +294,7 @@
 let DATA = null, CURRENT = null, PROMPT = "";
 let RESULTS = null, RUNDETAIL = null, RUNTAB = "prompt";
 let AGENT = new URLSearchParams(location.search).get("agent") || "";
+let RUNNER = [];   // agents the Copilot runner accepts; they get the run buttons
 const q = extra => "?agent=" + encodeURIComponent(AGENT) + (extra || "");
 
 const $ = id => document.getElementById(id);
@@ -290,6 +309,7 @@ async function load() {
   const res = await fetch("/api/tasks" + q());
   DATA = await res.json();
   AGENT = DATA.agent;
+  RUNNER = DATA.runner_agents || [];
   if (DATA.design && DATA.design.pair) PAIR_IDS = DATA.design.pair;
   const sel = $("agentsel");
   if (sel.options.length !== (DATA.agents || []).length) {
@@ -410,7 +430,7 @@ function render() {
       <td><strong>${t.repo}</strong><div class="muted">${t.task_id}</div></td>
       <td class="muted">${t.error_type.join(", ") || "-"}</td>
       ${columns.map(c => `<td>${t.conditions[c.id] ? dots(t.conditions[c.id]) : '<span class="muted">-</span>'}</td>`).join("")}
-      <td><button onclick="openFirst('${t.task_id}')">Open</button></td>
+      <td><div class="row"><button onclick="openFirst('${t.task_id}')">Open</button>${runButtons(t)}</div></td>
     </tr>`).join("");
 }
 
@@ -446,6 +466,9 @@ async function openRun(task, condition, run, fromHistory) {
   $("copybtn").textContent = "Copy prompt";
 
   show("run");
+  ciArms("cibox", task, condition, run);
+  $("runarms").innerHTML = runButtons(t) ||
+    `<span class="muted">Automatic runs are available for ${esc(RUNNER.join(" and ") || "the Copilot agents")}; this page shows ${esc(AGENT)}.</span>`;
   const res = await fetch("/api/prompt" + q(`&task=${task}&condition=${condition}&run=${run}`));
   PROMPT = (await res.json()).prompt || "";
   $("promptbox").textContent = PROMPT;
@@ -486,6 +509,7 @@ async function resetThis() {
   $("scorebox").innerHTML = "";
   $("s4").classList.remove("done");
   flash("This run was reset to the original broken code.", "info");
+  ciArms("cibox", CURRENT.task, CURRENT.condition, CURRENT.run);
   await load();
 }
 
@@ -1196,6 +1220,248 @@ function taskCards(byTask) {
   }).join("");
 }
 
+/* ====================== automatic Copilot runs ====================== */
+/* One button per design arm (no memory, K=1, K=3, K=5). Each opens a command window
+ * running scripts/run_copilot.py, which hands the task's pending runs in that arm to the
+ * VS Code extension and prints its progress. Only the Copilot cells the runner accepts
+ * get buttons. */
+function runButtons(t) {
+  if (!t || !RUNNER.includes(AGENT)) return "";
+  const design = (DATA.design && DATA.design.conditions) || [];
+  return design.filter(c => t.conditions[c.id]).map(c => {
+    const cell = t.conditions[c.id];
+    const left = cell.total - cell.done;
+    const name = c.k ? `K${c.k}` : "No mem";
+    const tip = !cell.total
+      ? `No runs laid out for ${c.label} yet. Create them with: python scripts/run_experiment.py --mode prompts --agent ${AGENT}`
+      : left ? `Run the ${left} pending run(s) of ${c.label} through Copilot` : "Every run of this arm is done";
+    return `<button ${left ? "" : "disabled"} title="${esc(tip)}"
+              onclick="runArm('${esc(t.task_id)}','${esc(c.id)}')">▶ ${name}</button>`;
+  }).join("");
+}
+
+async function runArm(task, condition) {
+  const out = await post("/api/agent/run", { task, condition });
+  if (out.error) return flash(esc(out.error), "err");
+  flash(`${esc(out.status)} Keep VS Code open: Copilot runs there, and the command window shows progress.`, "ok");
+}
+
+/* ====================== real CI build ====================== */
+/* One panel, mounted in the run page and the run sheet. The build runs server-side for
+ * minutes, so the panel polls; it stops once its container is gone or hidden, and the
+ * last state is kept so a re-render (tab switch) does not flash back to empty. */
+const CI = {};   // containerId -> { key, state, timer }
+
+/* Every arm of this task, and every run of each arm, one CI row per run. Each run of an
+ * arm produced its own patch, so each gets its own clean build: K=3 run 5 times means 5
+ * builds, and the arm's summary counts their results. The open run is highlighted. */
+function ciArms(id, task, condition, run) {
+  const el = $(id);
+  if (!el || !DATA) return;
+  const t = DATA.tasks.find(x => x.task_id === task);
+  let list = t ? arms(t) : [];
+  if (!list.some(a => a.id === condition)) list = [{ id: condition, label: armLabel(condition) }, ...list];
+  const runsOf = a => (t && t.conditions[a.id] && t.conditions[a.id].runs.length
+    ? t.conditions[a.id].runs.map(r => r.run) : [run]);
+  const rowId = (a, r) => `${id}-${a.id}-${r}`;
+  const sumId = a => `${id}-${a.id}-sum`;
+  const isOpen = (a, r) => a.id === condition && r === run;
+  el.innerHTML = `
+    <div class="row" style="margin-bottom:6px">
+      <button class="primary" onclick="ciStartArms('${id}')">Build every run of every arm</button>
+      <span class="muted">Each run has its own patch, so each run gets its own build: a fresh checkout of the failing commit on your fork, that run's patch applied, built by GitHub Actions. Runs already built keep their result.</span>
+    </div>
+    <div class="ciarm">
+      <div class="lab">Reference builds for this task (no agent involved)</div>
+      <div class="cirun">
+        <div class="mono" style="margin-bottom:4px">Golden patch only: the maintainers' fix and nothing else. Should PASS.</div>
+        <div id="${id}-ref-gold"></div>
+      </div>
+      <div class="cirun">
+        <div class="mono" style="margin-bottom:4px">Unpatched failing commit. Should FAIL.</div>
+        <div id="${id}-ref-baseline"></div>
+      </div>
+      <div id="${id}-ref-verdict"></div>
+    </div>
+    ${list.map(a => `<div class="ciarm ${a.id === condition ? "cur" : ""}">
+        <div class="row" style="margin-bottom:4px">
+          <div class="lab" style="margin:0">${esc(a.label || a.id)}</div>
+          <button onclick="ciStartArm('${id}','${esc(a.id)}')">Build all ${runsOf(a).length} runs</button>
+          <span class="muted" id="${sumId(a)}"></span>
+        </div>
+        ${runsOf(a).map(r => `<div class="cirun ${isOpen(a, r) ? "cur" : ""}">
+            <div class="mono" style="margin-bottom:4px">${esc(r)}${isOpen(a, r) ? " · this run" : ""}</div>
+            <div id="${rowId(a, r)}"></div>
+          </div>`).join("")}
+      </div>`).join("")}`;
+  el.dataset.task = task;
+  el.dataset.arms = list.map(a => a.id).join(",");
+  for (const kind of ["gold", "baseline"]) {
+    ciMountRef(`${id}-ref-${kind}`, task, kind);
+    CI[`${id}-ref-${kind}`].verdictId = `${id}-ref-verdict`;
+  }
+  list.forEach(a => runsOf(a).forEach(r => {
+    ciMount(rowId(a, r), task, a.id, r, true);
+    CI[rowId(a, r)].sumId = sumId(a);
+  }));
+}
+
+/* Build every run of one arm that has a patch and no result yet. */
+async function ciStartArm(id, armId) {
+  const task = $(id).dataset.task;
+  const out = await post("/api/ci/run-arm", { task, condition: armId });
+  if (out.error) return flash(esc(out.error), "err");
+  const skipped = Object.keys(out.skipped || {}).length;
+  flash(`${esc(armLabel(armId))}: started ${out.started.length} of ${out.runs.length} build(s)` +
+        (skipped ? `, ${skipped} skipped (already built, building, or no patch)` : "") + ".",
+        out.started.length ? "ok" : "info");
+  Object.entries(CI)
+    .filter(([, slot]) => slot.sumId === `${id}-${armId}-sum`)
+    .forEach(([rowId]) => ciRefresh(rowId));
+}
+
+async function ciStartArms(id) {
+  for (const armId of ($(id).dataset.arms || "").split(",").filter(Boolean)) await ciStartArm(id, armId);
+}
+
+/* "2 passed · 1 failed · 1 building · 1 no patch" for one arm. */
+function ciSummary(sumId) {
+  const el = $(sumId);
+  if (!el) return;
+  const count = {};
+  const bump = k => (count[k] = (count[k] || 0) + 1);
+  for (const slot of Object.values(CI)) {
+    if (slot.sumId !== sumId || !slot.state) continue;
+    const s = slot.state;
+    if (s.state === "running" || s.state === "starting") bump("building");
+    else if (s.state === "error") bump("error");
+    else if (s.state === "done") bump(s.conclusion === "success" ? "passed" : s.conclusion === "failure" ? "failed" : "no verdict");
+    else if (s.eligible === false) bump(/^Not run/.test(s.reason || "") ? "not run yet" : "no patch");
+    else bump("not built");
+  }
+  el.textContent = ["passed", "failed", "no verdict", "building", "error", "not built", "no patch", "not run yet"]
+    .filter(k => count[k]).map(k => `${count[k]} ${k}`).join(" · ");
+}
+
+/* A reference build of the task itself: "gold" (only the maintainers' golden patch,
+ * must pass) or "baseline" (the failing commit untouched, must fail). */
+function ciMountRef(id, task, kind) {
+  const key = `ref|${task}|${kind}`;
+  const slot = CI[id] && CI[id].key === key ? CI[id] : (CI[id] = { key, state: null, timer: null });
+  slot.args = { task, kind };
+  slot.ref = true;
+  slot.compact = true;
+  if (slot.state) ciRender(id);
+  ciRefresh(id);
+}
+
+const CI_VERDICTS = {
+  "usable": ["ok", "Usable task: it fails unpatched, and the golden patch alone makes CI pass."],
+  "already-green": ["err", "Not usable: CI already passes without any patch, so there is nothing to repair."],
+  "gold-red": ["err", "Not usable: the golden patch does not make CI pass, so no candidate can be scored fairly."],
+  "no-baseline": ["info", "The unpatched build has no pass/fail verdict yet."],
+  "gold-unknown": ["info", "The golden-patch build has no pass/fail verdict yet."],
+  "unvalidated": ["info", "Not validated yet: build both to check this task."],
+};
+
+function ciMount(id, task, condition, run, compact) {
+  const key = `${task}|${condition}|${run}`;
+  const slot = CI[id] && CI[id].key === key ? CI[id] : (CI[id] = { key, state: null, timer: null });
+  slot.args = { task, condition, run };
+  slot.compact = !!compact;
+  if (slot.state) ciRender(id);
+  ciRefresh(id);
+}
+
+async function ciRefresh(id) {
+  const slot = CI[id], el = $(id);
+  if (!slot || !el) return;
+  const { task, condition, run, kind } = slot.args;
+  try {
+    const res = await fetch(slot.ref
+      ? "/api/ci/reference" + q(`&task=${encodeURIComponent(task)}&kind=${encodeURIComponent(kind)}`)
+      : "/api/ci" + q(`&task=${encodeURIComponent(task)}&condition=${encodeURIComponent(condition)}&run=${encodeURIComponent(run)}`));
+    slot.state = await res.json();
+  } catch (e) {
+    slot.state = { state: "error", detail: String(e) };
+  }
+  ciRender(id);
+  ciSchedule(id);
+}
+
+function ciSchedule(id) {
+  const slot = CI[id];
+  clearTimeout(slot.timer);
+  if (slot.state && slot.state.state === "running")
+    slot.timer = setTimeout(() => {
+      const el = $(id);
+      if (el && el.offsetParent !== null) ciRefresh(id);
+    }, 10000);
+}
+
+async function ciStart(id) {
+  const slot = CI[id];
+  slot.state = { ...(slot.state || {}), state: "starting" };
+  ciRender(id);
+  const out = await post(slot.ref ? "/api/ci/reference" : "/api/ci/run", slot.args);
+  slot.state = out.error ? { state: "error", detail: out.error } : out;
+  ciRender(id);
+  ciSchedule(id);
+}
+
+function ciRender(id) {
+  const slot = CI[id], el = $(id);
+  if (!slot || !el) return;
+  const s = slot.state || { state: "none" };
+  const busy = s.state === "running" || s.state === "starting";
+  const blocked = s.state === "none" && s.eligible === false;
+  const mins = sec => sec >= 60 ? `${Math.floor(sec / 60)}m ${sec % 60}s` : `${sec || 0}s`;
+
+  let banner = "";
+  if (blocked)
+    banner = `<div class="muted">${esc(s.reason || "")}</div>`;
+  else if (s.state === "starting")
+    banner = `<div class="banner info">Starting the build…</div>`;
+  else if (s.state === "running")
+    banner = `<div class="banner info">Building on GitHub Actions — ${mins(s.elapsed_s)} elapsed.
+      ${esc(s.phase || "")}. Checks usually take 3–10 minutes; this updates every 10 seconds.</div>`;
+  else if (s.state === "error")
+    banner = `<div class="banner err">Could not run the build. ${esc(s.detail || "")}</div>`;
+  else if (s.state === "done" && s.conclusion === "success")
+    banner = `<div class="banner ok">CI passed — every check succeeded on a clean runner.</div>`;
+  else if (s.state === "done" && s.conclusion === "failure")
+    banner = `<div class="banner err">CI failed${s.failed_jobs && s.failed_jobs.length ? ": " + esc(s.failed_jobs.join(", ")) : ""}.
+      ${esc(s.detail || "")}</div>`;
+  else if (s.state === "done")
+    banner = `<div class="banner info">CI gave no verdict (${esc(s.conclusion || "inconclusive")}). ${esc(s.detail || "")}</div>`;
+
+  // Only ever link to github.com; the URLs come from the server, but an href is still an href.
+  const labels = { run: "Workflow run on GitHub", actions: "Actions for this branch", commit: "Pushed commit", branch: "Branch" };
+  const links = Object.entries(s.links || {})
+    .filter(([, url]) => /^https:\/\/github\.com\//.test(url))
+    .map(([k, url]) => `<div>${labels[k] || k}: <a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></div>`)
+    .join("");
+
+  const again = s.state === "done" || s.state === "error";
+  el.innerHTML = `
+    <div class="row">
+      <button class="${slot.compact ? "" : "primary"}" ${busy || blocked ? "disabled" : ""} onclick="ciStart('${id}')">
+        ${busy ? "Building…" : slot.compact ? (again ? "Run build again" : "Run build")
+                                           : (again ? "Run build again on clean CI" : "Run build on clean CI")}
+      </button>
+      ${slot.compact ? "" : `<span class="muted">Fresh checkout of the failing commit on your fork, this run's patch applied, built by GitHub Actions.</span>`}
+    </div>
+    ${slot.ref && s.files && s.files.length
+      ? `<div class="muted" style="margin-top:6px">Applies gold_patch.diff only, changing: <span class="mono">${esc(s.files.join(", "))}</span></div>` : ""}
+    ${banner ? `<div style="margin-top:10px">${banner}</div>` : ""}
+    ${links ? `<div class="cilinks">${links}</div>` : ""}`;
+  if (slot.sumId) ciSummary(slot.sumId);
+  if (slot.verdictId && s.verdict && $(slot.verdictId)) {
+    const [kind, text] = CI_VERDICTS[s.verdict] || ["info", s.verdict];
+    $(slot.verdictId).innerHTML = `<div class="banner ${kind}" style="margin:6px 0 0">${esc(text)}</div>`;
+  }
+}
+
 /* ====================== single run sheet ====================== */
 async function openRunDetail(task, condition, run, tab) {
   RUNTAB = tab || "prompt";
@@ -1262,7 +1528,14 @@ function renderRunSheet() {
       <span class="spacer"></span>
       <button onclick="closeRun()">Close</button>
     </div>
+    ${t.agent_error ? `<div class="banner err" style="margin-top:14px">
+        <strong>Copilot run failed: ${esc(t.agent_error.title || "error")}.</strong>
+        ${esc(t.agent_error.message || "")}
+        <div style="margin-top:6px">${esc(t.agent_error.advice || "")}</div>
+        <div class="mono" style="margin-top:6px">${esc(t.agent_error.model || "")} · ${esc(t.agent_error.at || "")}</div>
+      </div>` : ""}
     <div style="margin:14px 0">${verdict}</div>
+    <div id="ciboxsheet" style="margin:0 0 14px"></div>
     <div class="tiles">
       ${tile("Result", e ? (solved ? "Fixed" : "Not fixed") : "Unscored",
              e ? `${e.files_matched} of ${e.files_expected} target file(s) matched` : "")}
@@ -1286,6 +1559,7 @@ function renderRunSheet() {
     ${body}
     ${d.stderr ? `<h3 style="font-size:13px;margin:16px 0 6px" class="muted">stderr</h3>
                   <pre>${esc(d.stderr)}</pre>` : ""}`;
+  ciArms("ciboxsheet", d.task_id, d.condition, d.run);
 }
 
 function fileCheckTable(e) {

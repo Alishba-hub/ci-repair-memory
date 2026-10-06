@@ -1,0 +1,19 @@
+{
+  "conclusion": "success",
+  "raw_conclusions": [
+    "success",
+    "success",
+    "success",
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/axolotl/actions/runs/37318755506",
+  "commit": "ebdc0d7367e187fbe1166a94eeb62fb1f04ef2ec",
+  "branch": "cirepair/crb_axolotl_473/gold",
+  "failed_jobs": [],
+  "detail": "",
+  "polled_seconds": 691,
+  "source": "github",
+  "steps": [],
+  "passed": true,
+  "recorded_at": "2026-10-05T13:52:57.286358+00:00"
+}

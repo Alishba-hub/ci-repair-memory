@@ -1,0 +1,51 @@
+{
+  "conclusion": "success",
+  "raw_conclusions": [
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "cancelled",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success",
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/taipy/actions/runs/37326813399",
+  "commit": "5bef881d16d4d7d93f3dc927f38e51ff5ec56c26",
+  "branch": "cirepair/crb_taipy_439/gold",
+  "failed_jobs": [],
+  "detail": "job 'overall-tests (3.11, ubuntu-latest, max)' hung and was cancelled by its timeout on attempt 1; re-run of failed jobs passed",
+  "polled_seconds": 3439,
+  "source": "github",
+  "steps": [],
+  "passed": true,
+  "recorded_at": "2026-10-05T16:05:56.491342+00:00",
+  "first_attempt": {
+    "conclusion": "failure",
+    "failed_jobs": [
+      "overall-tests (3.11, ubuntu-latest, max)"
+    ]
+  }
+}

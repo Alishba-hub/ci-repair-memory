@@ -1,0 +1,18 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "failure"
+  ],
+  "run_url": "https://github.com/Alishba-hub/DocsGPT/actions/runs/37320527080",
+  "commit": "d7a306bbfdb25617bdb9f91e50330fafd92b62c7",
+  "branch": "cirepair/crb_docsgpt_426/gold",
+  "failed_jobs": [
+    "Run tests and count coverage (3.12)"
+  ],
+  "detail": "",
+  "polled_seconds": 820,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T14:08:47.337233+00:00"
+}

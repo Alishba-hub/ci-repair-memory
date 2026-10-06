@@ -1,0 +1,26 @@
+--- step: Linux Functional (3.10) ---
+ERROR test/functional/toolchains/qbs/test_qbsprofile.py::test_qbsprofile - Failed: Required 'qbs' tool version 'Any' is not available
+ERROR test/functional/toolchains/meson/test_subproject.py::test_subproject - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/toolchains/scons/test_sconsdeps.py::test_sconsdeps - Failed: Required 'scons' tool version 'Any' is not available
+ERROR test/functional/tools/scm/test_git.py::TestGitMonorepoSCMFlow::test_exports_sources_common_code_layout - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/util/test_cmd_args_to_string.py::test_unix_cases[_input0-. foo] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/util/test_cmd_args_to_string.py::test_unix_cases[_input1-. 'foo with sp'] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/util/test_cmd_args_to_string.py::test_unix_cases[_input2-. 'foo "with" sp'] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/util/test_cmd_args_to_string.py::test_unix_cases[_input3-. ''"'"'foo with sp'"'"''] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/util/test_cmd_args_to_string.py::test_unix_cases[_input4-'"."' foo] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/util/test_cmd_args_to_string.py::test_unix_cases[_input5-'".' foo] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/workspace/test_workspace.py::test_build - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/workspace/test_workspace.py::test_metabuild - Failed: Required 'cmake' tool version '3.27' is not available
+ERROR test/functional/command/test_install_deploy.py::test_install_deploy[False] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/command/test_install_deploy.py::test_install_deploy[True] - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/command/test_install_deploy.py::test_install_full_deploy_layout - Failed: Required 'cmake' tool version 'Any' is not available
+ERROR test/functional/toolchains/test_premake.py::test_premake - Failed: Required 'premake' tool version 'Any' is not available
+= 4 failed, 396 passed, 326 skipped, 1 xfailed, 121 warnings, 238 errors in 307.68s (0:05:07) =
+##[error]Process completed with exit code 1.
+##[end-action id=__self.__run;outcome=failure;conclusion=failure;duration_ms=309282]
+##[start-action display=Rename coverage file;id=__self.__run_2]
+##[end-action id=__self.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Upload coverage artifact;id=__self.__actions_upload-artifact]
+##[end-action id=__self.__actions_upload-artifact;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

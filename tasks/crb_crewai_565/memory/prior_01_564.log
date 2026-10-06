@@ -1,0 +1,20 @@
+--- step: type-checker ---
+   ââââââââââââââââââââââââââââââââââââââââ 1.3/1.3 MB 196.1 MB/s  0:00:00
+Installing collected packages: typing_extensions, pathspec, mypy_extensions, librt, ast-serialize, mypy
+Successfully installed ast-serialize-0.8.0 librt-0.15.0 mypy-2.3.0 mypy_extensions-1.1.0 pathspec-1.1.1 typing_extensions-4.16.0
+mypy src
+shell: /usr/bin/bash -e {0}
+env:
+  pythonLocation: /opt/hostedtoolcache/Python/3.11.9/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.9/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.9/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.9/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.9/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.9/x64/lib
+src/crewai/utilities/events/event_listener.py:382: error: Value of type "str | Callable[..., Any]" is not indexable  [index]
+src/crewai/utilities/events/event_listener.py:383: error: Argument 1 to "len" has incompatible type "str | Callable[..., Any]"; expected "Sized"  [arg-type]
+src/crewai/agent.py:683: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 2 errors in 1 file (checked 222 source files)
+##[error]Process completed with exit code 1.
+Post job cleanup.
+http.https://github.com/.extraheader

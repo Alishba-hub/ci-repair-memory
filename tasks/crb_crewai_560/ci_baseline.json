@@ -1,0 +1,32 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "failure"
+  ],
+  "run_url": "https://github.com/Alishba-hub/crewAI/actions/runs/37324530877",
+  "commit": "aa766e3159dcb8894296d89677ce618998b69083",
+  "branch": "cirepair/crb_crewai_560/baseline",
+  "failed_jobs": [
+    "tests (3.10)",
+    "tests (3.10)",
+    "tests (3.10)",
+    "tests (3.10)",
+    "tests (3.10)",
+    "tests (3.10)",
+    "tests (3.10)",
+    "tests (3.10)"
+  ],
+  "detail": "",
+  "polled_seconds": 112,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T14:26:55.405334+00:00"
+}

@@ -1,0 +1,22 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "failure",
+    "cancelled",
+    "cancelled"
+  ],
+  "run_url": "https://github.com/Alishba-hub/aider/actions/runs/37318225528",
+  "commit": "5f9841d8bfb7fbb013dabe554cb1d59b09c28b54",
+  "branch": "cirepair/crb_aider_94/gold",
+  "failed_jobs": [
+    "build (3.10)",
+    "build (3.11)",
+    "build (3.12)"
+  ],
+  "detail": "",
+  "polled_seconds": 416,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T13:44:11.960031+00:00"
+}

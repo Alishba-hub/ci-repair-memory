@@ -1,0 +1,20 @@
+{
+  "conclusion": "success",
+  "raw_conclusions": [
+    "success",
+    "success",
+    "success",
+    "success",
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/conan/actions/runs/37318053938",
+  "commit": "f5ec07d77b986d71f9d3f89f724539a5099623da",
+  "branch": "cirepair/crb_conan_543/gold",
+  "failed_jobs": [],
+  "detail": "",
+  "polled_seconds": 355,
+  "source": "github",
+  "steps": [],
+  "passed": true,
+  "recorded_at": "2026-10-05T13:41:51.442261+00:00"
+}

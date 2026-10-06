@@ -1,0 +1,24 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "cancelled",
+    "cancelled",
+    "cancelled",
+    "failure"
+  ],
+  "run_url": "https://github.com/Alishba-hub/crewAI/actions/runs/37325932097",
+  "commit": "5318cfdaf988433bb785180e2c4144c2ebf1ae30",
+  "branch": "cirepair/crb_crewai_573/gold",
+  "failed_jobs": [
+    "tests (3.12)",
+    "tests (3.13)",
+    "tests (3.10)",
+    "tests (3.11)"
+  ],
+  "detail": "",
+  "polled_seconds": 599,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T14:45:28.294073+00:00"
+}

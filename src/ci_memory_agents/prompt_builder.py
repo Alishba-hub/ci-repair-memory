@@ -220,7 +220,7 @@ def build_prompt(
     sections = [
         f"# Task: {task.name}",
         f"## Repository\n{task.repo_name or task.task_id} at commit {task.sha_fail[:8] or 'local'}",
-        f"## Failing CI log\n```\n{(task.failing_log or task.issue).strip()}\n```",
+        f"## Failing CI log (the failure you must fix)\n```\n{(task.failing_log or task.issue).strip()}\n```",
     ]
 
     if scope == "full":
@@ -242,8 +242,11 @@ def build_prompt(
 
     k = condition_k(condition)
     if k:
+        failures = "failure" if k == 1 else "failures"
         sections.append(
-            f"## Repository memory: the {k} most recent earlier CI failures in this project\n"
+            f"## Repository memory: {k} earlier CI {failures} from this project, most recent first\n"
+            "Each earlier failure below has its CI failure log and the golden patch the "
+            "maintainers committed to fix it. They are precedent, not the answer to this task.\n\n"
             f"{_render_memory(task, k)}"
         )
 
@@ -311,14 +314,18 @@ def _render_memory(task: Task, k: int) -> str:
                 f"{memory_condition(k)} needs {k}. Re-import it with "
                 f"scripts/import_ci_repair_bench.py, which stores {MEMORY_SIZE}."
             )
+        # Headings number items without "of K" on purpose: item 1 then reads the same in
+        # every arm, so the K=1 block stays a byte-exact prefix of K=3 and K=3 of K=5.
         blocks = []
         for order, item in enumerate(task.memory[:k], start=1):
             blocks.append(
-                f"### Prior failure {order} (instance {item.instance_id}, {item.commit_date})\n"
+                f"### Earlier failure {order} (instance {item.instance_id}, committed {item.commit_date})\n"
                 f"Error type: {', '.join(item.error_type) or 'unknown'}\n"
                 f"Files changed by the fix: {', '.join(item.changed_files) or 'unknown'}\n\n"
-                f"Log excerpt:\n```\n{item.log.strip()[:2000]}\n```\n\n"
-                f"Patch that fixed it:\n```diff\n{item.diff.strip()[:2000]}\n```"
+                f"#### Earlier failure {order}: CI failure log\n"
+                f"```\n{_clip(item.log, MEMORY_ITEM_CHARS)}\n```\n\n"
+                f"#### Earlier failure {order}: golden patch (the fix the maintainers committed)\n"
+                f"```diff\n{_clip(item.diff, MEMORY_ITEM_CHARS)}\n```"
             )
         return "\n\n".join(blocks)
 
@@ -330,17 +337,29 @@ def _render_memory(task: Task, k: int) -> str:
     )
 
 
+#: Per-item cap on an earlier failure's log and on its golden patch. The cut is marked in
+#: the prompt: a patch that silently stops mid-hunk reads as the whole fix.
+MEMORY_ITEM_CHARS = 2000
+
+
+def _clip(text: str, limit: int) -> str:
+    text = text.strip()
+    if len(text) <= limit:
+        return text
+    return f"{text[:limit]}\n[... truncated: {len(text) - limit} more characters not shown]"
+
+
 def _render_files(repo_root: Path, budget: int) -> str:
+    paths = [p for p in sorted(repo_root.rglob("*")) if p.is_file() and ".git" not in p.parts]
     blocks: list[str] = []
     used = 0
-    for path in sorted(repo_root.rglob("*")):
-        if not path.is_file() or ".git" in path.parts:
-            continue
+    for number, path in enumerate(paths, start=1):
         relative = str(path.relative_to(repo_root)).replace("\\", "/")
+        heading = f"### File {number} of {len(paths)}: {relative}"
         text = path.read_text(encoding="utf-8", errors="replace")
         if used + len(text) > budget:
-            blocks.append(f"=== {relative} ===\n[omitted: {len(text)} characters over prompt budget]")
+            blocks.append(f"{heading}\n=== {relative} ===\n[omitted: {len(text)} characters over prompt budget]")
             continue
         used += len(text)
-        blocks.append(f"=== {relative} ===\n{text}")
+        blocks.append(f"{heading}\n=== {relative} ===\n{text}")
     return "\n\n".join(blocks)

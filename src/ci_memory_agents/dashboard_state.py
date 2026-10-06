@@ -172,7 +172,17 @@ def telemetry(run_dir: Path) -> dict:
         except (json.JSONDecodeError, OSError):
             meta = {}
     duration = meta.get("duration_ms")
+    # Written by the VS Code extension when a request failed (quota, rate limit, prompt
+    # too long, ...). The run has no agent_meta.json and stays pending; this says why.
+    error = None
+    error_path = run_dir / "agent_error.json"
+    if error_path.exists():
+        try:
+            error = json.loads(error_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            error = {"title": "The runner recorded an error that could not be read back"}
     return {
+        "agent_error": error,
         "duration_ms": duration,
         "duration_s": round(duration / 1000, 1) if isinstance(duration, (int, float)) else None,
         "exit_code": meta.get("exit_code"),
@@ -288,6 +298,7 @@ def _score_fingerprint(agent_root: Path, task_id: str | None) -> tuple:
                     "ci_outcome.json",
                     "workspace",
                     "agent_timeout.txt",
+                    "agent_error.json",
                 ):
                     path = run_dir / name
                     try:
@@ -1025,25 +1036,10 @@ def reset_run(workspace: Path, repo_before: Path) -> str:
 
 
 def list_agents(runs_root: Path) -> list[str]:
-    """Every agent the UI can be switched to: the design's, plus any found on disk.
+    """The agents the UI can be switched to: the two Copilot cells the runner accepts.
 
-    An agent folder holds task folders holding condition folders; the execution oracle's
-    clone cache (`_repos`) sits in the same directory and is not one. Matched on shape
-    rather than by name, so any future sibling is excluded for the same reason.
-
-    Design agents are listed even with no runs yet. Deriving the picker purely from disk
-    meant a newly configured model was invisible until its first run finished, which is
-    exactly when someone wants to look at the dashboard and confirm the cells were laid
-    out for it. Agents on disk that are not in the design -- earlier or exploratory runs
-    -- are kept and listed after them, because those results are real.
+    Listed even with no runs yet, so a newly laid-out cell is visible before its first
+    run. Other folders under `runs/` (the claude-code pilot, earlier Copilot runs) are not
+    offered here, but they are left on disk and the CLI scripts still read them.
     """
-    on_disk = []
-    if runs_root.exists():
-        for path in sorted(runs_root.iterdir()):
-            if not path.is_dir() or path.name.startswith("_"):
-                continue
-            if any(t.is_dir() and any(c.is_dir() for c in t.iterdir()) for t in path.iterdir()):
-                on_disk.append(path.name)
-
-    declared = list(design.AGENT_NAMES)
-    return declared + [name for name in on_disk if name not in declared]
+    return list(design.RUNNER_AGENTS)

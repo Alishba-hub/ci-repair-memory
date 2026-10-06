@@ -1,0 +1,46 @@
+--- step: Linux Functional (3.10) ---
+os=Linux
+======== Computing dependency graph ========
+Graph root
+    conanfile.py: /tmp/tmpk3s2k56aconans/path with spaces/conanfile.py
+======== Computing necessary packages ========
+======== Installing packages ========
+======== Finalizing install (deploy, generators) ========
+conanfile.py: Generating aggregated env files
+conanfile.py: Generated aggregated env files: ['conanbuild.sh', 'conanrun.sh']
+ERROR: [HOOK - hook_sbom.py] post_generate(): 'Node' object has no attribute 'edge'
+================================== Traceback: ==================================
+Traceback (most recent call last):
+  File "/home/runner/work/conan/conan/conan/internal/hook_manager.py", line 34, in execute
+    method(conanfile)
+  File "/tmp/tmp4z62_3b2conans/path with spaces/.conan2/extensions/hooks/hook_sbom.py", line 9, in post_generate
+    sbom_cyclonedx_1_4 = cyclonedx_1_4(conanfile, name="custom-name")
+  File "/home/runner/work/conan/conan/conan/tools/sbom/cyclonedx.py", line 44, in cyclonedx_1_4
+    for d in graph.root.edge]}
+AttributeError: 'Node' object has no attribute 'edge'. Did you mean: 'edges'?
+During handling of the above exception, another exception occurred:
+Traceback (most recent call last):
+  File "/home/runner/work/conan/conan/conan/test/utils/tools.py", line 555, in _run_cli
+    command.run(args)
+  File "/home/runner/work/conan/conan/conan/cli/cli.py", line 193, in run
+    command.run(self._conan_api, args[0][1:])
+  File "/home/runner/work/conan/conan/conan/cli/command.py", line 182, in run
+    info = self._method(conan_api, parser, *args)
+  File "/home/runner/work/conan/conan/conan/cli/commands/install.py", line 77, in install
+    conan_api.install.install_consumer(deps_graph, args.generator, source_folder, output_folder,
+  File "/home/runner/work/conan/conan/conan/api/subapi/install.py", line 91, in install_consumer
+    write_generators(conanfile, hook_manager, self.conan_api.home_folder,
+  File "/home/runner/work/conan/conan/conan/internal/api/install/generators.py", line 145, in write_generators
+    hook_manager.execute("post_generate", conanfile=conanfile)
+  File "/home/runner/work/conan/conan/conan/internal/hook_manager.py", line 38, in execute
+    raise ConanException("[HOOK - %s] %s(): %s" % (name, method_name, str(e)))
+conan.errors.ConanException: [HOOK - hook_sbom.py] post_generate(): 'Node' object has no attribute 'edge'
+= 10 failed, 382 passed, 321 skipped, 1 xfailed, 106 warnings, 238 errors in 329.48s (0:05:29) =
+##[error]Process completed with exit code 1.
+##[end-action id=__self.__run;outcome=failure;conclusion=failure;duration_ms=331337]
+##[start-action display=Rename coverage file;id=__self.__run_2]
+##[end-action id=__self.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+##[start-action display=Upload coverage artifact;id=__self.__actions_upload-artifact]
+##[end-action id=__self.__actions_upload-artifact;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https:

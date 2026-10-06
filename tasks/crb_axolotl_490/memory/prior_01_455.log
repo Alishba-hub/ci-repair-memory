@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+         if self.cfg.gradient_checkpointing:
+diff --git a/src/axolotl/core/trainers/base.py b/src/axolotl/core/trainers/base.py
+index 7045e46..6b2d307 100644
+--- a/src/axolotl/core/trainers/base.py
++++ b/src/axolotl/core/trainers/base.py
+@@ -75,7 +75,6 @@ class AxolotlTrainer(
+         if self.args.orpo_alpha:
+             self.loss_fct = torch.nn.CrossEntropyLoss(reduction="none")
+-
+     def _create_multipack_sampler(
+         self, base_sampler: Sampler, dataset: Dataset
+     ) -> MultipackBatchSampler:
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=113718]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__ec905fa5-a671-4faf-bb06-3c6bf608ba1e.__actions_cache]
+##[end-action id=__ec905fa5-a671-4faf-bb06-3c6bf608ba1e.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

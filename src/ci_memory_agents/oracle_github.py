@@ -55,6 +55,10 @@ API = "https://api.github.com"
 PASSING = frozenset({"success"})
 FAILING = frozenset({"failure", "timed_out", "cancelled", "action_required", "startup_failure"})
 
+#: How long a pushed commit may have no check runs before that is taken to mean no
+#: workflow was triggered. GitHub usually creates them within a minute; queues can be slower.
+NO_RUNS_GRACE_S = 300
+
 
 class OracleError(RuntimeError):
     """The oracle could not reach a verdict, as against reaching a negative one."""
@@ -240,8 +244,11 @@ def _conclude(check_runs: list[dict]) -> tuple[str, list[str], list[str], str]:
     return "inconclusive", conclusions, [], f"unhandled conclusions: {sorted(set(conclusions))}"
 
 
-def poll(config: GitHubConfig, repo_name: str, commit: str) -> CIOutcome:
-    """Wait for the pushed commit's checks to finish and report the outcome."""
+def poll(config: GitHubConfig, repo_name: str, commit: str, progress=None) -> CIOutcome:
+    """Wait for the pushed commit's checks to finish and report the outcome.
+
+    `progress("running", run_url=...)` is called once GitHub has created the workflow
+    run, so a caller can link to it while it is still in progress."""
     deadline = time.time() + config.poll_timeout
     started = time.time()
     last = CIOutcome(conclusion="inconclusive", commit=commit, detail="never polled")
@@ -251,11 +258,19 @@ def poll(config: GitHubConfig, repo_name: str, commit: str) -> CIOutcome:
     while time.time() < deadline:
         payload = _request(config, f"/repos/{config.owner}/{repo_name}/commits/{commit}/check-runs")
         runs = payload.get("check_runs") or []
+        # GitHub creates check runs some time after the push, not at it. An empty list
+        # inside the grace period means "not started yet", not "nothing will run"; reading
+        # it as final recorded builds as inconclusive twenty seconds after pushing them.
+        if not runs and time.time() - started < NO_RUNS_GRACE_S:
+            time.sleep(config.poll_interval)
+            continue
         conclusion, conclusions, failed, detail = _conclude(runs)
         run_url = ""
         if runs:
             html = runs[0].get("html_url") or ""
             run_url = "/".join(html.split("/")[:-2]) if html else ""
+        if progress and run_url:
+            progress("running", run_url=run_url)
         last = CIOutcome(
             conclusion=conclusion if conclusion != "pending" else "inconclusive",
             raw_conclusions=[c for c in conclusions if c],
@@ -280,8 +295,13 @@ def run_ci(
     *,
     collapse_matrices: bool = False,
     drop_non_validation: bool = False,
+    progress=None,
 ) -> CIOutcome:
     """Re-execute the instance's workflow with `candidate_diff` applied.
+
+    `progress`, if given, is called as `progress("pushed", commit=...)` once the branch
+    exists on GitHub and `progress("running", run_url=...)` once the workflow run does,
+    so a page can show links only when they resolve.
 
     Pass `candidate_diff=None` for the baseline: the failing commit with nothing but the
     workflow standardization, which must come back red for the instance to be usable.
@@ -290,6 +310,15 @@ def run_ci(
     repo_name = metadata["repo_name"]
     sha = metadata["sha_fail"]
     branch = f"{config.branch_prefix}/{metadata['task_id']}/{label}"
+
+    # A run that changed no files has no patch. It is a failed repair, as in
+    # CI-Repair-Bench, but there is nothing to push, so it is settled before any clone.
+    if candidate_diff is not None and not candidate_diff.strip():
+        return CIOutcome(
+            conclusion="failure",
+            branch=branch,
+            detail="no usable patch: the run changed no files, so there was nothing to build",
+        )
 
     # Fork before cloning. `validate_instances` did this and `run_ci` did not, so
     # executing candidates without validating first failed on the first task with
@@ -302,10 +331,20 @@ def run_ci(
     # between writing its patch and committing, and B pushes A's changes under B's
     # branch. That is a wrong answer rather than a crash, which is worse.
     with repo_lock(repo_name):
-        return _run_ci_locked(
+        pushed = _run_ci_locked(
             config, task, candidate_diff, label, metadata, repo_name, sha, branch,
             collapse_matrices=collapse_matrices, drop_non_validation=drop_non_validation,
         )
+    if isinstance(pushed, CIOutcome):
+        return pushed
+    if progress:
+        progress("pushed", commit=pushed)
+    # Polling needs only the API, not the shared clone, so it happens outside the lock.
+    # Builds of one repository are then pushed one at a time but wait on GitHub side by
+    # side; holding the lock through the poll queued five runs of an arm for half an hour.
+    outcome = poll(config, repo_name, pushed, progress)
+    outcome.branch = branch
+    return outcome
 
 
 def _run_ci_locked(
@@ -320,7 +359,9 @@ def _run_ci_locked(
     *,
     collapse_matrices: bool = False,
     drop_non_validation: bool = False,
-) -> CIOutcome:
+) -> CIOutcome | str:
+    """Check out, install the workflow, apply the patch and push. Returns the pushed
+    commit, or an outcome when the patch could not be applied and nothing was pushed."""
     checkout_path = checkout(config, repo_name, sha, branch)
 
     prefer = {}
@@ -355,7 +396,4 @@ def _run_ci_locked(
         if failure:
             return CIOutcome(conclusion="failure", branch=branch, detail=f"patch apply failed: {failure}")
 
-    commit = push(config, checkout_path, branch, f"{metadata['task_id']} {label}")
-    outcome = poll(config, repo_name, commit)
-    outcome.branch = branch
-    return outcome
+    return push(config, checkout_path, branch, f"{metadata['task_id']} {label}")

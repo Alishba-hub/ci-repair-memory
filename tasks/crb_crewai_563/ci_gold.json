@@ -1,0 +1,16 @@
+{
+  "conclusion": "success",
+  "raw_conclusions": [
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/crewAI/actions/runs/37322374244",
+  "commit": "9b5d4234accf8bbd826d59731cf3712ed39a04ec",
+  "branch": "cirepair/crb_crewai_563/gold",
+  "failed_jobs": [],
+  "detail": "",
+  "polled_seconds": 416,
+  "source": "github",
+  "steps": [],
+  "passed": true,
+  "recorded_at": "2026-10-05T14:15:57.326865+00:00"
+}

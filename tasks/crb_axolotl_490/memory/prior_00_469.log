@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+                "datasets": [
+                    {
+                        "path": "tatsu-lab/alpaca",
+                        "type": "alpaca",
+                        "split": "train[:10%]",
+                    },
+                ],
+                "num_epochs": 1, (duplicate-code)
+------------------------------------
+Your code has been rated at 10.00/10
+mypy.....................................................................Passed
+bandit...................................................................Passed
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=119193]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__72edfe73-09c5-40b8-a874-feaaca36e2f7.__actions_cache]
+##[end-action id=__72edfe73-09c5-40b8-a874-feaaca36e2f7.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

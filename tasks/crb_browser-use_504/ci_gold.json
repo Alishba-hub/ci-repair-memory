@@ -1,0 +1,14 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [],
+  "run_url": "",
+  "commit": "",
+  "branch": "cirepair/crb_browser-use_504/gold",
+  "failed_jobs": [],
+  "detail": "patch apply failed: Applied patch to 'browser_use/dom/playground/test_accessibility.py' cleanly.\nApplied patch to 'browser_use/llm/anthropic/chat.py' cleanly.\nApplied patch to 'browser_use/llm/aws/chat_anthropic.py' cleanly.\nApplied patch to 'browser_use/llm/google/serializer.py' cleanly.\nApplied patch to 'eval/judge_s",
+  "polled_seconds": 0,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T13:34:29.041604+00:00"
+}

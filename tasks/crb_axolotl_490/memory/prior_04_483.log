@@ -1,0 +1,20 @@
+--- step: pre-commit ---
+@@ -615,7 +615,10 @@ class ModelLoader:
+             if self.cfg.fsdp_config.cpu_ram_efficient_loading:
+                 skip_move_to_device = True
+                 # Don't delete device_map for QLoRA + FSDP - it was set correctly in _set_device_map
+-                if "device_map" in self.model_kwargs and not self.is_qlora_and_fsdp_enabled:
++                if (
++                    "device_map" in self.model_kwargs
++                    and not self.is_qlora_and_fsdp_enabled
++                ):
+                     del self.model_kwargs["device_map"]
+             elif self.is_qlora_and_fsdp_enabled:
+                 skip_move_to_device = True
+##[error]Process completed with exit code 1.
+##[end-action id=__pre-commit_action.__run_3;outcome=failure;conclusion=failure;duration_ms=116152]
+Post job cleanup.
+##[start-action display=Run actions/cache@v4;id=__ce677417-4a20-4ba6-af78-ed4cad40014a.__actions_cache]
+##[end-action id=__ce677417-4a20-4ba6-af78-ed4cad40014a.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+Post job cleanup.
+http.https://github.com/.extraheader

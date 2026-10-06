@@ -1,0 +1,18 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "failure"
+  ],
+  "run_url": "https://github.com/Alishba-hub/crewAI/actions/runs/37320205238",
+  "commit": "5a840cb1accd6eebf63beeed10ead6007cb023fe",
+  "branch": "cirepair/crb_crewai_564/baseline",
+  "failed_jobs": [
+    "type-checker"
+  ],
+  "detail": "",
+  "polled_seconds": 50,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T13:53:30.496211+00:00"
+}

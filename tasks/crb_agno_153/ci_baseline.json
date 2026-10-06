@@ -1,0 +1,20 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "failure",
+    "failure"
+  ],
+  "run_url": "https://github.com/Alishba-hub/agno/actions/runs/37314880184",
+  "commit": "5ae8c96b67638133f70378f9943f6e9b99b3d890",
+  "branch": "cirepair/crb_agno_153/baseline",
+  "failed_jobs": [
+    "tests (3.12)",
+    "style-check (3.9)"
+  ],
+  "detail": "",
+  "polled_seconds": 112,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T13:13:07.376944+00:00"
+}

@@ -1,0 +1,16 @@
+{
+  "conclusion": "success",
+  "raw_conclusions": [
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/DocsGPT/actions/runs/37320639617",
+  "commit": "8f626114d232d4566c8e563c7bf8849effa4331a",
+  "branch": "cirepair/crb_docsgpt_422/gold",
+  "failed_jobs": [],
+  "detail": "",
+  "polled_seconds": 770,
+  "source": "github",
+  "steps": [],
+  "passed": true,
+  "recorded_at": "2026-10-05T14:08:47.352511+00:00"
+}

@@ -1,0 +1,22 @@
+{
+  "conclusion": "failure",
+  "raw_conclusions": [
+    "success",
+    "failure",
+    "failure",
+    "success"
+  ],
+  "run_url": "https://github.com/Alishba-hub/axolotl/actions/runs/37324523924",
+  "commit": "62ebf047aff57f1198c50a7a3a11ba96a078b3ca",
+  "branch": "cirepair/crb_axolotl_490/baseline",
+  "failed_jobs": [
+    "PyTest (3.11, 2.8.0)",
+    "PyTest (3.11, 2.9.0)"
+  ],
+  "detail": "",
+  "polled_seconds": 630,
+  "source": "github",
+  "steps": [],
+  "passed": false,
+  "recorded_at": "2026-10-05T14:35:31.401545+00:00"
+}
